@@ -6,13 +6,30 @@ int main()
 
     SinglePhaseManager app(10);
 
-    Phase stance(5, "stance");
+    Phase::PhasePtr stance = std::make_shared<Phase>(5, "stance");
+
+
+//    stance.addConstraint
 
     app.registerPhase(stance);
+    app.addPhase(stance);
+    app.addPhase(stance);
+    app.addPhase(stance);
+//    app.getRegisteredPhase("penis");
+
+//    app._shift_phases();
 
     app.addPhase(stance);
-    std::cout << app.getRegisteredPhase("penis") << std::endl;
-
-    app._shift_phases();
+//    app._shift_phases();
+//    app._shift_phases();
+//    app._shift_phases();
+//    app._shift_phases();
+//    app._shift_phases();
+//    app._shift_phases();
+//    app._shift_phases();
+//    app._shift_phases();
+//    app._shift_phases();
+//    app._shift_phases();
+//    app.addPhase(stance);
 
 }

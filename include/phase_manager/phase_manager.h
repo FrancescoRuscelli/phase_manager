@@ -20,6 +20,7 @@ public:
     bool addConstraint(HorizonFunction constraint, int nodes=-1);
 
 private:
+
     std::string _name;
     int _n_nodes;
 
@@ -42,17 +43,26 @@ private:
 //    def addParameterValues(self, par, values, nodes=None):
 };
 
+class SinglePhaseManager;
 class PhaseToken
 {
     friend class SinglePhaseManager;
+//    friend class std::forward<SinglePhaseManager>;
+//    friend class std::shared_ptr<PhaseToken>;
+
+public:
+
     typedef std::shared_ptr<PhaseToken> PhaseTokenPtr;
+
+protected:
+
+    PhaseToken(Phase::PhasePtr phase);
 
 private:
 
-    PhaseToken(Phase phase);
+    Phase::PhasePtr _abstract_phase;
 
-    Phase _abstract_phase;
-    std::shared_ptr<std::vector<int>> _active_nodes;
+    std::vector<int> _active_nodes;
 //    std::vector<std::string, std::set<int>> _constraints_in_horizon;
 //    std::vector<std::string, std::set<int>> _costs_in_horizon;
 //    std::vector<std::string, std::set<int>> _vars_in_horizon;
@@ -63,20 +73,21 @@ private:
     int _reset();
 
     int _get_n_nodes();
-    std::shared_ptr<std::vector<int>> _get_active_nodes();
+    std::vector<int>& _get_active_nodes();
 
 };
 
 class SinglePhaseManager
 {
+
 public:
 
     SinglePhaseManager(int n_nodes, std::string name="how_to_use_default_arguments");
 
-    bool registerPhase(Phase phase);
-    bool addPhase(std::vector<Phase> phases);
-    bool addPhase(Phase phase);
-    Phase* getRegisteredPhase(std::string name);
+    bool registerPhase(Phase::PhasePtr phase);
+    bool addPhase(std::vector<Phase::PhasePtr> phases);
+    bool addPhase(Phase::PhasePtr phase);
+    Phase::PhasePtr getRegisteredPhase(std::string name);
     Phase getActivePhase();
     int _shift_phases();
 
@@ -84,18 +95,18 @@ public:
 //    Eigen::VectorXd diocane;
 
 private:
-    bool _add_phase(Phase phase, int pos=-1); // TODO substitute with pointer
+    bool _add_phase(Phase::PhasePtr phase, int pos=-1); // TODO substitute with pointer
 
 
     std::string _name;
-    std::vector<Phase> _registered_phases; // container of all the registered phases
+    std::vector<Phase::PhasePtr> _registered_phases; // container of all the registered phases
     int _n_nodes;
 
 //    PhaseContainer phase_container; //PhaseContainer
 
-    std::vector<std::shared_ptr<PhaseToken>> _phases; // list of all the phases
+    std::vector<PhaseToken::PhaseTokenPtr> _phases; // list of all the phases
     int _n_phases;
-    std::vector<std::shared_ptr<PhaseToken>> _active_phases; // list of all active phases
+    std::vector<PhaseToken::PhaseTokenPtr> _active_phases; // list of all active phases
     int _n_active_phases;
     std::vector<int*> _activated_nodes; //
     int _horizon_nodes[100]; // np.nan * np.ones(self.n_tot)
