@@ -4,7 +4,7 @@
 int main()
 {
 
-    SinglePhaseManager app(10);
+    SinglePhaseManager app(12);
 
     Phase::PhasePtr stance = std::make_shared<Phase>(5, "stance");
 

@@ -94,11 +94,11 @@ bool SinglePhaseManager::_add_phase(Phase::PhasePtr phase, int pos)
     }
     else
     {
-////      if pos is beyond the horizon (outside of the active_phases), skip useless computation:
+//      if pos is beyond the horizon (outside of the active_phases), skip useless computation:
         if (0 <= pos <= _active_phases.size())
         {
-    ////          recompute empty nodes in horizon, clear active nodes of all the phases AFTER the one inserted
-    ////          insert phase + everything AFTER it back
+    //          recompute empty nodes in horizon, clear active nodes of all the phases AFTER the one inserted
+    //          insert phase + everything AFTER it back
             for (int i=0; i<pos; i++)
             {
                 std::shared_ptr<PhaseToken> s = _phases[i];
@@ -120,25 +120,29 @@ bool SinglePhaseManager::_add_phase(Phase::PhasePtr phase, int pos)
         _trailing_empty_nodes -= phase->getNNodes();
         std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
 
+
         if (_trailing_empty_nodes <= 0)
         {
             int remaining_nodes = phase_token->_get_n_nodes() + _trailing_empty_nodes;
+
             for (int i = 0; i<remaining_nodes; i++)
             {
                 phase_token->_get_active_nodes().push_back(i);
             }
             _trailing_empty_nodes = 0;
         }
+        else
+        {
+            for (int i = 0; i<phase_token->_get_n_nodes(); i++)
+            {
+                phase_token->_get_active_nodes().push_back(i);
+            }
+        }
 
 
         _active_phases.push_back(phase_token);
 
 
-        for (int i = 0; i<phase_token->_get_n_nodes(); i++)
-        {
-//            std::cout << "entered pushing back: " << i << std::endl;
-            phase_token->_get_active_nodes().push_back(i);
-        }
 
         std::cout << "number of free nodes: " << _trailing_empty_nodes << std::endl;
         std::cout << "number of node in added phase: " << phase_token->_get_n_nodes() << std::endl;
@@ -260,7 +264,7 @@ int SinglePhaseManager::_shift_phases()
     }
     _trailing_empty_nodes = _n_nodes - num_nodes;
 
-    std::cout << "number of free nodes: " << _trailing_empty_nodes << std::endl;
+    std::cout << "current number of free nodes: " << _trailing_empty_nodes << std::endl;
 
 }
 
