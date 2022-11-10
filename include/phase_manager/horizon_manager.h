@@ -21,10 +21,8 @@ public:
 private:
 
     std::vector<ItemWithBoundsBase::ItemWithBoundsBasePtr> _constraints;
-
-//    std::vector<HorizonFunction> _constraints;
-//    std::vector<HorizonFunction> _costs;
-//    std::vector<HorizonFunction> _vars;
+//    std::vector<ItemBase::ItemBasePtr> _costs;
+    std::vector<ItemWithBoundsBase::ItemWithBoundsBasePtr> _vars;
 //    std::vector<HorizonFunction> _pars;
 
 

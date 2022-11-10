@@ -191,7 +191,27 @@ int main()
     }
     std::cout << std::endl;
 
+    app.addPhase(stance);
+    std::cout << "constraint stance_c_1 has nodes: ";
+    for (int i : stance_c_1->getNodes())
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 
+    std::cout << "constraint stance_c_2 has nodes: ";
+    for (int i : stance_c_2->getNodes())
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "constraint flight_c_1 has nodes: ";
+    for (int i : flight_c_1->getNodes())
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 
     app._shift_phases();
 
@@ -272,7 +292,7 @@ int main()
     std::cout << "constraint stance_c_1 has nodes: ";
     for (int i : stance_c_1->getNodes())
     {
-        std::cout << i << "m";
+        std::cout << i << " ";
     }
     std::cout << std::endl;
 
@@ -294,7 +314,7 @@ int main()
     std::cout << "constraint stance_c_1 has nodes: ";
     for (int i : stance_c_1->getNodes())
     {
-        std::cout << i << "m";
+        std::cout << i << " ";
     }
     std::cout << std::endl;
 
@@ -316,7 +336,7 @@ int main()
     std::cout << "constraint stance_c_1 has nodes: ";
     for (int i : stance_c_1->getNodes())
     {
-        std::cout << i << "m";
+        std::cout << i << " ";
     }
     std::cout << std::endl;
 
