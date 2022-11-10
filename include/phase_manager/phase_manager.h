@@ -1,11 +1,17 @@
 #ifndef PHASE_MANAGER_H
 #define PHASE_MANAGER_H
 
-#include "Eigen/Dense"
+//#include "Eigen/Dense"
+#include <phase_manager/horizon_interface.h>
+
+#include <vector>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <set>
+#include <numeric>
+
+class HorizonManager;
 
 class Phase
 {
@@ -16,18 +22,40 @@ public:
     Phase(int n_nodes, std::string name);
     std::string getName();
     int getNNodes();
-    template <typename HorizonFunction>
-    bool addConstraint(HorizonFunction constraint, int nodes=-1);
+    template <typename T>
+    bool addConstraint(std::shared_ptr<T> constraint, std::vector<int> nodes = {})
+    {
+
+        std::vector<int> range_nodes(_n_nodes);
+        std::iota(std::begin(range_nodes), std::end(range_nodes), 0); //0 is the starting number
+
+        std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
+
+        ItemWithBoundsBase::ItemWithBoundsBasePtr converted_constraint = std::make_shared<WrapperWithBounds<T>>(constraint);
+
+        _constraints[converted_constraint] = active_nodes;
+
+        return 1;
+    }
+
+    std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>> getConstraints();
+
+    bool update();
+
+
+//    std::map<ItemWithBoundsConcept::ItemWithBoundsConceptPtr, std::vector<int>> getConstraints();
+
 
 private:
 
     std::string _name;
     int _n_nodes;
 
-    std::map<std::string, int> _constraints;
-    std::map<std::string, int> _costs;
+    std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>>_constraints;
+//    std::map<ItemBase::ItemBasePtr, std::vector<int>> _costs;
 
-//    std::map<std::string, std::string> _vars;
+//    std::map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>> _vars;
+
 //    std::map<std::string, std::string> _vars_node;
 //    std::map<std::string, std::string> _var_bounds;
 
@@ -47,6 +75,7 @@ class SinglePhaseManager;
 class PhaseToken
 {
     friend class SinglePhaseManager;
+    friend class HorizonManager;
 //    friend class std::forward<SinglePhaseManager>;
 //    friend class std::shared_ptr<PhaseToken>;
 
@@ -61,9 +90,9 @@ protected:
 private:
 
     Phase::PhasePtr _abstract_phase;
-
     std::vector<int> _active_nodes;
-//    std::vector<std::string, std::set<int>> _constraints_in_horizon;
+
+    std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>> _constraints_in_horizon;
 //    std::vector<std::string, std::set<int>> _costs_in_horizon;
 //    std::vector<std::string, std::set<int>> _vars_in_horizon;
 //    std::vector<std::string, std::set<int>> _pars_in_horizon;
@@ -74,6 +103,7 @@ private:
 
     int _get_n_nodes();
     std::vector<int>& _get_active_nodes();
+    Phase::PhasePtr get_phase();
 
 };
 
@@ -97,6 +127,8 @@ public:
 private:
     bool _add_phase(Phase::PhasePtr phase, int pos=-1); // TODO substitute with pointer
 
+
+    std::unique_ptr<HorizonManager> _horizon_manager;
 
     std::string _name;
     std::vector<Phase::PhasePtr> _registered_phases; // container of all the registered phases
