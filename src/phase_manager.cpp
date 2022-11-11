@@ -7,7 +7,6 @@ Phase::Phase(int n_nodes, std::string name):
     _n_nodes(n_nodes),
     _name(name)
 {
-
 }
 
 std::string Phase::getName()
@@ -23,6 +22,11 @@ int Phase::getNNodes()
 std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>> Phase::getConstraints()
 {
     return _constraints;
+}
+
+std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, Phase::BoundsContainer> Phase::getVariables()
+{
+    return _variables;
 }
 
 //std::map<ItemWithBoundsConcept::ItemWithBoundsConceptPtr, std::vector<int>> Phase::getConstraints()
@@ -73,7 +77,7 @@ Phase::PhasePtr PhaseToken::get_phase()
     return _abstract_phase;
 }
 
-int PhaseToken::_update_constraint(int initial_node)
+int PhaseToken::_update_constraints(int initial_node)
 {
     for (auto cnstr_map : _abstract_phase->getConstraints())
     {
@@ -108,44 +112,42 @@ int PhaseToken::_update_constraint(int initial_node)
     }
 }
 
-int PhaseToken::_update_variable(int initial_node)
+int PhaseToken::_update_variables(int initial_node)
 {
-//    for (auto var_map : _abstract_phase->getVariables())
-//    {
-//        std::vector<int> active_nodes;
+    for (auto var_map : _abstract_phase->getVariables())
+    {
+        std::vector<int> active_nodes;
 
-//        std::set_intersection(var_map.second.begin(), var_map.second.end(),
-//                              _active_nodes.begin(), _active_nodes.end(),
-//                              std::back_inserter(active_nodes));
+        std::set_intersection(var_map.second.nodes.begin(), var_map.second.nodes.end(),
+                              _active_nodes.begin(), _active_nodes.end(),
+                              std::back_inserter(active_nodes));
 
-//        std::cout << "active nodes of constraint: ";
-//        for (auto elem : active_nodes)
-//        {
-//            std::cout << elem << " ";
-//        }
-//        std::cout << std::endl;
+        std::cout << "active nodes of variable: ";
+        for (auto elem : active_nodes)
+        {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
 
 
-//        std::vector<int> horizon_nodes(active_nodes.size());
-//        // active phase nodes   : [1 2 3 4]
-//        // active fun nodes     : [2 3]
-//        // phase pos in horizon : 7
-//        // constr pos in horizon: 7 + 2 - 1 = 8
-//        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
+        std::vector<int> horizon_nodes(active_nodes.size());
+        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
 
-//        cnstr_map.first->addNodes(horizon_nodes);
-//        std::cout << " adding horizon nodes: ";
-//        for (auto elem : horizon_nodes)
-//        {
-//            std::cout << elem << " ";
-//        }
-//        std::cout << std::endl;
-//    }
+        var_map.first->addNodes(horizon_nodes);
+        var_map.first->addBounds(var_map.second.lower_bounds, var_map.second.upper_bounds);
+        std::cout << " adding horizon nodes: ";
+        for (auto elem : horizon_nodes)
+        {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
+    }
 }
 
 int PhaseToken::_update(int initial_node)
 {
-    _update_constraint(initial_node);
+    _update_constraints(initial_node);
+    _update_variables(initial_node);
 
 }
 
@@ -166,6 +168,12 @@ bool SinglePhaseManager::registerPhase(Phase::PhasePtr phase)
     {
         _horizon_manager->addConstraint(constraint.first);
     }
+
+    for (auto variable : phase->getVariables())
+    {
+        _horizon_manager->addVariable(variable.first);
+    }
+
 
     return true;
 }

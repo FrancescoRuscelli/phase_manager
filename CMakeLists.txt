@@ -4,7 +4,7 @@ project(phase_manager LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 
-find_package(Eigen3 REQUIRED)
+find_package(Eigen3 3.4 REQUIRED)
 
 #list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 

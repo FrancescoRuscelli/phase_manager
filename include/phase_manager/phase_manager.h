@@ -22,9 +22,11 @@ public:
     struct BoundsContainer
     {
         BoundsContainer() {}
+
+        // must be of same dimension
         std::vector<int> nodes;
-        Eigen::VectorXd lower_bounds;
-        Eigen::VectorXd upper_bounds;
+        Eigen::MatrixXd lower_bounds;
+        Eigen::MatrixXd upper_bounds;
     };
 
 
@@ -49,8 +51,8 @@ public:
 
     template <typename T>
     bool addVariableBounds(std::shared_ptr<T> variable,
-                           Eigen::VectorXd lower_bound,
-                           Eigen::VectorXd upper_bound,
+                           Eigen::MatrixXd lower_bounds,
+                           Eigen::MatrixXd upper_bounds,
                            std::vector<int> nodes = {})
     {
 
@@ -61,7 +63,11 @@ public:
 
         ItemWithBoundsBase::ItemWithBoundsBasePtr converted_variable = std::make_shared<WrapperWithBounds<T>>(variable);
 
-        BoundsContainer val_container{active_nodes, lower_bound, upper_bound};
+        BoundsContainer val_container;
+
+        val_container.nodes = active_nodes;
+        val_container.lower_bounds = lower_bounds;
+        val_container.upper_bounds = upper_bounds;
 
         _variables[converted_variable] = val_container;
 
@@ -81,7 +87,7 @@ private:
     std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>>_constraints;
 //    std::map<ItemBase::ItemBasePtr, std::vector<int>> _costs;
 
-    std::map<ItemWithBoundsBase::ItemWithBoundsBasePtr, BoundsContainer> _variables;
+    std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, BoundsContainer> _variables;
 
 //    std::map<std::string, std::string> _vars_node;
 //    std::map<std::string, std::string> _var_bounds;
@@ -124,8 +130,8 @@ private:
 //    std::vector<std::string, std::set<int>> _vars_in_horizon;
 //    std::vector<std::string, std::set<int>> _pars_in_horizon;
 
-    int _update_constraint(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
-    int _update_variable(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
+    int _update_constraints(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
+    int _update_variables(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
     int _update(int initial_node);
     int _reset();
 

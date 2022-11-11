@@ -4,15 +4,16 @@
 #include <chrono>
 
 
-
-class Constraint
+class Variable
 {
 public:
 
-    using ConstraintPtr = std::shared_ptr<Constraint>;
+    using VariablePtr = std::shared_ptr<Variable>;
+//    using MakeVariable = std::make_shared<Variable>;
 
-    Constraint(std::string name):
-        _name(name)
+    Variable(std::string name, int dim):
+        _name(name),
+        _dim(dim)
     {
     }
 
@@ -21,9 +22,15 @@ public:
         _nodes = nodes;
     }
 
-    bool setBounds(Eigen::VectorXd bounds)
+    bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds)
     {
-        _bounds = bounds;
+        _lower_bounds = lower_bounds;
+        _upper_bounds = upper_bounds;
+    }
+
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> getBounds()
+    {
+        return {_lower_bounds, _upper_bounds};
     }
 
     std::vector<int> getNodes()
@@ -31,24 +38,93 @@ public:
         return _nodes;
     }
 
+    std::string getName()
+    {
+        return _name;
+    }
+
+    int getDim()
+    {
+        return _dim;
+    }
+
 private:
 
     std::string _name;
+    int _dim;
     std::vector<int> _nodes;
-    Eigen::VectorXd _bounds;
+    Eigen::MatrixXd _lower_bounds;
+    Eigen::MatrixXd _upper_bounds;
+};
+
+class Constraint
+{
+public:
+
+    using ConstraintPtr = std::shared_ptr<Constraint>;
+
+    Constraint(std::string name, int dim):
+        _name(name),
+        _dim(dim)
+    {
+    }
+
+    bool setNodes(std::vector<int> nodes)
+    {
+        _nodes = nodes;
+    }
+
+    std::string getName()
+    {
+        return _name;
+    }
+
+    bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds)
+    {
+        _lower_bounds = lower_bounds;
+        _upper_bounds = upper_bounds;
+    }
+
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> getBounds()
+    {
+        return {_lower_bounds, _upper_bounds};
+    }
+
+    std::vector<int> getNodes()
+    {
+        return _nodes;
+    }
+
+    int getDim()
+    {
+        return _dim;
+    }
+
+private:
+
+    std::string _name;
+    int _dim;
+    std::vector<int> _nodes;
+    Eigen::MatrixXd _lower_bounds;
+    Eigen::MatrixXd _upper_bounds;
+
 };
 
 int main()
 {
 
-    Constraint::ConstraintPtr stance_c_1 = std::make_shared<Constraint>("stance_c_1");
-    Constraint::ConstraintPtr stance_c_2 = std::make_shared<Constraint>("stance_c_2");
+    Constraint::ConstraintPtr stance_c_1 = std::make_shared<Constraint>("stance_c_1", 1);
+    Constraint::ConstraintPtr stance_c_2 = std::make_shared<Constraint>("stance_c_2", 1);
 
-    Constraint::ConstraintPtr flight_c_1 = std::make_shared<Constraint>("flight_c_1");
+    Constraint::ConstraintPtr flight_c_1 = std::make_shared<Constraint>("flight_c_1", 1);
 
-//    Constraint template_constraint("diocane");
+    Variable::VariablePtr var_1 = std::make_shared<Variable>("var_1", 3); //Variable::MakeVariable("var_1");
+    Eigen::MatrixXd bounds_var_1 = Eigen::MatrixXd::Zero(3,5);
+    std::vector<int> prb_nodes;
+    prb_nodes.insert(prb_nodes.end(), {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
+    var_1->setNodes(prb_nodes);
 
-    SinglePhaseManager app(12);
+    SinglePhaseManager app(20);
 
     Phase::PhasePtr stance = std::make_shared<Phase>(5, "stance");
     Phase::PhasePtr flight = std::make_shared<Phase>(5, "flight");
@@ -56,10 +132,12 @@ int main()
     std::vector<int> my_nodes;
     my_nodes.insert(my_nodes.end(), {2, 3, 4});
 
-    stance->addConstraint(stance_c_1, my_nodes);
-    stance->addConstraint(stance_c_2);
+//    stance->addConstraint(stance_c_1, my_nodes);
+//    stance->addConstraint(stance_c_2);
+    stance->addVariableBounds(var_1, bounds_var_1, bounds_var_1);
+    flight->addVariableBounds(var_1, bounds_var_1, bounds_var_1);
 
-    flight->addConstraint(flight_c_1);
+//    flight->addConstraint(flight_c_1);
 
 
     //  without registering, cannot link horizon constraints to updater
@@ -68,28 +146,36 @@ int main()
 
 //    auto start_time = std::chrono::high_resolution_clock::now();
     app.addPhase(stance);
-    app.addPhase(flight);
+//    app.addPhase(flight);
 
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint stance_c_1 has nodes: ";
+//    for (int i : stance_c_1->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint stance_c_2 has nodes: ";
+//    for (int i : stance_c_2->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint flight_c_1 has nodes: ";
+//    for (int i : flight_c_1->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
+
+//    ;
+//    std::cout << "variable var_1 has bounds: " << std::endl;
+//    std::cout << std::get<0>(var_1->getBounds()) << std::endl;
+
+
+
+//    std::cout << std::endl;
 
 //    std::chrono::duration<double> elapsed_time = std::chrono::system_clock::now() - start_time;
 //    std::cout << "elapsed time: " << elapsed_time.count() << std::endl;
@@ -98,259 +184,28 @@ int main()
 //    app.addPhase(stance);
 //    app.getRegisteredPhase("penis");
 
-    app._shift_phases();
+//    app._shift_phases();
 
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint stance_c_1 has nodes: ";
+//    for (int i : stance_c_1->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint stance_c_2 has nodes: ";
+//    for (int i : stance_c_2->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    app._shift_phases();
-
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    app._shift_phases();
-
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint flight_c_1 has nodes: ";
+//    for (int i : flight_c_1->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
 
-    app._shift_phases();
-
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    app.addPhase(stance);
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    app._shift_phases();
-
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-
-
-    app._shift_phases();
-
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-
-
-    app._shift_phases();
-
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-
-
-    app._shift_phases();
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    app._shift_phases();
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    app._shift_phases();
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
 }

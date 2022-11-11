@@ -6,13 +6,14 @@
 
 #include <Eigen/Dense>
 #include <vector>
-#include <unordered_map> // use unordered map?
+#include <unordered_set> // use unordered map?
 
 class HorizonManager
 {
 public:
 
     bool addConstraint(ItemWithBoundsBase::ItemWithBoundsBasePtr constraint);
+    bool addVariable(ItemWithBoundsBase::ItemWithBoundsBasePtr variable);
 
     bool flush();
     bool reset();
@@ -20,9 +21,9 @@ public:
 
 private:
 
-    std::vector<ItemWithBoundsBase::ItemWithBoundsBasePtr> _constraints;
+    std::unordered_set<ItemWithBoundsBase::ItemWithBoundsBasePtr> _constraints;
 //    std::vector<ItemBase::ItemBasePtr> _costs;
-    std::vector<ItemWithBoundsBase::ItemWithBoundsBasePtr> _vars;
+    std::unordered_set<ItemWithBoundsBase::ItemWithBoundsBasePtr> _variables;
 //    std::vector<HorizonFunction> _pars;
 
 
