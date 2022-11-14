@@ -15,6 +15,7 @@ public:
     bool addConstraint(ItemWithBoundsBase::ItemWithBoundsBasePtr constraint);
     bool addVariable(ItemWithBoundsBase::ItemWithBoundsBasePtr variable);
 
+    bool update();
     bool flush();
     bool reset();
 

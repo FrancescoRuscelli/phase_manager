@@ -33,8 +33,10 @@ public:
     Phase(int n_nodes, std::string name);
     std::string getName();
     int getNNodes();
-    template <typename T>
-    bool addConstraint(std::shared_ptr<T> constraint, std::vector<int> nodes = {})
+
+//    template <typename T>
+//    bool addConstraint(std::shared_ptr<T> constraint, std::vector<int> nodes = {})
+    bool addConstraint(ItemWithBoundsBase::ItemWithBoundsBasePtr constraint, std::vector<int> nodes = {})
     {
 
         std::vector<int> range_nodes(_n_nodes);
@@ -42,15 +44,13 @@ public:
 
         std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
 
-        ItemWithBoundsBase::ItemWithBoundsBasePtr converted_constraint = std::make_shared<WrapperWithBounds<T>>(constraint);
-
-        _constraints[converted_constraint] = active_nodes;
+        _constraints[constraint] = active_nodes;
 
         return 1;
     }
-
-    template <typename T>
-    bool addVariableBounds(std::shared_ptr<T> variable,
+//    template <typename T>
+//    bool addVariableBounds(std::shared_ptr<T> variable,
+    bool addVariableBounds(ItemWithBoundsBase::ItemWithBoundsBasePtr variable,
                            Eigen::MatrixXd lower_bounds,
                            Eigen::MatrixXd upper_bounds,
                            std::vector<int> nodes = {})
@@ -61,15 +61,13 @@ public:
 
         std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
 
-        ItemWithBoundsBase::ItemWithBoundsBasePtr converted_variable = std::make_shared<WrapperWithBounds<T>>(variable);
-
         BoundsContainer val_container;
 
         val_container.nodes = active_nodes;
         val_container.lower_bounds = lower_bounds;
         val_container.upper_bounds = upper_bounds;
 
-        _variables[converted_variable] = val_container;
+        _variables[variable] = val_container;
 
         return 1;
     }

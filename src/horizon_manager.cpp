@@ -8,10 +8,21 @@ bool HorizonManager::addConstraint(ItemWithBoundsBase::ItemWithBoundsBasePtr con
 
 bool HorizonManager::addVariable(ItemWithBoundsBase::ItemWithBoundsBasePtr variable)
 {
-//    std::cout << "name:" << variable->getName() << std::endl;
-    std::cout << "before size" << _variables.size() << std::endl;
-    _variables.insert(variable);
-    std::cout << "after size" << _variables.size() << std::endl;
+    bool duplicate_flag = false;
+    for (auto item : _variables)
+    {
+        if (variable->getName() == item->getName())
+        {
+            duplicate_flag = true;
+        }
+
+    }
+
+    if (duplicate_flag == false)
+    {
+        _variables.insert(variable);
+    }
+
 }
 
 bool HorizonManager::flush()
@@ -33,11 +44,13 @@ bool HorizonManager::reset()
     for (auto constraint : _constraints)
     {
         constraint->clearNodes();
+        constraint->clearBounds();
     }
 
     for (auto variable : _variables)
     {
         variable->clearNodes();
+        variable->clearBounds();
     }
 
 }

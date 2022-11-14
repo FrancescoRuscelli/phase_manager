@@ -133,14 +133,10 @@ int PhaseToken::_update_variables(int initial_node)
         std::vector<int> horizon_nodes(active_nodes.size());
         std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
 
-        var_map.first->addNodes(horizon_nodes);
-        var_map.first->addBounds(var_map.second.lower_bounds, var_map.second.upper_bounds);
-        std::cout << " adding horizon nodes: ";
-        for (auto elem : horizon_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
+        var_map.first->addBounds(horizon_nodes,
+                                 var_map.second.lower_bounds(Eigen::indexing::all, active_nodes),
+                                 var_map.second.upper_bounds(Eigen::indexing::all, active_nodes));
+
     }
 }
 
@@ -184,6 +180,8 @@ bool SinglePhaseManager::_add_phase(Phase::PhasePtr phase, int pos)
 
     std::cout << "= = = = = = = = = = = = = =adding phase: " << phase->getName() << " = = = = = = = = = = = = = =" << std::endl;
 
+    // magic trick because PhaseToken construction is protected (only friends can use it)
+    // in particular, the method make_shared cannot acces to the construction of PhaseToken
     struct PhaseTokenGate : PhaseToken
     {
         PhaseTokenGate(Phase::PhasePtr phase):
@@ -191,8 +189,8 @@ bool SinglePhaseManager::_add_phase(Phase::PhasePtr phase, int pos)
         {}
     };
 
-    PhaseToken::PhaseTokenPtr phase_token;
-    phase_token = std::make_shared<PhaseTokenGate>(phase);
+    PhaseToken::PhaseTokenPtr phase_token = std::make_shared<PhaseTokenGate>(phase);
+//    PhaseToken::PhaseTokenPtr phase_token = std::make_shared<PhaseToken>(phase);
 
     if (pos == -1)
     {
@@ -371,7 +369,6 @@ int SinglePhaseManager::_shift_phases()
             std::cout << std::endl;
         }
 
-        _horizon_manager->reset();
         int i = 0;
         for (auto phase : _active_phases)
         {

@@ -13,7 +13,10 @@ class ItemBase
 public:
     using ItemBasePtr = std::shared_ptr<ItemBase>;
     virtual bool setNodes(std::vector<int> nodes) = 0;
-//    virtual std::string getName() = 0;
+    virtual std::string getName() = 0;
+    virtual int getDim() = 0;
+    virtual std::vector<int> getNodes() = 0;
+
     bool addNodes(std::vector<int> nodes)
     {
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
@@ -43,30 +46,44 @@ public:
     using ItemWithBoundsBasePtr = std::shared_ptr<ItemWithBoundsBase>;
     virtual bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds) = 0;
 
-    bool addBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds)
+
+    bool addBounds(std::vector<int> nodes, Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds)
     {
-        std::cout << "setting bounds to nodes: ";
-        for (auto node : _nodes)
-        {
-            std::cout << node << " ";
-        }
-        std::cout << std::endl;
-        _lower_bounds(Eigen::placeholders::all, _nodes) << lower_bounds;
-        _upper_bounds(Eigen::placeholders::all, _nodes) << upper_bounds;
+//        std::cout << "setting bounds to nodes: ";
+//        for (auto node : nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
+
+        _lower_bounds(Eigen::indexing::all, nodes) << lower_bounds;
+        _upper_bounds(Eigen::indexing::all, nodes) << upper_bounds;
+
+        _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
+
     }
 
     bool flush()
     {
         ItemBase::flush();
-        std::cout << _upper_bounds << std::endl;
         setBounds(_lower_bounds, _upper_bounds);
         return true;
     }
+
+    bool clearBounds()
+    {
+        _lower_bounds = _initial_lower_bounds;
+        _upper_bounds = _initial_upper_bounds;
+    }
+
 
 protected:
     // do I need to initialize these?
     Eigen::MatrixXd _lower_bounds;
     Eigen::MatrixXd _upper_bounds;
+
+    Eigen::MatrixXd _initial_lower_bounds;
+    Eigen::MatrixXd _initial_upper_bounds;
 };
 
 
@@ -79,7 +96,9 @@ public:
         m_item(item) {}
 
     bool setNodes(std::vector<int> nodes) { return m_item->setNodes(nodes); }
-//    std::string getName() { return m_item->getName(); }
+    std::string getName() { return m_item->getName(); }
+    int getDim() { return m_item->getDim(); }
+    std::vector<int> getNodes() { return m_item->getNodes(); }
 
 private:
 
@@ -95,13 +114,19 @@ public:
         m_item(item)
         {
             // what if empty?
-            _lower_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(m_item->getDim(), m_item->getNodes().size());
-            _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(m_item->getDim(), m_item->getNodes().size());
+            _lower_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+            _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+
+            _initial_lower_bounds =  _lower_bounds;
+            _initial_upper_bounds =  _upper_bounds;
         }
 
     bool setNodes(std::vector<int> nodes) { return m_item->setNodes(nodes); }
     bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds) { return m_item->setBounds(lower_bounds, upper_bounds); }
-//    std::string getName() { return m_item->getName(); }
+    int getDim() { return m_item->getDim(); }
+    std::vector<int> getNodes() { return m_item->getNodes(); }
+
+    std::string getName() { return m_item->getName(); }
 
 private:
 
