@@ -3,13 +3,14 @@
 # include <iostream>
 #include <chrono>
 
+class Porcodio
+{};
 
 class Variable
 {
 public:
 
     using VariablePtr = std::shared_ptr<Variable>;
-//    using MakeVariable = std::make_shared<Variable>;
 
     Variable(std::string name, int dim):
         _name(name),
@@ -112,7 +113,10 @@ private:
 
 int main()
 {
-    // all of this comes from outside
+    std::cout << has_set_bounds<Porcodio>() << std::endl;
+    std::cout << has_set_bounds<Constraint>() << std::endl;
+
+//     all of this comes from outside
     Constraint::ConstraintPtr fake_stance_c_1 = std::make_shared<Constraint>("stance_c_1", 1);
     Constraint::ConstraintPtr fake_stance_c_2 = std::make_shared<Constraint>("stance_c_2", 1);
 

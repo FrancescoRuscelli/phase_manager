@@ -1,4 +1,4 @@
-#ifndef CLASS_RESOLVER_H
+    #ifndef CLASS_RESOLVER_H
 #define CLASS_RESOLVER_H
 
 #include <iostream>
@@ -42,7 +42,7 @@ using can_apply = details::can_apply<Z, types<Ts...>>;
 
 // the type of os << X, in a SFINAE friendly manner:
 template<class X>
-using set_bounds_result = decltype( std::declval<X>().setBounds(std::declval<int>()) );
+using set_bounds_result = decltype( std::declval<X>().setBounds(std::declval<Eigen::MatrixXd>(), std::declval<Eigen::MatrixXd>()) );
 
 // turn the above into a "is there a print operator" test:
 template<class X>
