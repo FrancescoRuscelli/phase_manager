@@ -1,6 +1,6 @@
 #include <phase_manager/horizon_manager.h>
 
-bool HorizonManager::addConstraint(ItemWithBoundsBase::ItemWithBoundsBasePtr constraint)
+bool HorizonManager::addConstraint(ItemWithBoundsBase::Ptr constraint)
 {
     bool duplicate_flag = false;
     for (auto item : _constraints)
@@ -16,10 +16,10 @@ bool HorizonManager::addConstraint(ItemWithBoundsBase::ItemWithBoundsBasePtr con
     {
         _constraints.push_back(constraint);
     }
-
+    return true;
 }
 
-bool HorizonManager::addCost(ItemBase::ItemBasePtr cost)
+bool HorizonManager::addCost(ItemBase::Ptr cost)
 {
     bool duplicate_flag = false;
     for (auto item : _costs)
@@ -35,10 +35,10 @@ bool HorizonManager::addCost(ItemBase::ItemBasePtr cost)
     {
         _costs.push_back(cost);
     }
-
+    return true;
 }
 
-bool HorizonManager::addVariable(ItemWithBoundsBase::ItemWithBoundsBasePtr variable)
+bool HorizonManager::addVariable(ItemWithBoundsBase::Ptr variable)
 {
     bool duplicate_flag = false;
     for (auto item : _variables)
@@ -54,10 +54,10 @@ bool HorizonManager::addVariable(ItemWithBoundsBase::ItemWithBoundsBasePtr varia
     {
         _variables.push_back(variable);
     }
-
+    return true;
 }
 
-bool HorizonManager::addParameter(ItemWithValuesBase::ItemWithValuesBasePtr parameter)
+bool HorizonManager::addParameter(ItemWithValuesBase::Ptr parameter)
 {
     bool duplicate_flag = false;
     for (auto item : _parameters)
@@ -73,7 +73,7 @@ bool HorizonManager::addParameter(ItemWithValuesBase::ItemWithValuesBasePtr para
     {
         _parameters.push_back(parameter);
     }
-
+    return true;
 }
 
 bool HorizonManager::flush()
@@ -98,6 +98,7 @@ bool HorizonManager::flush()
         parameter->flush();
     }
 
+    return true;
 
 }
 
@@ -120,5 +121,5 @@ bool HorizonManager::reset()
         parameter->clearNodes();
         parameter->clearBounds();
     }
-
+    return true;
 }

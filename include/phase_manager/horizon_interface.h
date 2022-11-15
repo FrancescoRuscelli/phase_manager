@@ -11,7 +11,9 @@
 class ItemBase
 {
 public:
-    using ItemBasePtr = std::shared_ptr<ItemBase>;
+
+    typedef std::shared_ptr<ItemBase> Ptr;
+
     virtual bool setNodes(std::vector<int> nodes) = 0;
     virtual std::string getName() = 0;
     virtual int getDim() = 0;
@@ -32,6 +34,7 @@ public:
     bool clearNodes()
     {
         _nodes.clear();
+        return true;
     }
 
 protected:
@@ -43,7 +46,8 @@ class ItemWithBoundsBase : public ItemBase
 {
 public:
 
-    using ItemWithBoundsBasePtr = std::shared_ptr<ItemWithBoundsBase>;
+    typedef std::shared_ptr<ItemWithBoundsBase> Ptr;
+
     virtual bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds) = 0;
 
 
@@ -61,6 +65,8 @@ public:
 
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
 
+        return true;
+
     }
 
     bool flush()
@@ -74,6 +80,8 @@ public:
     {
         _lower_bounds = _initial_lower_bounds;
         _upper_bounds = _initial_upper_bounds;
+
+        return true;
     }
 
 
@@ -90,7 +98,7 @@ class ItemWithValuesBase : public ItemBase
 {
 public:
 
-    using ItemWithValuesBasePtr = std::shared_ptr<ItemWithValuesBase>;
+    typedef std::shared_ptr<ItemWithValuesBase> Ptr;
     virtual bool assign(Eigen::MatrixXd values) = 0;
 
 
@@ -106,6 +114,8 @@ public:
 
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
 
+        return true;
+
     }
 
     bool flush()
@@ -118,6 +128,7 @@ public:
     bool clearBounds()
     {
         _values = _initial_values;
+        return true;
     }
 
 

@@ -19,6 +19,7 @@ set(LIBRARY_TARGET_NAME phase_manager) # set library name
 add_library(${LIBRARY_TARGET_NAME} SHARED
   src/phase_manager.cpp
   src/horizon_manager.cpp
+  src/phase.cpp
 )
 
 target_include_directories(${LIBRARY_TARGET_NAME}
@@ -29,3 +30,5 @@ add_executable(letstry
     src/letstry.cpp)
 
 target_link_libraries(letstry ${LIBRARY_TARGET_NAME})
+
+add_subdirectory(bindings/python/)

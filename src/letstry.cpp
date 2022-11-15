@@ -6,6 +6,45 @@
 class ClassWithoutBounds
 {};
 
+class Cost
+{
+public:
+
+    using CostPtr = std::shared_ptr<Cost>;
+
+    Cost(std::string name, int dim):
+        _name(name),
+        _dim(dim)
+    {
+    }
+
+    bool setNodes(std::vector<int> nodes)
+    {
+        _nodes = nodes;
+    }
+
+    std::vector<int> getNodes()
+    {
+        return _nodes;
+    }
+
+    std::string getName()
+    {
+        return _name;
+    }
+
+    int getDim()
+    {
+        return _dim;
+    }
+
+private:
+
+    std::string _name;
+    int _dim;
+    std::vector<int> _nodes;
+};
+
 class Parameter
 {
 public:
@@ -167,6 +206,8 @@ int main()
     std::cout << has_set_bounds<Constraint>() << std::endl;
 
 //     all of this comes from outside
+    Cost::CostPtr fake_stance_cc_1 = std::make_shared<Cost>("stance_cc_1", 1);
+
     Constraint::ConstraintPtr fake_stance_c_1 = std::make_shared<Constraint>("stance_c_1", 1);
     Constraint::ConstraintPtr fake_stance_c_2 = std::make_shared<Constraint>("stance_c_2", 1);
 
@@ -189,16 +230,20 @@ int main()
     // ==================================================================================================================
 
     // convert variable to something usable by phase_manager
-    ItemWithBoundsBase::ItemWithBoundsBasePtr var_1 = std::make_shared<WrapperWithBounds<Variable>>(fake_var_1);
-    ItemWithBoundsBase::ItemWithBoundsBasePtr stance_c_1 = std::make_shared<WrapperWithBounds<Constraint>>(fake_stance_c_1);
-    ItemWithBoundsBase::ItemWithBoundsBasePtr stance_c_2 = std::make_shared<WrapperWithBounds<Constraint>>(fake_stance_c_2);
-    ItemWithBoundsBase::ItemWithBoundsBasePtr flight_c_1 = std::make_shared<WrapperWithBounds<Constraint>>(fake_flight_c_1);
-    ItemWithValuesBase::ItemWithValuesBasePtr flight_p_1 = std::make_shared<WrapperWithValues<Parameter>>(fake_flight_p_1);
+    ItemBase::Ptr stance_cc_1 = std::make_shared<Wrapper<Cost>>(fake_stance_cc_1);
+    ItemWithBoundsBase::Ptr var_1 = std::make_shared<WrapperWithBounds<Variable>>(fake_var_1);
+    ItemWithBoundsBase::Ptr stance_c_1 = std::make_shared<WrapperWithBounds<Constraint>>(fake_stance_c_1);
+    ItemWithBoundsBase::Ptr stance_c_2 = std::make_shared<WrapperWithBounds<Constraint>>(fake_stance_c_2);
+    ItemWithBoundsBase::Ptr flight_c_1 = std::make_shared<WrapperWithBounds<Constraint>>(fake_flight_c_1);
+    ItemWithValuesBase::Ptr flight_p_1 = std::make_shared<WrapperWithValues<Parameter>>(fake_flight_p_1);
 
-    SinglePhaseManager app(20);
+    PhaseManager app(20);
+    auto timeline_1 = app.addTimeline("first_timeline");
 
-    Phase::PhasePtr stance = std::make_shared<Phase>(5, "stance");
-    Phase::PhasePtr flight = std::make_shared<Phase>(5, "flight");
+//    SinglePhaseManager app(20);
+
+    Phase::Ptr stance = std::make_shared<Phase>(5, "stance");
+    Phase::Ptr flight = std::make_shared<Phase>(5, "flight");
 
     std::vector<int> my_nodes;
     my_nodes.insert(my_nodes.end(), {2, 3, 4});
@@ -220,12 +265,12 @@ int main()
 
 
     //  without registering, cannot link horizon constraints to updater
-    app.registerPhase(stance);
-    app.registerPhase(flight);
+    timeline_1->registerPhase(stance);
+    timeline_1->registerPhase(flight);
 
 //    auto start_time = std::chrono::high_resolution_clock::now();
-    app.addPhase(stance);
-    app.addPhase(flight);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(flight);
 
 
     std::cout << "constraint stance_c_1 has nodes: ";
@@ -263,10 +308,10 @@ int main()
 //    app.addPhase(stance);
 //    app.getRegisteredPhase("penis");
 
-    app._shift_phases();
-    app._shift_phases();
-    app._shift_phases();
-    app._shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
 //    app._shift_phases();
 
 

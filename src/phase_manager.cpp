@@ -3,198 +3,6 @@
 
 #include <chrono>
 
-Phase::Phase(int n_nodes, std::string name):
-    _n_nodes(n_nodes),
-    _name(name)
-{
-}
-
-std::string Phase::getName()
-{
-    return _name;
-}
-
-int Phase::getNNodes()
-{
-    return _n_nodes;
-}
-
-std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>> Phase::getConstraints()
-{
-    return _constraints;
-}
-
-std::unordered_map<ItemBase::ItemBasePtr, std::vector<int>> Phase::getCosts()
-{
-    return _costs;
-}
-
-std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, Phase::BoundsContainer> Phase::getVariables()
-{
-    return _variables;
-}
-
-std::unordered_map<ItemWithValuesBase::ItemWithValuesBasePtr, Phase::ValuesContainer> Phase::getParameters()
-{
-    return _parameters;
-}
-
-PhaseToken::PhaseToken(Phase::PhasePtr phase):
-    _abstract_phase(phase)
-
-{
-//    _active_nodes = std::make_shared<std::vector<int>>();
-    //    _n_nodes = _abstract_phase.getNNodes();
-}
-
-int PhaseToken::_get_n_nodes()
-{
-    return _abstract_phase->getNNodes();
-}
-
-std::vector<int>& PhaseToken::_get_active_nodes()
-{
-    return _active_nodes;
-}
-
-Phase::PhasePtr PhaseToken::get_phase()
-{
-    return _abstract_phase;
-}
-
-int PhaseToken::_update_constraints(int initial_node)
-{
-    for (auto cnstr_map : _abstract_phase->getConstraints())
-    {
-        std::vector<int> active_nodes;
-
-        std::set_intersection(cnstr_map.second.begin(), cnstr_map.second.end(),
-                              _active_nodes.begin(), _active_nodes.end(),
-                              std::back_inserter(active_nodes));
-
-        std::cout << "active nodes of constraint: ";
-        for (auto elem : active_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
-
-
-        std::vector<int> horizon_nodes(active_nodes.size());
-        // active phase nodes   : [1 2 3 4]
-        // active fun nodes     : [2 3]
-        // phase pos in horizon : 7
-        // constr pos in horizon: 7 + 2 - 1 = 8
-        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
-
-        cnstr_map.first->addNodes(horizon_nodes);
-        std::cout << " adding horizon nodes: ";
-        for (auto elem : horizon_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
-    }
-}
-
-int PhaseToken::_update_variables(int initial_node)
-{
-    for (auto var_map : _abstract_phase->getVariables())
-    {
-        std::vector<int> active_nodes;
-
-        std::set_intersection(var_map.second.nodes.begin(), var_map.second.nodes.end(),
-                              _active_nodes.begin(), _active_nodes.end(),
-                              std::back_inserter(active_nodes));
-
-        std::cout << "active nodes of variable: ";
-        for (auto elem : active_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
-
-
-        std::vector<int> horizon_nodes(active_nodes.size());
-        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
-
-        var_map.first->addBounds(horizon_nodes,
-                                 var_map.second.lower_bounds(Eigen::indexing::all, active_nodes),
-                                 var_map.second.upper_bounds(Eigen::indexing::all, active_nodes));
-
-    }
-}
-
-int PhaseToken::_update_costs(int initial_node)
-{
-    for (auto cost_map : _abstract_phase->getConstraints())
-    {
-        std::vector<int> active_nodes;
-
-        std::set_intersection(cost_map.second.begin(), cost_map.second.end(),
-                              _active_nodes.begin(), _active_nodes.end(),
-                              std::back_inserter(active_nodes));
-
-        std::cout << "active nodes of cost: ";
-        for (auto elem : active_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
-
-
-        std::vector<int> horizon_nodes(active_nodes.size());
-        // active phase nodes   : [1 2 3 4]
-        // active fun nodes     : [2 3]
-        // phase pos in horizon : 7
-        // constr pos in horizon: 7 + 2 - 1 = 8
-        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
-
-        cost_map.first->addNodes(horizon_nodes);
-        std::cout << " adding horizon nodes: ";
-        for (auto elem : horizon_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
-    }
-}
-
-int PhaseToken::_update_parameters(int initial_node)
-{
-    for (auto par_map : _abstract_phase->getParameters())
-    {
-        std::vector<int> active_nodes;
-
-        std::set_intersection(par_map.second.nodes.begin(), par_map.second.nodes.end(),
-                              _active_nodes.begin(), _active_nodes.end(),
-                              std::back_inserter(active_nodes));
-
-        std::cout << "active nodes of parameter: ";
-        for (auto elem : active_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
-
-
-        std::vector<int> horizon_nodes(active_nodes.size());
-        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
-
-        par_map.first->addValues(horizon_nodes, par_map.second.values(Eigen::indexing::all, active_nodes));
-
-    }
-}
-
-int PhaseToken::_update(int initial_node)
-{
-    _update_constraints(initial_node);
-    _update_variables(initial_node);
-    _update_costs(initial_node);
-    _update_parameters(initial_node);
-
-}
-
 SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name)
 {
     _horizon_manager = std::make_unique<HorizonManager>();
@@ -204,7 +12,7 @@ SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name)
 
 }
 
-bool SinglePhaseManager::registerPhase(Phase::PhasePtr phase)
+bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
 {
     _registered_phases.push_back(phase);
 
@@ -233,7 +41,7 @@ bool SinglePhaseManager::registerPhase(Phase::PhasePtr phase)
     return true;
 }
 
-bool SinglePhaseManager::_add_phase(Phase::PhasePtr phase, int pos)
+bool SinglePhaseManager::_add_phase(Phase::Ptr phase, int pos)
 {
     //  TODO: cannot add a phase if it is not registered
 
@@ -243,7 +51,7 @@ bool SinglePhaseManager::_add_phase(Phase::PhasePtr phase, int pos)
     // in particular, the method make_shared cannot acces to the construction of PhaseToken
     struct PhaseTokenGate : PhaseToken
     {
-        PhaseTokenGate(Phase::PhasePtr phase):
+        PhaseTokenGate(Phase::Ptr phase):
             PhaseToken(phase)
         {}
     };
@@ -438,13 +246,6 @@ int SinglePhaseManager::_shift_phases()
         _horizon_manager->flush();
 
 
-////    self.horizon_manager.reset()
-////   i = 0
-////    for phase in self.active_phases:
-////         phase.update(i)
-////         i += len(phase.active_nodes)
-
-////      [self.horizon_manager.update_phase(phase) for phase in self.active_phases]
     }
     int num_nodes = 0;
     for (int i=0; i<_active_phases.size(); i++)
@@ -466,7 +267,7 @@ int SinglePhaseManager::_shift_phases()
     return true;
 }
 
-bool SinglePhaseManager::addPhase(std::vector<Phase::PhasePtr> phases)
+bool SinglePhaseManager::addPhase(std::vector<Phase::Ptr> phases)
 {
     for (int i=0; i<phases.size(); i++)
     {
@@ -475,13 +276,13 @@ bool SinglePhaseManager::addPhase(std::vector<Phase::PhasePtr> phases)
     return true;
 }
 
-bool SinglePhaseManager::addPhase(Phase::PhasePtr phase)
+bool SinglePhaseManager::addPhase(Phase::Ptr phase)
 {
     return SinglePhaseManager::_add_phase(phase);
 
 }
 
-Phase::PhasePtr SinglePhaseManager:: getRegisteredPhase(std::string name)
+Phase::Ptr SinglePhaseManager:: getRegisteredPhase(std::string name)
 {
 //    std::cout << "checking name: '" << phase_name << "'" <<std::endl;
     for (int i=0; i<_registered_phases.size(); i++)
@@ -502,4 +303,27 @@ Phase::PhasePtr SinglePhaseManager:: getRegisteredPhase(std::string name)
 SinglePhaseManager::~SinglePhaseManager()
 {
 
+}
+
+PhaseManager::PhaseManager(int n_nodes):
+    _n_nodes(n_nodes)
+{
+
+}
+
+SinglePhaseManager::Ptr PhaseManager::addTimeline(std::string name)
+{
+    SinglePhaseManager::Ptr timeline = std::make_shared<SinglePhaseManager>(_n_nodes, name);
+    _timelines[name]= timeline;
+    return timeline;
+}
+
+bool PhaseManager::registerPhase(std::string name, Phase::Ptr phase)
+{
+    return _timelines[name]->registerPhase(phase);
+}
+
+bool PhaseManager::addPhase(std::string name, Phase::Ptr phase)
+{
+    return _timelines[name]->addPhase(phase);
 }
