@@ -31,4 +31,19 @@ add_executable(letstry
 
 target_link_libraries(letstry ${LIBRARY_TARGET_NAME})
 
+include(GNUInstallDirs)
+install(TARGETS  ${LIBRARY_TARGET_NAME}
+        EXPORT   ${LIBRARY_TARGET_NAME}
+        LIBRARY  DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib
+        ARCHIVE  DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT lib
+        RUNTIME  DESTINATION "${CMAKE_INSTALL_BINDIR}" COMPONENT bin)
+
+#include(InstallBasicPackageFiles)
+#install_basic_package_files(${LIBRARY_TARGET_NAME}
+#                            VERSION ${${PROJECT_NAME}_VERSION}
+#                            COMPATIBILITY AnyNewerVersion
+#                            EXPORT ${LIBRARY_TARGET_NAME}
+#                            VARS_PREFIX ${LIBRARY_TARGET_NAME}
+#                            NO_CHECK_REQUIRED_COMPONENTS_MACRO)
+
 add_subdirectory(bindings/python/)
