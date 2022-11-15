@@ -2,8 +2,40 @@
 
 bool HorizonManager::addConstraint(ItemWithBoundsBase::ItemWithBoundsBasePtr constraint)
 {
-    // should push pointer
-    _constraints.insert(constraint);
+    bool duplicate_flag = false;
+    for (auto item : _constraints)
+    {
+        if (constraint->getName() == item->getName())
+        {
+            duplicate_flag = true;
+        }
+
+    }
+
+    if (duplicate_flag == false)
+    {
+        _constraints.push_back(constraint);
+    }
+
+}
+
+bool HorizonManager::addCost(ItemBase::ItemBasePtr cost)
+{
+    bool duplicate_flag = false;
+    for (auto item : _costs)
+    {
+        if (cost->getName() == item->getName())
+        {
+            duplicate_flag = true;
+        }
+
+    }
+
+    if (duplicate_flag == false)
+    {
+        _costs.push_back(cost);
+    }
+
 }
 
 bool HorizonManager::addVariable(ItemWithBoundsBase::ItemWithBoundsBasePtr variable)
@@ -20,7 +52,26 @@ bool HorizonManager::addVariable(ItemWithBoundsBase::ItemWithBoundsBasePtr varia
 
     if (duplicate_flag == false)
     {
-        _variables.insert(variable);
+        _variables.push_back(variable);
+    }
+
+}
+
+bool HorizonManager::addParameter(ItemWithValuesBase::ItemWithValuesBasePtr parameter)
+{
+    bool duplicate_flag = false;
+    for (auto item : _parameters)
+    {
+        if (parameter->getName() == item->getName())
+        {
+            duplicate_flag = true;
+        }
+
+    }
+
+    if (duplicate_flag == false)
+    {
+        _parameters.push_back(parameter);
     }
 
 }
@@ -32,10 +83,21 @@ bool HorizonManager::flush()
         constraint->flush();
     }
 
-    for (auto variables : _variables)
+    for (auto cost : _costs)
     {
-        variables->flush();
+        cost->flush();
     }
+
+    for (auto variable : _variables)
+    {
+        variable->flush();
+    }
+
+    for (auto parameter : _parameters)
+    {
+        parameter->flush();
+    }
+
 
 }
 
@@ -51,6 +113,12 @@ bool HorizonManager::reset()
     {
         variable->clearNodes();
         variable->clearBounds();
+    }
+
+    for (auto parameter : _parameters)
+    {
+        parameter->clearNodes();
+        parameter->clearBounds();
     }
 
 }

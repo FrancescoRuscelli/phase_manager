@@ -29,13 +29,20 @@ public:
         Eigen::MatrixXd upper_bounds;
     };
 
+    struct ValuesContainer
+    {
+        ValuesContainer() {}
+
+        // must be of same dimension
+        std::vector<int> nodes;
+        Eigen::MatrixXd values;
+    };
 
     Phase(int n_nodes, std::string name);
     std::string getName();
     int getNNodes();
 
-//    template <typename T>
-//    bool addConstraint(std::shared_ptr<T> constraint, std::vector<int> nodes = {})
+
     bool addConstraint(ItemWithBoundsBase::ItemWithBoundsBasePtr constraint, std::vector<int> nodes = {})
     {
 
@@ -45,6 +52,19 @@ public:
         std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
 
         _constraints[constraint] = active_nodes;
+
+        return 1;
+    }
+
+    bool addCost(ItemWithBoundsBase::ItemWithBoundsBasePtr cost, std::vector<int> nodes = {})
+    {
+
+        std::vector<int> range_nodes(_n_nodes);
+        std::iota(std::begin(range_nodes), std::end(range_nodes), 0); //0 is the starting number
+
+        std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
+
+        _costs[cost] = active_nodes;
 
         return 1;
     }
@@ -72,34 +92,42 @@ public:
         return 1;
     }
 
+    bool addParameterValues(ItemWithValuesBase::ItemWithValuesBasePtr parameter,
+                           Eigen::MatrixXd values,
+                           std::vector<int> nodes = {})
+    {
+
+        std::vector<int> range_nodes(_n_nodes);
+        std::iota(std::begin(range_nodes), std::end(range_nodes), 0); //0 is the starting number
+
+        std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
+
+        ValuesContainer val_container;
+
+        val_container.nodes = active_nodes;
+        val_container.values = values;
+
+        _parameters[parameter] = val_container;
+
+        return 1;
+    }
+
     std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>> getConstraints();
+    std::unordered_map<ItemBase::ItemBasePtr, std::vector<int>> getCosts();
     std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, BoundsContainer> getVariables();
+    std::unordered_map<ItemWithValuesBase::ItemWithValuesBasePtr, ValuesContainer> getParameters();
 
 private:
-
-
 
     std::string _name;
     int _n_nodes;
 
     std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>>_constraints;
-//    std::map<ItemBase::ItemBasePtr, std::vector<int>> _costs;
-
+    std::unordered_map<ItemBase::ItemBasePtr, std::vector<int>>_costs;
     std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, BoundsContainer> _variables;
-
-//    std::map<std::string, std::string> _vars_node;
-//    std::map<std::string, std::string> _var_bounds;
-
-//    std::map<std::string, std::string> _pars;
-//    std::map<std::string, std::string> _pars_node;
-//    std::map<std::string, std::string> _par_bounds;
+    std::unordered_map<ItemWithValuesBase::ItemWithValuesBasePtr, ValuesContainer> _parameters;
 
 
-//    def addCost(self, cost, nodes=None);
-
-//    def addVariableBounds(self, var, lower_bounds, upper_bounds, nodes=None):
-
-//    def addParameterValues(self, par, values, nodes=None):
 };
 
 class SinglePhaseManager;
@@ -107,8 +135,6 @@ class PhaseToken
 {
     friend class SinglePhaseManager;
     friend class HorizonManager;
-//    friend class std::forward<SinglePhaseManager>;
-//    friend class std::shared_ptr<PhaseToken>;
 
 public:
 
@@ -123,13 +149,11 @@ private:
     Phase::PhasePtr _abstract_phase;
     std::vector<int> _active_nodes;
 
-    std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>> _constraints_in_horizon;
-//    std::vector<std::string, std::set<int>> _costs_in_horizon;
-//    std::vector<std::string, std::set<int>> _vars_in_horizon;
-//    std::vector<std::string, std::set<int>> _pars_in_horizon;
-
     int _update_constraints(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
     int _update_variables(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
+    int _update_costs(int initial_node);
+    int _update_parameters(int initial_node);
+
     int _update(int initial_node);
     int _reset();
 

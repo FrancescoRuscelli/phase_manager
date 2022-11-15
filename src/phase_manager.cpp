@@ -24,35 +24,20 @@ std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, std::vector<int>> 
     return _constraints;
 }
 
+std::unordered_map<ItemBase::ItemBasePtr, std::vector<int>> Phase::getCosts()
+{
+    return _costs;
+}
+
 std::unordered_map<ItemWithBoundsBase::ItemWithBoundsBasePtr, Phase::BoundsContainer> Phase::getVariables()
 {
     return _variables;
 }
 
-//std::map<ItemWithBoundsConcept::ItemWithBoundsConceptPtr, std::vector<int>> Phase::getConstraints()
-//{
-//    return _constraints;
-//}
-
-
-
-//def addCost(self, cost, nodes=None):
-//    active_nodes = range(self.n_nodes) if nodes is None else nodes
-//    self.costs[cost] = active_nodes
-
-//def addVariableBounds(self, var, lower_bounds, upper_bounds, nodes=None):
-//    # todo: this is not very nice, find another way? would be nice to copy the structure of addCost and addConstraint
-//    active_nodes = range(self.n_nodes) if nodes is None else nodes
-//    self.vars[var.getName()] = var
-//    self.vars_node[var.getName()] = active_nodes
-//    self.var_bounds[var.getName()] = (lower_bounds, upper_bounds)
-
-//def addParameterValues(self, par, values, nodes=None):
-//    active_nodes = range(self.n_nodes) if nodes is None else nodes
-//    self.pars[par.getName()] = par
-//    self.pars_node[par.getName()] = active_nodes
-//    self.par_values[par.getName()] = values
-
+std::unordered_map<ItemWithValuesBase::ItemWithValuesBasePtr, Phase::ValuesContainer> Phase::getParameters()
+{
+    return _parameters;
+}
 
 PhaseToken::PhaseToken(Phase::PhasePtr phase):
     _abstract_phase(phase)
@@ -140,10 +125,73 @@ int PhaseToken::_update_variables(int initial_node)
     }
 }
 
+int PhaseToken::_update_costs(int initial_node)
+{
+    for (auto cost_map : _abstract_phase->getConstraints())
+    {
+        std::vector<int> active_nodes;
+
+        std::set_intersection(cost_map.second.begin(), cost_map.second.end(),
+                              _active_nodes.begin(), _active_nodes.end(),
+                              std::back_inserter(active_nodes));
+
+        std::cout << "active nodes of cost: ";
+        for (auto elem : active_nodes)
+        {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
+
+
+        std::vector<int> horizon_nodes(active_nodes.size());
+        // active phase nodes   : [1 2 3 4]
+        // active fun nodes     : [2 3]
+        // phase pos in horizon : 7
+        // constr pos in horizon: 7 + 2 - 1 = 8
+        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
+
+        cost_map.first->addNodes(horizon_nodes);
+        std::cout << " adding horizon nodes: ";
+        for (auto elem : horizon_nodes)
+        {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
+    }
+}
+
+int PhaseToken::_update_parameters(int initial_node)
+{
+    for (auto par_map : _abstract_phase->getParameters())
+    {
+        std::vector<int> active_nodes;
+
+        std::set_intersection(par_map.second.nodes.begin(), par_map.second.nodes.end(),
+                              _active_nodes.begin(), _active_nodes.end(),
+                              std::back_inserter(active_nodes));
+
+        std::cout << "active nodes of parameter: ";
+        for (auto elem : active_nodes)
+        {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
+
+
+        std::vector<int> horizon_nodes(active_nodes.size());
+        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
+
+        par_map.first->addValues(horizon_nodes, par_map.second.values(Eigen::indexing::all, active_nodes));
+
+    }
+}
+
 int PhaseToken::_update(int initial_node)
 {
     _update_constraints(initial_node);
     _update_variables(initial_node);
+    _update_costs(initial_node);
+    _update_parameters(initial_node);
 
 }
 
@@ -169,6 +217,17 @@ bool SinglePhaseManager::registerPhase(Phase::PhasePtr phase)
     {
         _horizon_manager->addVariable(variable.first);
     }
+
+    for (auto cost : phase->getCosts())
+    {
+        _horizon_manager->addCost(cost.first);
+    }
+
+    for (auto parameter : phase->getParameters())
+    {
+        _horizon_manager->addParameter(parameter.first);
+    }
+
 
 
     return true;

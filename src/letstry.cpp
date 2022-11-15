@@ -3,8 +3,58 @@
 # include <iostream>
 #include <chrono>
 
-class Porcodio
+class ClassWithoutBounds
 {};
+
+class Parameter
+{
+public:
+
+    using ParameterPtr = std::shared_ptr<Parameter>;
+
+    Parameter(std::string name, int dim):
+        _name(name),
+        _dim(dim)
+    {
+    }
+
+    bool setNodes(std::vector<int> nodes)
+    {
+        _nodes = nodes;
+    }
+
+    bool assign(Eigen::MatrixXd value)
+    {
+        _values = value;
+    }
+
+    std::vector<int> getNodes()
+    {
+        return _nodes;
+    }
+
+    Eigen::MatrixXd getValues()
+    {
+        return _values;
+    }
+
+    std::string getName()
+    {
+        return _name;
+    }
+
+    int getDim()
+    {
+        return _dim;
+    }
+
+private:
+
+    std::string _name;
+    int _dim;
+    std::vector<int> _nodes;
+    Eigen::MatrixXd _values;
+};
 
 class Variable
 {
@@ -113,7 +163,7 @@ private:
 
 int main()
 {
-    std::cout << has_set_bounds<Porcodio>() << std::endl;
+    std::cout << has_set_bounds<ClassWithoutBounds>() << std::endl;
     std::cout << has_set_bounds<Constraint>() << std::endl;
 
 //     all of this comes from outside
@@ -122,20 +172,28 @@ int main()
 
     Constraint::ConstraintPtr fake_flight_c_1 = std::make_shared<Constraint>("flight_c_1", 1);
 
-    Variable::VariablePtr fake_var_1 = std::make_shared<Variable>("var_1", 3); //Variable::MakeVariable("var_1");
+    Parameter::ParameterPtr fake_flight_p_1 = std::make_shared<Parameter>("flight_p_1", 3);
+
+    Variable::VariablePtr fake_var_1 = std::make_shared<Variable>("var_1", 3);
 
     Eigen::MatrixXd bounds_var_1 = Eigen::MatrixXd::Zero(3,5);
     std::vector<int> prb_nodes;
     prb_nodes.insert(prb_nodes.end(), {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
+
+    fake_flight_p_1->setNodes(prb_nodes);
     fake_var_1->setNodes(prb_nodes);
+
+    Eigen::MatrixXd values_par_1 = Eigen::MatrixXd::Zero(3,20);
+    fake_flight_p_1->assign(values_par_1);
 
     // ==================================================================================================================
 
-    // convert variable to somethiong usable
+    // convert variable to something usable by phase_manager
     ItemWithBoundsBase::ItemWithBoundsBasePtr var_1 = std::make_shared<WrapperWithBounds<Variable>>(fake_var_1);
     ItemWithBoundsBase::ItemWithBoundsBasePtr stance_c_1 = std::make_shared<WrapperWithBounds<Constraint>>(fake_stance_c_1);
     ItemWithBoundsBase::ItemWithBoundsBasePtr stance_c_2 = std::make_shared<WrapperWithBounds<Constraint>>(fake_stance_c_2);
-    ItemWithBoundsBase::ItemWithBoundsBasePtr  flight_c_1 = std::make_shared<WrapperWithBounds<Constraint>>(fake_flight_c_1);
+    ItemWithBoundsBase::ItemWithBoundsBasePtr flight_c_1 = std::make_shared<WrapperWithBounds<Constraint>>(fake_flight_c_1);
+    ItemWithValuesBase::ItemWithValuesBasePtr flight_p_1 = std::make_shared<WrapperWithValues<Parameter>>(fake_flight_p_1);
 
     SinglePhaseManager app(20);
 
@@ -152,6 +210,13 @@ int main()
     flight->addVariableBounds(var_1, bounds_var_1, bounds_var_1);
 
     flight->addConstraint(flight_c_1);
+
+    Eigen::MatrixXd values(3, 5);
+    values << 1.5, 1.5, 1.5, 1.5, 1.5,
+              1.5, 1.5, 1.5, 1.5, 1.5,
+              1.5, 1.5, 1.5, 1.5, 1.5;
+
+    flight->addParameterValues(flight_p_1, values);
 
 
     //  without registering, cannot link horizon constraints to updater
@@ -184,6 +249,9 @@ int main()
     }
     std::cout << std::endl;
 
+    std::cout << "parameter flight_p_1 has values: " << std::endl;
+    std::cout << fake_flight_p_1->getValues() << std::endl;
+
     std::cout << "variable var_1 has bounds: " << std::endl;
     std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
     std::cout << std::endl;
@@ -199,7 +267,7 @@ int main()
     app._shift_phases();
     app._shift_phases();
     app._shift_phases();
-    app._shift_phases();
+//    app._shift_phases();
 
 
     std::cout << "constraint stance_c_1 has nodes: ";
@@ -222,6 +290,9 @@ int main()
         std::cout << i << " ";
     }
     std::cout << std::endl;
+
+    std::cout << "parameter flight_p_1 has values: " << std::endl;
+    std::cout << fake_flight_p_1->getValues() << std::endl;
 
     std::cout << "variable var_1 has bounds: " << std::endl;
     std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;

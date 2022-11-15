@@ -86,6 +86,46 @@ protected:
     Eigen::MatrixXd _initial_upper_bounds;
 };
 
+class ItemWithValuesBase : public ItemBase
+{
+public:
+
+    using ItemWithValuesBasePtr = std::shared_ptr<ItemWithValuesBase>;
+    virtual bool assign(Eigen::MatrixXd values) = 0;
+
+
+    bool addValues(std::vector<int> nodes, Eigen::MatrixXd values)
+    {
+//        std::cout << "setting bounds to nodes: ";
+//        for (auto node : nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+        std::cout << std::endl;
+        _values(Eigen::indexing::all, nodes) << values;
+
+        _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
+
+    }
+
+    bool flush()
+    {
+        ItemBase::flush();
+        assign(_values);
+        return true;
+    }
+
+    bool clearBounds()
+    {
+        _values = _initial_values;
+    }
+
+
+protected:
+    // do I need to initialize these?
+    Eigen::MatrixXd _values;
+    Eigen::MatrixXd _initial_values;
+};
 
 // model that calls the desired function from the original objects
 template <typename T>
@@ -133,5 +173,28 @@ private:
     std::shared_ptr<T> m_item;
 };
 
+template <typename T>
+class WrapperWithValues : public ItemWithValuesBase
+{
+public:
+    WrapperWithValues(std::shared_ptr<T> item):
+        m_item(item)
+        {
+            // what if empty?
+            _values = Eigen::MatrixXd::Zero(getDim(), getNodes().size());
+
+            _initial_values = _values;
+        }
+
+    bool setNodes(std::vector<int> nodes) { return m_item->setNodes(nodes); }
+    bool assign(Eigen::MatrixXd values) { return m_item->assign(values); }
+    int getDim() { return m_item->getDim(); }
+    std::vector<int> getNodes() { return m_item->getNodes(); }
+    std::string getName() { return m_item->getName(); }
+
+private:
+
+    std::shared_ptr<T> m_item;
+};
 
 #endif
