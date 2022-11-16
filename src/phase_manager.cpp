@@ -3,13 +3,12 @@
 
 #include <chrono>
 
-SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name)
+SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name):
+    _name(name),
+    _n_nodes(n_nodes),
+    _trailing_empty_nodes(_n_nodes)
 {
     _horizon_manager = std::make_unique<HorizonManager>();
-    _name = name;
-    _n_nodes = n_nodes;
-    _trailing_empty_nodes = _n_nodes;
-
 }
 
 bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
@@ -143,7 +142,7 @@ bool SinglePhaseManager::_add_phase(Phase::Ptr phase, int pos)
 
 }
 
-int SinglePhaseManager::_shift_phases()
+bool SinglePhaseManager::_shift_phases()
 {
 
     _horizon_manager->reset();
@@ -326,4 +325,12 @@ bool PhaseManager::registerPhase(std::string name, Phase::Ptr phase)
 bool PhaseManager::addPhase(std::string name, Phase::Ptr phase)
 {
     return _timelines[name]->addPhase(phase);
+}
+
+bool PhaseManager::_shift_phases()
+{
+    for (auto timeline : _timelines)
+    {
+        timeline.second->_shift_phases();
+    }
 }

@@ -304,15 +304,11 @@ int main()
 //    std::chrono::duration<double> elapsed_time = std::chrono::system_clock::now() - start_time;
 //    std::cout << "elapsed time: " << elapsed_time.count() << std::endl;
 
-//    app.addPhase(flight);
-//    app.addPhase(stance);
-//    app.getRegisteredPhase("penis");
 
     timeline_1->_shift_phases();
     timeline_1->_shift_phases();
     timeline_1->_shift_phases();
     timeline_1->_shift_phases();
-//    app._shift_phases();
 
 
     std::cout << "constraint stance_c_1 has nodes: ";

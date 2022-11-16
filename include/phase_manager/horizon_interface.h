@@ -24,7 +24,7 @@ public:
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
         return true;
     }
-    bool flush()
+    bool flushNodes()
     {
         _nodes.erase(std::unique(_nodes.begin(), _nodes.end()), _nodes.end());
         setNodes(_nodes);
@@ -69,12 +69,19 @@ public:
 
     }
 
-    bool flush()
+    bool flushNodes()
     {
-        ItemBase::flush();
+        ItemBase::flushNodes();
+        return true;
+    }
+
+    bool flushBounds()
+    {
+//        std::cout << _lower_bounds << std::endl;
         setBounds(_lower_bounds, _upper_bounds);
         return true;
     }
+
 
     bool clearBounds()
     {
@@ -109,7 +116,6 @@ public:
 //        {
 //            std::cout << node << " ";
 //        }
-        std::cout << std::endl;
         _values(Eigen::indexing::all, nodes) << values;
 
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
@@ -118,14 +124,19 @@ public:
 
     }
 
-    bool flush()
+    bool flushNodes()
     {
-        ItemBase::flush();
+        ItemBase::flushNodes();
+        return true;
+    }
+
+    bool flushValues()
+    {
         assign(_values);
         return true;
     }
 
-    bool clearBounds()
+    bool clearValues()
     {
         _values = _initial_values;
         return true;

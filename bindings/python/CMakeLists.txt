@@ -8,10 +8,6 @@ if(${pybind11_FOUND})
 
     message(STATUS "compiling python bindings")
 
-    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-    pybind11_add_module(pyphase pyPhase.cpp)
-    target_link_libraries(pyphase PUBLIC phase_manager)
-
     execute_process(
       COMMAND "${PYTHON_EXECUTABLE}" -c "if True:
         from distutils import sysconfig as sc
@@ -19,7 +15,18 @@ if(${pybind11_FOUND})
       OUTPUT_VARIABLE PYTHON_SITE
       OUTPUT_STRIP_TRAILING_WHITESPACE)
 
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+    pybind11_add_module(pyphase pyPhase.cpp)
+    target_link_libraries(pyphase PUBLIC phase_manager)
+
     install(TARGETS pyphase
+            DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
+
+#    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+    pybind11_add_module(pymanager pyPhaseManager.cpp)
+    target_link_libraries(pymanager PUBLIC phase_manager)
+
+    install(TARGETS pymanager
             DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
 
     install(FILES __init__.py DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})

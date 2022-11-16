@@ -17,13 +17,13 @@ public:
     {
     }
 
-    std::string getName() { return _pyobj.attr("getName").cast<std::string>(); }
-    int getDim() {return _pyobj.attr("getDim").cast<int>(); }
-    std::vector<int> getNodes() {return _pyobj.attr("getNodes").cast<std::vector<int>>(); }
+    std::string getName() { return _pyobj.attr("getName")().cast<std::string>(); }
+    int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
+    std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
 
     bool setNodes(std::vector<int> nodes)
     {
-        _pyobj.attr("setNodes") = nodes;
+        _pyobj.attr("setNodes")(nodes);
         return true;
     }
 
@@ -36,20 +36,33 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
     PyObjWrapperWithBounds(py::object pyobj):
         _pyobj(pyobj)
     {
+        // what if empty?
+        _lower_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+        _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+
+        _initial_lower_bounds =  _lower_bounds;
+        _initial_upper_bounds =  _upper_bounds;
     }
-    std::string getName() {return _pyobj.attr("getName").cast<std::string>(); }
-    int getDim() {return _pyobj.attr("getDim").cast<int>(); }
-    std::vector<int> getNodes() {return _pyobj.attr("getNodes").cast<std::vector<int>>(); }
+    std::string getName(){return _pyobj.attr("getName")().cast<std::string>();}
+    int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
+    std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
 
     bool setNodes(std::vector<int> nodes)
     {
-        _pyobj.attr("setNodes") = nodes;
+//        std::cout << "(pyphase) setting nodes: " << std::endl;
+//        for (auto node: nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
+        _pyobj.attr("setNodes")(nodes);
         return true;
     }
 
     bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds)
     {
-        _pyobj.attr("setBounds") = lower_bounds, upper_bounds;
+//        std::cout << "(pyphase) setting bounds: " << lower_bounds << std::endl;
+        _pyobj.attr("setBounds")(lower_bounds, upper_bounds);
         return true;
     }
 
@@ -62,20 +75,24 @@ struct PyObjWrapperWithValues : ItemWithValuesBase {
     PyObjWrapperWithValues(py::object pyobj):
         _pyobj(pyobj)
     {
+        // what if empty?
+        _values = Eigen::MatrixXd::Zero(getDim(), getNodes().size());
+
+        _initial_values = _values;
     }
-    std::string getName() {return _pyobj.attr("getName").cast<std::string>(); }
-    int getDim() {return _pyobj.attr("getDim").cast<int>(); }
-    std::vector<int> getNodes() {return _pyobj.attr("getNodes").cast<std::vector<int>>(); }
+    std::string getName() {return _pyobj.attr("getName")().cast<std::string>(); }
+    int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
+    std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
 
     bool setNodes(std::vector<int> nodes)
     {
-        _pyobj.attr("setNodes") = nodes;
+        _pyobj.attr("setNodes")(nodes);
         return true;
     }
 
     bool assign(Eigen::MatrixXd values)
     {
-        _pyobj.attr("assign") = values;
+        _pyobj.attr("assign")(values);
         return true;
     }
 
@@ -95,16 +112,17 @@ bool add_cost_pyobject(Phase& self,
 
 bool add_constraint_pyobject(Phase& self,
                              py::object item,
-                             std::vector<int> nodes = {})
+                             std::vector<int> nodes)
 {
     ItemWithBoundsBase::Ptr item_converted = std::make_shared<PyObjWrapperWithBounds>(item);
     self.addConstraint(item_converted, nodes);
 }
 
-bool add_variable_pyobject(Phase& self, py::object item,
+bool add_variable_pyobject(Phase& self,
+                           py::object item,
                            Eigen::MatrixXd lower_bounds,
                            Eigen::MatrixXd upper_bounds,
-                           std::vector<int> nodes = {})
+                           std::vector<int> nodes)
 {
     ItemWithBoundsBase::Ptr item_converted = std::make_shared<PyObjWrapperWithBounds>(item);
     self.addVariableBounds(item_converted, lower_bounds, upper_bounds, nodes);
@@ -112,7 +130,7 @@ bool add_variable_pyobject(Phase& self, py::object item,
 
 bool add_parameter_pyobject(Phase& self, py::object item,
                            Eigen::MatrixXd values,
-                           std::vector<int> nodes = {})
+                           std::vector<int> nodes)
 {
     ItemWithValuesBase::Ptr item_converted = std::make_shared<PyObjWrapperWithValues>(item);
     self.addParameterValues(item_converted, values, nodes);
@@ -121,61 +139,13 @@ bool add_parameter_pyobject(Phase& self, py::object item,
 
 PYBIND11_MODULE(pyphase, m) {
 
-    py::class_<Phase>(m, "Phase")
+    py::class_<Phase, Phase::Ptr>(m, "Phase")
             .def(py::init<int, std::string>())
             .def("getName", &Phase::getName)
             .def("getNNodes", &Phase::getNNodes)
-            .def("addCost", add_cost_pyobject)
-            .def("addConstraint", add_constraint_pyobject) //, ItemWithBoundsBase::Ptr constraint, std::vector<int> nodes = {})
-            .def("addVariableBounds", add_variable_pyobject)
-            .def("addCost", add_parameter_pyobject);
-//            .def("addCost", &Phase::addVariableBounds);
-
+            .def("addCost", add_cost_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
+            .def("addConstraint", add_constraint_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
+            .def("addVariableBounds", add_variable_pyobject, py::arg("item"), py::arg("lower_bounds"), py::arg("upper_bounds"), py::arg("nodes") = std::vector<int>())
+            .def("addParameterValues", add_parameter_pyobject, py::arg("item"), py::arg("values"), py::arg("nodes") = std::vector<int>());
 
 }
-//            .def(py::init<std::string>(), py::arg("namespace") = "cartesian")
-//            .def("__repr__", ci_repr)
-//            .def("update", &RosClient::update, py::arg("time") = 0, py::arg("period") = 0)
-//            .def("getControlMode", &RosClient::getControlMode)
-//            .def("setControlMode", &RosClient::setControlMode)
-//            .def("getBaseLink", &RosClient::getBaseLink)
-//            .def("setBaseLink", &RosClient::setBaseLink)
-//            .def("loadController", &RosClient::loadController,
-//                 py::arg("controller_name"),
-//                 py::arg("problem_description_name") = "",
-//                 py::arg("problem_description_string") = "",
-//                 py::arg("force_reload") = true)
-//            .def("getVelocityLimits", py_get_velocity_limits)
-//            .def("getAccelerationLimits", py_get_acceleration_limits)
-//            .def("setVelocityLimits", &RosClient::setVelocityLimits)
-//            .def("setAccelerationLimits", &RosClient::setAccelerationLimits)
-//            .def("setReferencePosture",  (bool (RosClient::*)(const XBot::JointNameMap&)) &RosClient::setReferencePosture)
-//            .def("setTargetPose", py_send_target_pose,
-//                 py::arg("task_name"),
-//                 py::arg("pose"),
-//                 py::arg("time"),
-//                 py::arg("incremental") = false)
-//            .def("setWaypoints", py_send_waypoints,
-//                 py::arg("task_name"),
-//                 py::arg("waypoints"),
-//                 py::arg("incremental") = false)
-//            .def("waitReachCompleted", &RosClient::waitReachCompleted,
-//                 py::arg("task_name"),
-//                 py::arg("timeout") = 0.0)
-//            .def("getPoseReference", py_get_pose_reference)
-//            .def("getDesiredInteraction", py_get_interaction_reference)
-//            .def("setPoseReference", &RosClient::setPoseReference)
-//            .def("setForceReference", &RosClient::setForceReference)
-//            .def("setDesiredStiffness", &RosClient::setDesiredStiffness)
-//            .def("setDesiredDamping", &RosClient::setDesiredDamping)
-//            .def("resetWorld", (bool (RosClient::*)(const Eigen::Affine3d&)) &RosClient::resetWorld)
-//            .def("resetWorld", (bool (RosClient::*)(const std::string&))     &RosClient::resetWorld)
-//            .def("setVelocityReference", (bool (RosClient::*)(const std::string&,
-//                                                              const Eigen::Vector6d&))  &RosClient::setVelocityReference)
-//            //        .def("setVelocityReferenceAsync", &RosClient::setVelocityReferenceAsync)
-//            .def("setVelocityReference", (bool (RosClient::*)(const std::string&,
-//                                                              const Eigen::Vector6d&,
-//                                                              const std::string&))  &RosClient::setVelocityReference)
-//            //        .def("stopVelocityReferenceAsync", &RosClient::stopVelocityReferenceAsync)
-//            .def("getPoseFromTf", py_get_pose_from_tf);
-

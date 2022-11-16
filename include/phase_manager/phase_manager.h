@@ -26,8 +26,8 @@ public:
     bool addPhase(std::vector<Phase::Ptr> phases);
     bool addPhase(Phase::Ptr phase);
     Phase::Ptr getRegisteredPhase(std::string name);
-    Phase getActivePhase();
-    int _shift_phases();
+//    Phase::Ptr getActivePhase();
+    bool _shift_phases();
 
     ~SinglePhaseManager();
 
@@ -63,6 +63,7 @@ public:
 
     bool registerPhase(std::string name, Phase::Ptr phase);
     bool addPhase(std::string name, Phase::Ptr phase);
+    bool _shift_phases();
 
 private:
 

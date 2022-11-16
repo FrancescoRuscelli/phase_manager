@@ -69,7 +69,7 @@ bool PhaseToken::_update_constraints(int initial_node)
                               _active_nodes.begin(), _active_nodes.end(),
                               std::back_inserter(active_nodes));
 
-        std::cout << "active nodes of constraint: ";
+        std::cout << "active nodes of constraint: <" << cnstr_map.first->getName() << ">: ";
         for (auto elem : active_nodes)
         {
             std::cout << elem << " ";
@@ -102,11 +102,12 @@ bool PhaseToken::_update_variables(int initial_node)
     {
         std::vector<int> active_nodes;
 
+        // TODO: this is not necessary
         std::set_intersection(var_map.second.nodes.begin(), var_map.second.nodes.end(),
                               _active_nodes.begin(), _active_nodes.end(),
                               std::back_inserter(active_nodes));
 
-        std::cout << "active nodes of variable: ";
+        std::cout << "active nodes of variable <" << var_map.first->getName() << ">: ";
         for (auto elem : active_nodes)
         {
             std::cout << elem << " ";
@@ -128,7 +129,7 @@ bool PhaseToken::_update_variables(int initial_node)
 
 bool PhaseToken::_update_costs(int initial_node)
 {
-    for (auto cost_map : _abstract_phase->getConstraints())
+    for (auto cost_map : _abstract_phase->getCosts())
     {
         std::vector<int> active_nodes;
 
@@ -136,7 +137,7 @@ bool PhaseToken::_update_costs(int initial_node)
                               _active_nodes.begin(), _active_nodes.end(),
                               std::back_inserter(active_nodes));
 
-        std::cout << "active nodes of cost: ";
+        std::cout << "active nodes of cost <" << cost_map.first->getName() << ">: ";
         for (auto elem : active_nodes)
         {
             std::cout << elem << " ";
@@ -173,7 +174,7 @@ bool PhaseToken::_update_parameters(int initial_node)
                               _active_nodes.begin(), _active_nodes.end(),
                               std::back_inserter(active_nodes));
 
-        std::cout << "active nodes of parameter: ";
+        std::cout << "active nodes of parameter <" << par_map.first->getName() << ">: ";
         for (auto elem : active_nodes)
         {
             std::cout << elem << " ";

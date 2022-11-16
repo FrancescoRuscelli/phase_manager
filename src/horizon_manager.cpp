@@ -1,8 +1,13 @@
 #include <phase_manager/horizon_manager.h>
 
+HorizonManager::HorizonManager()
+{
+}
+
 bool HorizonManager::addConstraint(ItemWithBoundsBase::Ptr constraint)
 {
     bool duplicate_flag = false;
+
     for (auto item : _constraints)
     {
         if (constraint->getName() == item->getName())
@@ -80,22 +85,25 @@ bool HorizonManager::flush()
 {
     for (auto constraint : _constraints)
     {
-        constraint->flush();
+        constraint->flushNodes();
     }
 
     for (auto cost : _costs)
     {
-        cost->flush();
+        cost->flushNodes();
     }
 
     for (auto variable : _variables)
     {
-        variable->flush();
+//        variable->flushNodes();
+        variable->flushBounds();
+
     }
 
     for (auto parameter : _parameters)
     {
-        parameter->flush();
+//        parameter->flushNodes();
+        parameter->flushValues();
     }
 
     return true;
@@ -110,6 +118,11 @@ bool HorizonManager::reset()
         constraint->clearBounds();
     }
 
+    for (auto cost : _costs)
+    {
+        cost->clearNodes();
+    }
+
     for (auto variable : _variables)
     {
         variable->clearNodes();
@@ -119,7 +132,7 @@ bool HorizonManager::reset()
     for (auto parameter : _parameters)
     {
         parameter->clearNodes();
-        parameter->clearBounds();
+        parameter->clearValues();
     }
     return true;
 }
