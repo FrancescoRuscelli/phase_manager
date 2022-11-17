@@ -218,13 +218,17 @@ int main()
     Variable::VariablePtr fake_var_1 = std::make_shared<Variable>("var_1", 3);
 
     Eigen::MatrixXd bounds_var_1 = Eigen::MatrixXd::Zero(3,5);
-    std::vector<int> prb_nodes;
-    prb_nodes.insert(prb_nodes.end(), {0, 1, 2, 3, 4, 5, 6, 7, 8, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20});
+    std::vector<int> prb_nodes(50);
+    std::iota(prb_nodes.begin(), prb_nodes.end(), 50);
 
+//    for (auto element : prb_nodes)
+//    {
+//        std::cout << element << " ";
+//    }
     fake_flight_p_1->setNodes(prb_nodes);
     fake_var_1->setNodes(prb_nodes);
 
-    Eigen::MatrixXd values_par_1 = Eigen::MatrixXd::Zero(3,20);
+    Eigen::MatrixXd values_par_1 = Eigen::MatrixXd::Zero(3,50);
     fake_flight_p_1->assign(values_par_1);
 
     // ==================================================================================================================
@@ -237,7 +241,7 @@ int main()
     ItemWithBoundsBase::Ptr flight_c_1 = std::make_shared<WrapperWithBounds<Constraint>>(fake_flight_c_1);
     ItemWithValuesBase::Ptr flight_p_1 = std::make_shared<WrapperWithValues<Parameter>>(fake_flight_p_1);
 
-    PhaseManager app(20);
+    PhaseManager app(50);
     auto timeline_1 = app.addTimeline("first_timeline");
 
 //    SinglePhaseManager app(20);
@@ -248,7 +252,7 @@ int main()
     std::vector<int> my_nodes;
     my_nodes.insert(my_nodes.end(), {2, 3, 4});
 
-    stance->addConstraint(stance_c_1, my_nodes);
+    stance->addConstraint(stance_c_1); //, my_nodes);
     stance->addConstraint(stance_c_2);
 
     stance->addVariableBounds(var_1, bounds_var_1, bounds_var_1);
@@ -270,7 +274,16 @@ int main()
 
 //    auto start_time = std::chrono::high_resolution_clock::now();
     timeline_1->addPhase(stance);
-    timeline_1->addPhase(flight);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+//    timeline_1->addPhase(flight, 1);
 
 
     std::cout << "constraint stance_c_1 has nodes: ";
@@ -305,38 +318,38 @@ int main()
 //    std::cout << "elapsed time: " << elapsed_time.count() << std::endl;
 
 
-    timeline_1->_shift_phases();
-    timeline_1->_shift_phases();
-    timeline_1->_shift_phases();
-    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
 
 
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : fake_stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint stance_c_1 has nodes: ";
+//    for (int i : fake_stance_c_1->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
-    std::cout << "constraint stance_c_2 has nodes: ";
-    for (int i : fake_stance_c_2->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint stance_c_2 has nodes: ";
+//    for (int i : fake_stance_c_2->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
-    std::cout << "constraint flight_c_1 has nodes: ";
-    for (int i : fake_flight_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint flight_c_1 has nodes: ";
+//    for (int i : fake_flight_c_1->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
-    std::cout << "parameter flight_p_1 has values: " << std::endl;
-    std::cout << fake_flight_p_1->getValues() << std::endl;
+//    std::cout << "parameter flight_p_1 has values: " << std::endl;
+//    std::cout << fake_flight_p_1->getValues() << std::endl;
 
-    std::cout << "variable var_1 has bounds: " << std::endl;
-    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
-    std::cout << std::endl;
+//    std::cout << "variable var_1 has bounds: " << std::endl;
+//    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+//    std::cout << std::endl;
 
 }

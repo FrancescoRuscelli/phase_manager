@@ -34,92 +34,139 @@ bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
     {
         _horizon_manager->addParameter(parameter.first);
     }
-
-
-
     return true;
 }
 
-bool SinglePhaseManager::_add_phase(Phase::Ptr phase, int pos)
+bool SinglePhaseManager::_add_phases(int pos)
 {
     //  TODO: cannot add a phase if it is not registered
 
-    std::cout << "= = = = = = = = = = = = = =adding phase: " << phase->getName() << " = = = = = = = = = = = = = =" << std::endl;
+//    for (auto phase : _phases_to_add)
+//    {
+//        std::cout << "phase: (" << phase << ") ";
+//        std::cout << phase->get_phase()->getName() << std::endl;
+//        for (auto item : phase->get_phase()->getConstraints())
+//        {
+//            std::cout << item.first->getName() << ": ";
 
-    // magic trick because PhaseToken construction is protected (only friends can use it)
-    // in particular, the method make_shared cannot acces to the construction of PhaseToken
-    struct PhaseTokenGate : PhaseToken
+//            for (auto node : item.second)
+//            {
+//                std::cout << node << " ";
+//            }
+
+//            std::cout << std::endl;
+//        }
+//    }
+//    std::cout << std::endl;
+    std::cout << "= = = = = = = = = = = = = =adding phase: < ";
+    for (auto phase : _phases_to_add)
     {
-        PhaseTokenGate(Phase::Ptr phase):
-            PhaseToken(phase)
-        {}
-    };
-
-    PhaseToken::PhaseTokenPtr phase_token = std::make_shared<PhaseTokenGate>(phase);
-//    PhaseToken::PhaseTokenPtr phase_token = std::make_shared<PhaseToken>(phase);
+        std::cout << phase->get_phase()->getName() << " ";
+    }
+    std::cout << "> = = = = = = = = = = = = = =" << std::endl;
 
     if (pos == -1)
     {
-        _phases.push_back(phase_token);
+        // add phase_tokens to stack
+        _phases.insert(_phases.end(), _phases_to_add.begin(), _phases_to_add.end());
     }
     else
     {
-//      if pos is beyond the horizon (outside of the active_phases), skip useless computation:
+        // insert phase_tokens in stack at pos
+        _phases.insert(_phases.begin() + pos, _phases_to_add.begin(), _phases_to_add.end());
+
+        // if pos is beyond the horizon (outside of the active_phases), skip useless computation
         if (0 <= pos <= _active_phases.size())
         {
-    //          recompute empty nodes in horizon, clear active nodes of all the phases AFTER the one inserted
-    //          insert phase + everything AFTER it back
+
+            // remove all the active_phases after the position
+            _active_phases.resize(pos);
+
+            // reset the horizon_manager (holding all the active nodes)
+            _horizon_manager->reset();
+
+            // recompute empty nodes in horizon until pos
+            _trailing_empty_nodes = _n_nodes;
             for (int i=0; i<pos; i++)
             {
-                PhaseToken::PhaseTokenPtr s = _phases[i];
-                _trailing_empty_nodes = _n_nodes - s->_get_active_nodes().size();
-                // if I'm removing phases from the current stack, i need to remove current nodes from the phases
-
-    //        //        for (auto i = pos; i <= _phases.size(); ++i) _phases[i].reset(); // reset all the phases after the desired position
-    //        //        horizon_manager.reset(); // reset the horizon_manager
-    //        //        for (auto i = pos; i <= _phases.size(); ++i) _horizon_manager.update_phase(_phases[i]); // update all the "new" phases added
+                _trailing_empty_nodes -= _phases[i]->_get_active_nodes().size();
             }
+
+            // update again phases before the position (before i resetted horizon_manager)
+            int pos_in_horizon = 0;
+            for (auto phase_token_i : _active_phases)
+            {
+                std::cout << "updating phases before pos: " << phase_token_i->get_phase()->getName() << std::endl;
+                phase_token_i->_update(pos_in_horizon);
+                pos_in_horizon += phase_token_i->_get_active_nodes().size();
+
+            }
+
+            // add tail of phases after the one added
+            _phases_to_add.insert(_phases_to_add.end(), _phases.begin() + pos + 1, _phases.end());
+
+            // remove active nodes from phases to add
+            for (auto phase_to_add : _phases_to_add)
+            {
+                phase_to_add->_get_active_nodes().clear();
+            }
+
         }
     }
 
     if (_trailing_empty_nodes > 0)
     {
         // set active node for each added phase
-        int pos_in_horizon = _n_nodes - _trailing_empty_nodes;
-        _trailing_empty_nodes -= phase->getNNodes();
-        int remaining_nodes = phase_token->_get_n_nodes();
-        if (_trailing_empty_nodes <= 0)
+        for (auto phase_token_i : _phases_to_add)
         {
-            remaining_nodes += _trailing_empty_nodes;
-            _trailing_empty_nodes = 0;
-        }
+            int pos_in_horizon = _n_nodes - _trailing_empty_nodes;
+            _trailing_empty_nodes -= phase_token_i->get_phase()->getNNodes();
 
-        for (int i = 0; i<remaining_nodes; i++)
-        {
-            phase_token->_get_active_nodes().push_back(i);
-        }
-
-        std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
-
-        phase_token->_update(pos_in_horizon);
-        _active_phases.push_back(phase_token);
-
-
-
-        std::cout << "number of free nodes: " << _trailing_empty_nodes << std::endl;
-
-        for (auto phase : _phases)
-        {
-            std::cout << "active nodes of phase '" << phase->get_phase()->getName() << "': ";
-
-            for (auto j : phase->_get_active_nodes())
+            int remaining_nodes = phase_token_i->_get_n_nodes();
+            if (_trailing_empty_nodes <= 0)
             {
-                std::cout << j << " ";
+                remaining_nodes += _trailing_empty_nodes;
+
+                for (int i = 0; i<remaining_nodes; i++)
+                {
+                    phase_token_i->_get_active_nodes().push_back(i);
+                }
+
+                std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
+                phase_token_i->_update(pos_in_horizon);
+                _trailing_empty_nodes = 0;
+                break;
             }
-            std::cout << std::endl;
+    
+            for (int i = 0; i<remaining_nodes; i++)
+            {
+                phase_token_i->_get_active_nodes().push_back(i);
+            }
+    
+            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
+
+            // important bit: this is where i update the phase
+            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
+            phase_token_i->_update(pos_in_horizon);
+            _active_phases.push_back(phase_token_i);
         }
 
     }
+
+
+    std::cout << "number of free nodes: " << _trailing_empty_nodes << std::endl;
+
+    for (auto phase : _phases)
+    {
+        std::cout << "active nodes of phase '" << phase->get_phase()->getName() << "': ";
+
+        for (auto j : phase->_get_active_nodes())
+        {
+            std::cout << j << " ";
+        }
+        std::cout << std::endl;
+    }
+
     std::cout << "current phases in vector: << ";
     for (auto phase : _phases)
     {
@@ -128,9 +175,7 @@ bool SinglePhaseManager::_add_phase(Phase::Ptr phase, int pos)
     std::cout << ">> "<< std::endl;
 
 
-
     _horizon_manager->flush();
-
     std::cout << "= = = = = = = = = = = = = = = = = = = = = = = = = = =" << std::endl;
 
     return true;
@@ -140,6 +185,20 @@ bool SinglePhaseManager::_add_phase(Phase::Ptr phase, int pos)
 //     self.horizon_manager.set_horizon_nodes()
 
 
+}
+
+PhaseToken::Ptr SinglePhaseManager::_generate_phase_token(Phase::Ptr phase)
+{
+    // magic trick because PhaseToken construction is protected (only friends can use it)
+    // in particular, the method make_shared cannot acces to the construction of PhaseToken
+    struct PhaseTokenGate : PhaseToken
+    {
+        PhaseTokenGate(Phase::Ptr phase):
+            PhaseToken(phase)
+        {}
+    };
+
+    return std::make_shared<PhaseTokenGate>(phase);
 }
 
 bool SinglePhaseManager::_shift_phases()
@@ -244,7 +303,6 @@ bool SinglePhaseManager::_shift_phases()
 
         _horizon_manager->flush();
 
-
     }
     int num_nodes = 0;
     for (int i=0; i<_active_phases.size(); i++)
@@ -266,19 +324,30 @@ bool SinglePhaseManager::_shift_phases()
     return true;
 }
 
-bool SinglePhaseManager::addPhase(std::vector<Phase::Ptr> phases)
+bool SinglePhaseManager::addPhase(std::vector<Phase::Ptr> phases, int pos)
 {
-    for (int i=0; i<phases.size(); i++)
+
+    for (auto phase : phases)
     {
-        SinglePhaseManager::_add_phase(phases[i]);
+        _phases_to_add.push_back(_generate_phase_token(phase));
     }
+
+    _add_phases(pos);
+    _phases_to_add.clear();
+
     return true;
+
 }
 
-bool SinglePhaseManager::addPhase(Phase::Ptr phase)
+bool SinglePhaseManager::addPhase(Phase::Ptr phase, int pos)
 {
-    return SinglePhaseManager::_add_phase(phase);
 
+    _phases_to_add.push_back(_generate_phase_token(phase));
+
+    _add_phases(pos);
+    _phases_to_add.clear();
+
+    return true;
 }
 
 Phase::Ptr SinglePhaseManager:: getRegisteredPhase(std::string name)

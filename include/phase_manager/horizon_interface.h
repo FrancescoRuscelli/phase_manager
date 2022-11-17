@@ -21,6 +21,13 @@ public:
 
     bool addNodes(std::vector<int> nodes)
     {
+        std::cout << "adding nodes to " << getName() << ": ";
+        for (auto node : nodes)
+        {
+            std::cout << node << " ";
+        }
+        std::cout << std::endl;
+
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
         return true;
     }
@@ -59,6 +66,8 @@ public:
 //            std::cout << node << " ";
 //        }
 //        std::cout << std::endl;
+//        std::cout << _lower_bounds(Eigen::indexing::all, nodes) << std::endl;
+//        std::cout << lower_bounds << std::endl;
 
         _lower_bounds(Eigen::indexing::all, nodes) << lower_bounds;
         _upper_bounds(Eigen::indexing::all, nodes) << upper_bounds;

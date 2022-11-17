@@ -63,34 +63,10 @@ bool PhaseToken::_update_constraints(int initial_node)
 {
     for (auto cnstr_map : _abstract_phase->getConstraints())
     {
-        std::vector<int> active_nodes;
+        auto pair_nodes = _compute_horizon_nodes(cnstr_map.second, initial_node);
 
-        std::set_intersection(cnstr_map.second.begin(), cnstr_map.second.end(),
-                              _active_nodes.begin(), _active_nodes.end(),
-                              std::back_inserter(active_nodes));
+        cnstr_map.first->addNodes(pair_nodes.second);
 
-        std::cout << "active nodes of constraint: <" << cnstr_map.first->getName() << ">: ";
-        for (auto elem : active_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
-
-
-        std::vector<int> horizon_nodes(active_nodes.size());
-        // active phase nodes   : [1 int2 3 4]
-        // active fun nodes     : [2 3]
-        // phase pos in horizon : 7
-        // constr pos in horizon: 7 + 2 - 1 = 8
-        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
-
-        cnstr_map.first->addNodes(horizon_nodes);
-        std::cout << " adding horizon nodes: ";
-        for (auto elem : horizon_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
     }
 
     return true;
@@ -100,27 +76,14 @@ bool PhaseToken::_update_variables(int initial_node)
 {
     for (auto var_map : _abstract_phase->getVariables())
     {
-        std::vector<int> active_nodes;
-
-        // TODO: this is not necessary
-        std::set_intersection(var_map.second.nodes.begin(), var_map.second.nodes.end(),
-                              _active_nodes.begin(), _active_nodes.end(),
-                              std::back_inserter(active_nodes));
-
-        std::cout << "active nodes of variable <" << var_map.first->getName() << ">: ";
-        for (auto elem : active_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
+        auto pair_nodes = _compute_horizon_nodes(var_map.second.nodes, initial_node);
 
 
-        std::vector<int> horizon_nodes(active_nodes.size());
-        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
+        std::cout << var_map.second.lower_bounds(Eigen::indexing::all, pair_nodes.first) << std::endl;
 
-        var_map.first->addBounds(horizon_nodes,
-                                 var_map.second.lower_bounds(Eigen::indexing::all, active_nodes),
-                                 var_map.second.upper_bounds(Eigen::indexing::all, active_nodes));
+        var_map.first->addBounds(pair_nodes.second,
+                                 var_map.second.lower_bounds(Eigen::indexing::all, pair_nodes.first),
+                                 var_map.second.upper_bounds(Eigen::indexing::all, pair_nodes.first));
 
     }
 
@@ -131,34 +94,16 @@ bool PhaseToken::_update_costs(int initial_node)
 {
     for (auto cost_map : _abstract_phase->getCosts())
     {
-        std::vector<int> active_nodes;
+        auto pair_nodes = _compute_horizon_nodes(cost_map.second, initial_node);
 
-        std::set_intersection(cost_map.second.begin(), cost_map.second.end(),
-                              _active_nodes.begin(), _active_nodes.end(),
-                              std::back_inserter(active_nodes));
+        cost_map.first->addNodes(pair_nodes.second);
 
-        std::cout << "active nodes of cost <" << cost_map.first->getName() << ">: ";
-        for (auto elem : active_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
-
-
-        std::vector<int> horizon_nodes(active_nodes.size());
-        // active phase nodes   : [1 2 3 4]
-        // active fun nodes     : [2 3]
-        // phase pos in horizon : 7
-        // constr pos in horizon: 7 + 2 - 1 = 8
-        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
-
-        cost_map.first->addNodes(horizon_nodes);
-        std::cout << " adding horizon nodes: ";
-        for (auto elem : horizon_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
+//        std::cout << " adding horizon nodes: ";
+//        for (auto elem : pair_nodes.second)
+//        {
+//            std::cout << elem << " ";
+//        }
+//        std::cout << std::endl;
     }
 
     return true;
@@ -168,29 +113,35 @@ bool PhaseToken::_update_parameters(int initial_node)
 {
     for (auto par_map : _abstract_phase->getParameters())
     {
-        std::vector<int> active_nodes;
+        auto pair_nodes = _compute_horizon_nodes(par_map.second.nodes, initial_node);
 
-        std::set_intersection(par_map.second.nodes.begin(), par_map.second.nodes.end(),
-                              _active_nodes.begin(), _active_nodes.end(),
-                              std::back_inserter(active_nodes));
-
-        std::cout << "active nodes of parameter <" << par_map.first->getName() << ">: ";
-        for (auto elem : active_nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
-
-
-        std::vector<int> horizon_nodes(active_nodes.size());
-        std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
-
-        par_map.first->addValues(horizon_nodes, par_map.second.values(Eigen::indexing::all, active_nodes));
+        par_map.first->addValues(pair_nodes.second, par_map.second.values(Eigen::indexing::all, pair_nodes.first));
 
     }
 
     return true;
 }
+
+std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes(std::vector<int> nodes, int initial_node)
+{
+    std::vector<int> active_nodes;
+
+    std::set_intersection(nodes.begin(), nodes.end(),
+                          _active_nodes.begin(), _active_nodes.end(),
+                          std::back_inserter(active_nodes));
+
+    std::vector<int> horizon_nodes(active_nodes.size());
+    // active phase nodes   : [1 2 3 4]
+    // active fun nodes     : [2 3]
+    // phase pos in horizon : 7
+    // constr pos in horizon: 7 + 2 - 1 = 8
+    std::iota(std::begin(horizon_nodes), std::end(horizon_nodes), initial_node + active_nodes[0] - _active_nodes[0]);
+
+
+    return std::make_pair(active_nodes, horizon_nodes);
+
+}
+
 
 bool PhaseToken::_update(int initial_node)
 {

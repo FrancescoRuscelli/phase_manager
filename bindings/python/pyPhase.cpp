@@ -37,7 +37,7 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
         _pyobj(pyobj)
     {
         // what if empty?
-        _lower_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+        _lower_bounds = - std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
         _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
 
         _initial_lower_bounds =  _lower_bounds;

@@ -135,7 +135,7 @@ class PhaseToken
 
 public:
 
-    typedef std::shared_ptr<PhaseToken> PhaseTokenPtr;
+    typedef std::shared_ptr<PhaseToken> Ptr;
 
 protected:
 
@@ -151,8 +151,9 @@ private:
     bool _update_costs(int initial_node);
     bool _update_parameters(int initial_node);
 
+    std::pair<std::vector<int>, std::vector<int>> _compute_horizon_nodes(std::vector<int> nodes, int initial_node);
+
     bool _update(int initial_node);
-    bool _reset();
 
     int _get_n_nodes();
     std::vector<int>& _get_active_nodes();

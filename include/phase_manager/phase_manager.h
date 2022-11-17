@@ -20,11 +20,11 @@ public:
 
     typedef std::shared_ptr<SinglePhaseManager> Ptr;
 
-    SinglePhaseManager(int n_nodes, std::string name="how_to_use_default_arguments");
+    SinglePhaseManager(int n_nodes, std::string name="");
 
     bool registerPhase(Phase::Ptr phase);
-    bool addPhase(std::vector<Phase::Ptr> phases);
-    bool addPhase(Phase::Ptr phase);
+    bool addPhase(std::vector<Phase::Ptr> phases, int pos=-1);
+    bool addPhase(Phase::Ptr phase, int pos=-1);
     Phase::Ptr getRegisteredPhase(std::string name);
 //    Phase::Ptr getActivePhase();
     bool _shift_phases();
@@ -33,8 +33,8 @@ public:
 
 private:
 
-    bool _add_phase(Phase::Ptr phase, int pos=-1); // TODO substitute with pointer
-
+    bool _add_phases(int pos=-1); // TODO substitute with pointer
+    PhaseToken::Ptr _generate_phase_token(Phase::Ptr phase);
 
     std::unique_ptr<HorizonManager> _horizon_manager;
 
@@ -42,8 +42,9 @@ private:
     std::vector<Phase::Ptr> _registered_phases; // container of all the registered phases
     int _n_nodes;
 
-    std::vector<PhaseToken::PhaseTokenPtr> _phases; // list of all the phases
-    std::vector<PhaseToken::PhaseTokenPtr> _active_phases; // list of all active phases
+    std::vector<PhaseToken::Ptr> _phases_to_add;
+    std::vector<PhaseToken::Ptr> _phases; // list of all the phases
+    std::vector<PhaseToken::Ptr> _active_phases; // list of all active phases
     int _trailing_empty_nodes; // empty nodes in horizon --> at the very beginning, all
 
 
