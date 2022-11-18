@@ -78,9 +78,6 @@ bool PhaseToken::_update_variables(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(var_map.second.nodes, initial_node);
 
-
-        std::cout << var_map.second.lower_bounds(Eigen::indexing::all, pair_nodes.first) << std::endl;
-
         var_map.first->addBounds(pair_nodes.second,
                                  var_map.second.lower_bounds(Eigen::indexing::all, pair_nodes.first),
                                  var_map.second.upper_bounds(Eigen::indexing::all, pair_nodes.first));

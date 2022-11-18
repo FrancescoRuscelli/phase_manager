@@ -58,12 +58,12 @@ bool SinglePhaseManager::_add_phases(int pos)
 //        }
 //    }
 //    std::cout << std::endl;
-    std::cout << "= = = = = = = = = = = = = =adding phase: < ";
-    for (auto phase : _phases_to_add)
-    {
-        std::cout << phase->get_phase()->getName() << " ";
-    }
-    std::cout << "> = = = = = = = = = = = = = =" << std::endl;
+//    std::cout << "= = = = = = = = = = = = = =adding phase: < ";
+//    for (auto phase : _phases_to_add)
+//    {
+//        std::cout << phase->get_phase()->getName() << " ";
+//    }
+//    std::cout << "> = = = = = = = = = = = = = =" << std::endl;
 
     if (pos == -1)
     {
@@ -76,7 +76,7 @@ bool SinglePhaseManager::_add_phases(int pos)
         _phases.insert(_phases.begin() + pos, _phases_to_add.begin(), _phases_to_add.end());
 
         // if pos is beyond the horizon (outside of the active_phases), skip useless computation
-        if (0 <= pos <= _active_phases.size())
+        if (0 <= pos && pos <= _active_phases.size())
         {
 
             // remove all the active_phases after the position
@@ -94,9 +94,10 @@ bool SinglePhaseManager::_add_phases(int pos)
 
             // update again phases before the position (before i resetted horizon_manager)
             int pos_in_horizon = 0;
+
+
             for (auto phase_token_i : _active_phases)
             {
-                std::cout << "updating phases before pos: " << phase_token_i->get_phase()->getName() << std::endl;
                 phase_token_i->_update(pos_in_horizon);
                 pos_in_horizon += phase_token_i->_get_active_nodes().size();
 
@@ -132,7 +133,6 @@ bool SinglePhaseManager::_add_phases(int pos)
                     phase_token_i->_get_active_nodes().push_back(i);
                 }
 
-                std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
                 phase_token_i->_update(pos_in_horizon);
                 _trailing_empty_nodes = 0;
                 break;
@@ -143,10 +143,10 @@ bool SinglePhaseManager::_add_phases(int pos)
                 phase_token_i->_get_active_nodes().push_back(i);
             }
     
-            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
+//            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
 
+//            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
             // important bit: this is where i update the phase
-            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
             phase_token_i->_update(pos_in_horizon);
             _active_phases.push_back(phase_token_i);
         }
@@ -154,29 +154,29 @@ bool SinglePhaseManager::_add_phases(int pos)
     }
 
 
-    std::cout << "number of free nodes: " << _trailing_empty_nodes << std::endl;
+//    std::cout << "number of free nodes: " << _trailing_empty_nodes << std::endl;
 
-    for (auto phase : _phases)
-    {
-        std::cout << "active nodes of phase '" << phase->get_phase()->getName() << "': ";
+//    for (auto phase : _phases)
+//    {
+//        std::cout << "active nodes of phase '" << phase->get_phase()->getName() << "': ";
 
-        for (auto j : phase->_get_active_nodes())
-        {
-            std::cout << j << " ";
-        }
-        std::cout << std::endl;
-    }
+//        for (auto j : phase->_get_active_nodes())
+//        {
+//            std::cout << j << " ";
+//        }
+//        std::cout << std::endl;
+//    }
 
-    std::cout << "current phases in vector: << ";
-    for (auto phase : _phases)
-    {
-       std::cout << phase->get_phase()->getName() << " ";
-    }
-    std::cout << ">> "<< std::endl;
+//    std::cout << "current phases in vector: << ";
+//    for (auto phase : _phases)
+//    {
+//       std::cout << phase->get_phase()->getName() << " ";
+//    }
+//    std::cout << ">> "<< std::endl;
 
 
     _horizon_manager->flush();
-    std::cout << "= = = = = = = = = = = = = = = = = = = = = = = = = = =" << std::endl;
+//    std::cout << "= = = = = = = = = = = = = = = = = = = = = = = = = = =" << std::endl;
 
     return true;
 
@@ -206,8 +206,8 @@ bool SinglePhaseManager::_shift_phases()
 
     _horizon_manager->reset();
 
-    auto start_time = std::chrono::high_resolution_clock::now();
-    std::cout << " ============ shifting phases ============ : " << std::endl;
+//    auto start_time = std::chrono::high_resolution_clock::now();
+//    std::cout << " ============ shifting phases ============ : " << std::endl;
     //  if phases is empty, skip everything
     if (_phases.size() > 0)
     {
@@ -283,16 +283,16 @@ bool SinglePhaseManager::_shift_phases()
         }
 
 
-        for (int i=0; i<_phases.size(); i++)
-        {
-            std::cout << "active nodes of phase '" << _phases[i]->get_phase()->getName() << "' at pos '" << i << "': ";
+//        for (int i=0; i<_phases.size(); i++)
+//        {
+//            std::cout << "active nodes of phase '" << _phases[i]->get_phase()->getName() << "' at pos '" << i << "': ";
 
-            for (auto j : _phases[i]->_get_active_nodes())
-            {
-                std::cout << j << " ";
-            }
-            std::cout << std::endl;
-        }
+//            for (auto j : _phases[i]->_get_active_nodes())
+//            {
+//                std::cout << j << " ";
+//            }
+//            std::cout << std::endl;
+//        }
 
         int i = 0;
         for (auto phase : _active_phases)
@@ -311,16 +311,16 @@ bool SinglePhaseManager::_shift_phases()
     }
     _trailing_empty_nodes = _n_nodes - num_nodes;
 
-    std::cout << "active nodes: << ";
-    for (int i=0; i<_active_phases.size(); i++)
-    {
-        std::cout << _active_phases[i]->get_phase()->getName() <<" ";
-    }
-    std::cout << " >>" << std::endl;
-    std::cout << "current number of free nodes: " << _trailing_empty_nodes << std::endl;
+//    std::cout << "active nodes: << ";
+//    for (int i=0; i<_active_phases.size(); i++)
+//    {
+//        std::cout << _active_phases[i]->get_phase()->getName() <<" ";
+//    }
+//    std::cout << " >>" << std::endl;
+//    std::cout << "current number of free nodes: " << _trailing_empty_nodes << std::endl;
 
-    std::chrono::duration<double> elapsed_time = std::chrono::system_clock::now() - start_time;
-    std::cout << "elapsed time: " << elapsed_time.count() << std::endl;
+//    std::chrono::duration<double> elapsed_time = std::chrono::system_clock::now() - start_time;
+//    std::cout << "elapsed time: " << elapsed_time.count() << std::endl;
     return true;
 }
 
@@ -359,12 +359,12 @@ Phase::Ptr SinglePhaseManager:: getRegisteredPhase(std::string name)
 
         if (phase_name == name)
         {
-            std::cout << "Found registered phase with name '" << name << "'" <<std::endl;
+//            std::cout << "Found registered phase with name '" << name << "'" <<std::endl;
             return _registered_phases[i];
         }
     }
 
-    std::cout << "NOT found registered phase with name '" << name << "'" <<std::endl;
+//    std::cout << "NOT found registered phase with name '" << name << "'" <<std::endl;
     return NULL;
 }
 
@@ -402,4 +402,6 @@ bool PhaseManager::_shift_phases()
     {
         timeline.second->_shift_phases();
     }
+
+    return true;
 }

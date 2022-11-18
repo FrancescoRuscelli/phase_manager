@@ -21,12 +21,12 @@ public:
 
     bool addNodes(std::vector<int> nodes)
     {
-        std::cout << "adding nodes to " << getName() << ": ";
-        for (auto node : nodes)
-        {
-            std::cout << node << " ";
-        }
-        std::cout << std::endl;
+//        std::cout << "adding nodes to " << getName() << ": ";
+//        for (auto node : nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
 
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
         return true;

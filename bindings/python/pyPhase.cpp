@@ -108,6 +108,7 @@ bool add_cost_pyobject(Phase& self,
 {
     ItemBase::Ptr item_converted = std::make_shared<PyObjWrapper>(item);
     self.addCost(item_converted, nodes);
+    return true;
 }
 
 bool add_constraint_pyobject(Phase& self,
@@ -116,6 +117,7 @@ bool add_constraint_pyobject(Phase& self,
 {
     ItemWithBoundsBase::Ptr item_converted = std::make_shared<PyObjWrapperWithBounds>(item);
     self.addConstraint(item_converted, nodes);
+    return true;
 }
 
 bool add_variable_pyobject(Phase& self,
@@ -126,6 +128,7 @@ bool add_variable_pyobject(Phase& self,
 {
     ItemWithBoundsBase::Ptr item_converted = std::make_shared<PyObjWrapperWithBounds>(item);
     self.addVariableBounds(item_converted, lower_bounds, upper_bounds, nodes);
+    return true;
 }
 
 bool add_parameter_pyobject(Phase& self, py::object item,
@@ -134,6 +137,7 @@ bool add_parameter_pyobject(Phase& self, py::object item,
 {
     ItemWithValuesBase::Ptr item_converted = std::make_shared<PyObjWrapperWithValues>(item);
     self.addParameterValues(item_converted, values, nodes);
+    return true;
 }
 
 

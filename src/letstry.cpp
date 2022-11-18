@@ -21,6 +21,7 @@ public:
     bool setNodes(std::vector<int> nodes)
     {
         _nodes = nodes;
+        return true;
     }
 
     std::vector<int> getNodes()
@@ -60,11 +61,13 @@ public:
     bool setNodes(std::vector<int> nodes)
     {
         _nodes = nodes;
+        return true;
     }
 
     bool assign(Eigen::MatrixXd value)
     {
         _values = value;
+        return true;
     }
 
     std::vector<int> getNodes()
@@ -110,12 +113,14 @@ public:
     bool setNodes(std::vector<int> nodes)
     {
         _nodes = nodes;
+        return true;
     }
 
     bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds)
     {
         _lower_bounds = lower_bounds;
         _upper_bounds = upper_bounds;
+        return true;
     }
 
     std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> getBounds()
@@ -162,6 +167,7 @@ public:
     bool setNodes(std::vector<int> nodes)
     {
         _nodes = nodes;
+        return true;
     }
 
     std::string getName()
@@ -173,6 +179,7 @@ public:
     {
         _lower_bounds = lower_bounds;
         _upper_bounds = upper_bounds;
+        return true;
     }
 
     std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> getBounds()
@@ -241,6 +248,7 @@ int main()
     ItemWithBoundsBase::Ptr flight_c_1 = std::make_shared<WrapperWithBounds<Constraint>>(fake_flight_c_1);
     ItemWithValuesBase::Ptr flight_p_1 = std::make_shared<WrapperWithValues<Parameter>>(fake_flight_p_1);
 
+
     PhaseManager app(50);
     auto timeline_1 = app.addTimeline("first_timeline");
 
@@ -283,7 +291,10 @@ int main()
     timeline_1->addPhase(stance);
     timeline_1->addPhase(stance);
     timeline_1->addPhase(stance);
-//    timeline_1->addPhase(flight, 1);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(stance);
+    timeline_1->addPhase(flight, 10);
 
 
     std::cout << "constraint stance_c_1 has nodes: ";
@@ -318,38 +329,97 @@ int main()
 //    std::cout << "elapsed time: " << elapsed_time.count() << std::endl;
 
 
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
+    timeline_1->_shift_phases();
 
+    std::cout << "constraint stance_c_1 has nodes: ";
+    for (int i : fake_stance_c_1->getNodes())
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 
-//    std::cout << "constraint stance_c_1 has nodes: ";
-//    for (int i : fake_stance_c_1->getNodes())
-//    {
-//        std::cout << i << " ";
-//    }
-//    std::cout << std::endl;
+    std::cout << "constraint stance_c_2 has nodes: ";
+    for (int i : fake_stance_c_2->getNodes())
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 
-//    std::cout << "constraint stance_c_2 has nodes: ";
-//    for (int i : fake_stance_c_2->getNodes())
-//    {
-//        std::cout << i << " ";
-//    }
-//    std::cout << std::endl;
+    std::cout << "constraint flight_c_1 has nodes: ";
+    for (int i : fake_flight_c_1->getNodes())
+    {
+        std::cout << i << " ";
+    }
+    std::cout << std::endl;
 
-//    std::cout << "constraint flight_c_1 has nodes: ";
-//    for (int i : fake_flight_c_1->getNodes())
-//    {
-//        std::cout << i << " ";
-//    }
-//    std::cout << std::endl;
+    std::cout << "parameter flight_p_1 has values: " << std::endl;
+    std::cout << fake_flight_p_1->getValues() << std::endl;
 
-//    std::cout << "parameter flight_p_1 has values: " << std::endl;
-//    std::cout << fake_flight_p_1->getValues() << std::endl;
-
-//    std::cout << "variable var_1 has bounds: " << std::endl;
-//    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
-//    std::cout << std::endl;
+    std::cout << "variable var_1 has bounds: " << std::endl;
+    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+    std::cout << std::endl;
 
 }
