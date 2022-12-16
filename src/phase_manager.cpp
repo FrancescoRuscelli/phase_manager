@@ -368,6 +368,16 @@ Phase::Ptr SinglePhaseManager:: getRegisteredPhase(std::string name)
     return NULL;
 }
 
+//std::vector<PhaseToken::Ptr> SinglePhaseManager::getActivePhase()
+//{
+//    std::vector<Phase::Ptr> registered_active_phases;
+//    for (auto active_phase : _active_phases)
+//    {
+
+//        registered_active_phases.back(_pha)
+//    }
+//}
+
 SinglePhaseManager::~SinglePhaseManager()
 {
 

@@ -119,8 +119,8 @@ private:
     std::string _name;
     int _n_nodes;
 
-    std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>>_constraints;
-    std::unordered_map<ItemBase::Ptr, std::vector<int>>_costs;
+    std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> _constraints;
+    std::unordered_map<ItemBase::Ptr, std::vector<int>> _costs;
     std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer> _variables;
     std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> _parameters;
 

@@ -297,6 +297,13 @@ int main()
     timeline_1->addPhase(flight, 10);
 
 
+//    std::cout << "active Phases" << std::endl;
+//    for (auto active_phase: timeline_1->getActivePhase())
+//    {
+//        std::cout << active_phase << std::endl;
+//    }
+
+
     std::cout << "constraint stance_c_1 has nodes: ";
     for (int i : fake_stance_c_1->getNodes())
     {

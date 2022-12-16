@@ -27,6 +27,10 @@ public:
         return true;
     }
 
+    py::object getPyObject()
+    {
+        return _pyobj;
+    }
 
 private:
     py::object _pyobj;
@@ -66,6 +70,10 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
         return true;
     }
 
+    py::object getPyObject()
+    {
+        return _pyobj;
+    }
 
 private:
     py::object _pyobj;
@@ -140,6 +148,27 @@ bool add_parameter_pyobject(Phase& self, py::object item,
     return true;
 }
 
+auto get_constraint_item(Phase& phase)
+{
+    auto constraints = phase.getConstraints();
+
+    std::vector<py::object> constraint_python;
+
+    for (auto item : constraints)
+    {
+        auto item_converted = std::dynamic_pointer_cast<PyObjWrapperWithBounds>(item.first);
+
+        if (!item_converted)
+        {
+            std::cout << "diocane " << typeid(*item.first).name() << std::endl;
+            continue;
+        }
+
+        constraint_python.push_back(item_converted->getPyObject());
+    }
+
+    return constraint_python;
+}
 
 PYBIND11_MODULE(pyphase, m) {
 
@@ -150,6 +179,7 @@ PYBIND11_MODULE(pyphase, m) {
             .def("addCost", add_cost_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
             .def("addConstraint", add_constraint_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
             .def("addVariableBounds", add_variable_pyobject, py::arg("item"), py::arg("lower_bounds"), py::arg("upper_bounds"), py::arg("nodes") = std::vector<int>())
-            .def("addParameterValues", add_parameter_pyobject, py::arg("item"), py::arg("values"), py::arg("nodes") = std::vector<int>());
-
+            .def("addParameterValues", add_parameter_pyobject, py::arg("item"), py::arg("values"), py::arg("nodes") = std::vector<int>())
+            .def("getConstraints", get_constraint_item) // py::return_value_policy::reference_internal
+            ;
 }
