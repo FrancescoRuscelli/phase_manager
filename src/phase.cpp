@@ -133,7 +133,16 @@ bool PhaseToken::_update_parameters(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(par_map.second.nodes, initial_node);
 
-        par_map.first->addValues(pair_nodes.second, par_map.second.values(Eigen::indexing::all, pair_nodes.first));
+        Eigen::MatrixXd bring_me_to_eigen_3_4_val;
+        bring_me_to_eigen_3_4_val.resize(par_map.second.values.rows(), pair_nodes.first.size());
+
+        for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
+        {
+            bring_me_to_eigen_3_4_val.col(col_i) = par_map.second.values.col(pair_nodes.first.at(col_i));
+        }
+
+        par_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
+//        par_map.first->addValues(pair_nodes.second, par_map.second.values(Eigen::indexing::all, pair_nodes.first));
 
     }
 
