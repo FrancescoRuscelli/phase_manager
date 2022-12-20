@@ -3,7 +3,7 @@
 
 #include <phase_manager/horizon_interface.h>
 
-#include <eigen3/Eigen/Dense>
+#include <Eigen/Dense>
 #include <numeric>
 #include <vector>
 #include <iostream>
