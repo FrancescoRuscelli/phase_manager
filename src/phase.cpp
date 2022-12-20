@@ -76,9 +76,32 @@ bool PhaseToken::_update_variables(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(var_map.second.nodes, initial_node);
 
+
+        Eigen::MatrixXd bring_me_to_eigen_3_4_lb;
+        bring_me_to_eigen_3_4_lb.resize(var_map.second.lower_bounds.rows(), pair_nodes.first.size());
+
+        for (int col_i = 0; col_i < bring_me_to_eigen_3_4_lb.cols(); col_i++)
+        {
+            bring_me_to_eigen_3_4_lb.col(col_i) = var_map.second.lower_bounds.col(pair_nodes.first.at(col_i));
+        }
+
+
+        Eigen::MatrixXd bring_me_to_eigen_3_4_ub;
+        bring_me_to_eigen_3_4_ub.resize(var_map.second.upper_bounds.rows(), pair_nodes.first.size());
+
+        for (int col_i = 0; col_i < bring_me_to_eigen_3_4_ub.cols(); col_i++)
+        {
+            bring_me_to_eigen_3_4_ub.col(col_i) = var_map.second.upper_bounds.col(pair_nodes.first.at(col_i));
+        }
+
+
         var_map.first->addBounds(pair_nodes.second,
-                                 var_map.second.lower_bounds(Eigen::indexing::all, pair_nodes.first),
-                                 var_map.second.upper_bounds(Eigen::indexing::all, pair_nodes.first));
+                                 bring_me_to_eigen_3_4_lb,
+                                 bring_me_to_eigen_3_4_ub);
+
+//        var_map.first->addBounds(pair_nodes.second,
+//                                 var_map.second.lower_bounds(Eigen::indexing::all, pair_nodes.first),
+//                                 var_map.second.upper_bounds(Eigen::indexing::all, pair_nodes.first));
 
     }
 

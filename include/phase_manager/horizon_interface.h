@@ -68,9 +68,24 @@ public:
 //        std::cout << std::endl;
 //        std::cout << _lower_bounds(Eigen::indexing::all, nodes) << std::endl;
 //        std::cout << lower_bounds << std::endl;
+//        auto const lb_rows = _lower_bounds.rows();
 
-        _lower_bounds(Eigen::indexing::all, nodes) << lower_bounds;
-        _upper_bounds(Eigen::indexing::all, nodes) << upper_bounds;
+        int col_lb = 0;
+        for (int col : nodes)
+        {
+            _lower_bounds.col(col) = lower_bounds.col(col_lb);
+            col_lb++;
+        }
+
+        int col_ub = 0;
+        for (int col : nodes)
+        {
+            _upper_bounds.col(col) = upper_bounds.col(col_ub);
+            col_ub++;
+        }
+        // todo: only available in Eigen  3.4, what a pity
+//        _lower_bounds1(Eigen::indexing::all, nodes) << lower_bounds;
+//        _upper_bounds(Eigen::indexing::all, nodes) << upper_bounds;
 
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
 
@@ -125,7 +140,16 @@ public:
 //        {
 //            std::cout << node << " ";
 //        }
-        _values(Eigen::indexing::all, nodes) << values;
+
+        int col_val = 0;
+        for (int col : nodes)
+        {
+            _values.col(col) = values.col(col_val);
+            col_val++;
+        }
+
+        // todo: only available in Eigen 3.4, what a pity
+//        _values(Eigen::indexing::all, nodes) << values;
 
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
 

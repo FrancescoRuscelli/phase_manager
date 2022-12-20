@@ -65,20 +65,23 @@ bool SinglePhaseManager::_add_phases(int pos)
 //    }
 //    std::cout << "> = = = = = = = = = = = = = =" << std::endl;
 
-    if (pos == -1)
+    if (pos == -1 || pos > _phases.size())
     {
         // add phase_tokens to stack
+//        std::cout << "...adding at tail: " << "(" << _phases.size() << ")";
         _phases.insert(_phases.end(), _phases_to_add.begin(), _phases_to_add.end());
+//        std::cout << " ...done." << " (" << _phases.size() << ")" << std::endl;
     }
     else
     {
         // insert phase_tokens in stack at pos
+//        std::cout << "...inserting at pos: " << pos << " (" << _phases.size() << ")";
         _phases.insert(_phases.begin() + pos, _phases_to_add.begin(), _phases_to_add.end());
+//        std::cout << "...done." << " (" << _phases.size() << ")" << std::endl;
 
         // if pos is beyond the horizon (outside of the active_phases), skip useless computation
         if (0 <= pos && pos <= _active_phases.size())
         {
-
             // remove all the active_phases after the position
             _active_phases.resize(pos);
 
@@ -142,9 +145,8 @@ bool SinglePhaseManager::_add_phases(int pos)
             {
                 phase_token_i->_get_active_nodes().push_back(i);
             }
-    
-//            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
 
+//            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
 //            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
             // important bit: this is where i update the phase
             phase_token_i->_update(pos_in_horizon);
@@ -333,6 +335,7 @@ bool SinglePhaseManager::addPhase(std::vector<Phase::Ptr> phases, int pos)
     }
 
     _add_phases(pos);
+
     _phases_to_add.clear();
 
     return true;
@@ -341,7 +344,6 @@ bool SinglePhaseManager::addPhase(std::vector<Phase::Ptr> phases, int pos)
 
 bool SinglePhaseManager::addPhase(Phase::Ptr phase, int pos)
 {
-
     _phases_to_add.push_back(_generate_phase_token(phase));
 
     _add_phases(pos);
