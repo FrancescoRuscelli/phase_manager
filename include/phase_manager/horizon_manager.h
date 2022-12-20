@@ -4,7 +4,7 @@
 #include <phase_manager/horizon_interface.h>
 #include <phase_manager/phase_manager.h>
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <vector>
 
 class HorizonManager

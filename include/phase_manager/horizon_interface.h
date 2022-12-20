@@ -1,7 +1,7 @@
 #ifndef HORIZON_INTERFACE_H
 #define HORIZON_INTERFACE_H
 
-#include <Eigen/Dense>
+#include <eigen3/Eigen/Dense>
 #include <vector>
 #include <memory>
 #include <set>

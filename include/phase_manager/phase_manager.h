@@ -1,7 +1,6 @@
 #ifndef PHASE_MANAGER_H
 #define PHASE_MANAGER_H
 
-//#include "Eigen/Dense"
 #include <phase_manager/horizon_interface.h>
 #include <phase_manager/phase.h>
 
