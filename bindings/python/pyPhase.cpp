@@ -110,6 +110,15 @@ private:
 };
 
 
+bool add_item_pyobject(Phase& self,
+                       py::object item,
+                       std::vector<int> nodes = {})
+{
+    ItemBase::Ptr item_converted = std::make_shared<PyObjWrapper>(item);
+    self.addItem(item_converted, nodes);
+    return true;
+}
+
 bool add_cost_pyobject(Phase& self,
                        py::object item,
                        std::vector<int> nodes = {})
@@ -160,7 +169,7 @@ auto get_constraint_item(Phase& phase)
 
         if (!item_converted)
         {
-            std::cout << "diocane " << typeid(*item.first).name() << std::endl;
+//            std::cout << "what happens " << typeid(*item.first).name() << std::endl;
             continue;
         }
 
@@ -176,6 +185,7 @@ PYBIND11_MODULE(pyphase, m) {
             .def(py::init<int, std::string>())
             .def("getName", &Phase::getName)
             .def("getNNodes", &Phase::getNNodes)
+            .def("addItem", add_item_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
             .def("addCost", add_cost_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
             .def("addConstraint", add_constraint_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
             .def("addVariableBounds", add_variable_pyobject, py::arg("item"), py::arg("lower_bounds"), py::arg("upper_bounds"), py::arg("nodes") = std::vector<int>())

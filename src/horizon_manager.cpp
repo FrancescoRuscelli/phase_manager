@@ -1,7 +1,31 @@
 #include <phase_manager/horizon_manager.h>
 
+// TODO: this is an horrible implementation: if I add new items in phase, I should add them here
+// implement automatic detection.
+//      given a list of different elements?
+// this class
 HorizonManager::HorizonManager()
 {
+}
+
+bool HorizonManager::addItem(ItemBase::Ptr item)
+{
+    bool duplicate_flag = false;
+
+    for (auto it : _items)
+    {
+        if (item->getName() == it->getName())
+        {
+            duplicate_flag = true;
+        }
+
+    }
+
+    if (duplicate_flag == false)
+    {
+        _items.push_back(item);
+    }
+    return true;
 }
 
 bool HorizonManager::addConstraint(ItemWithBoundsBase::Ptr constraint)
@@ -83,6 +107,17 @@ bool HorizonManager::addParameter(ItemWithValuesBase::Ptr parameter)
 
 bool HorizonManager::flush()
 {
+
+    for (auto item : _items)
+    {
+        item->flushNodes();
+    }
+
+    for (auto constraint : _constraints)
+    {
+        constraint->flushNodes();
+    }
+
     for (auto constraint : _constraints)
     {
         constraint->flushNodes();
@@ -112,6 +147,13 @@ bool HorizonManager::flush()
 
 bool HorizonManager::reset()
 {
+
+    for (auto item : _items)
+    {
+        item->clearNodes();
+    }
+
+
     for (auto constraint : _constraints)
     {
         constraint->clearNodes();

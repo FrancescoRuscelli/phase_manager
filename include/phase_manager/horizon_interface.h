@@ -10,6 +10,9 @@
 // synthesis of what I need from the items in Horizon
 class ItemBase
 {
+    /*
+     * ItemBase is an interface used in PhaseManager that can host any item that has a 'setNodes()' method
+     */
 public:
 
     typedef std::shared_ptr<ItemBase> Ptr;
@@ -48,7 +51,7 @@ protected:
     std::vector<int> _nodes;
 };
 
-//// + bounds
+// + bounds
 class ItemWithBoundsBase : public ItemBase
 {
 public:

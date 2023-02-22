@@ -16,6 +16,11 @@ int Phase::getNNodes()
     return _n_nodes;
 }
 
+std::unordered_map<ItemBase::Ptr, std::vector<int>> Phase::getItems()
+{
+    return _items_base;
+}
+
 std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> Phase::getConstraints()
 {
     return _constraints;
@@ -58,6 +63,18 @@ Phase::Ptr PhaseToken::get_phase()
 {
     return _abstract_phase;
 }
+
+bool PhaseToken::_update_items(int initial_node)
+{
+    for (auto item_map : _abstract_phase->getItems())
+    {
+        auto pair_nodes = _compute_horizon_nodes(item_map.second, initial_node);
+        item_map.first->addNodes(pair_nodes.second);
+    }
+
+    return true;
+}
+
 
 bool PhaseToken::_update_constraints(int initial_node)
 {
@@ -174,6 +191,7 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
 
 bool PhaseToken::_update(int initial_node)
 {
+    _update_items(initial_node);
     _update_constraints(initial_node);
     _update_variables(initial_node);
     _update_costs(initial_node);

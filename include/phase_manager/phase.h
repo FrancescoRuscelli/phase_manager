@@ -12,6 +12,11 @@
 
 class Phase
 {
+    /*
+     * container of any object compatible (i.e. has a setNodes() at least).
+     * It represent an abstract phase that can be used to define constraints, costs, bounds active on certain segments of nodes.
+     */
+
 public:
 
     typedef std::shared_ptr<Phase> Ptr;
@@ -21,6 +26,7 @@ public:
         BoundsContainer() {}
 
         // must be of same dimension
+        // TODO: what happen if not same dimension?
         std::vector<int> nodes;
         Eigen::MatrixXd lower_bounds;
         Eigen::MatrixXd upper_bounds;
@@ -31,6 +37,7 @@ public:
         ValuesContainer() {}
 
         // must be of same dimension
+        // TODO: what happen if not same dimension?
         std::vector<int> nodes;
         Eigen::MatrixXd values;
     };
@@ -40,14 +47,31 @@ public:
     int getNNodes();
 
 
-    bool addConstraint(ItemWithBoundsBase::Ptr constraint, std::vector<int> nodes = {})
-    {
 
+    std::vector<int> _check_active_nodes(std::vector<int> nodes)
+    {
+        // if nodes inserted is empty, get all the nodes in horizon
         std::vector<int> range_nodes(_n_nodes);
         std::iota(std::begin(range_nodes), std::end(range_nodes), 0); //0 is the starting number
 
         std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
 
+        return active_nodes;
+    }
+
+    bool addItem(ItemBase::Ptr item, std::vector<int> nodes = {})
+    {
+        auto active_nodes = _check_active_nodes(nodes);
+        _items_base[item] = active_nodes;
+
+        return 1;
+
+    }
+
+    bool addConstraint(ItemWithBoundsBase::Ptr constraint, std::vector<int> nodes = {})
+    {
+
+        auto active_nodes = _check_active_nodes(nodes);
         _constraints[constraint] = active_nodes;
 
         return 1;
@@ -55,12 +79,8 @@ public:
 
     bool addCost(ItemBase::Ptr cost, std::vector<int> nodes = {})
     {
-
-        std::vector<int> range_nodes(_n_nodes);
-        std::iota(std::begin(range_nodes), std::end(range_nodes), 0); //0 is the starting number
-
-        std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
-
+        // check if added item is actually a cost?
+        auto active_nodes = _check_active_nodes(nodes);
         _costs[cost] = active_nodes;
 
         return 1;
@@ -73,10 +93,7 @@ public:
                            std::vector<int> nodes = {})
     {
 
-        std::vector<int> range_nodes(_n_nodes);
-        std::iota(std::begin(range_nodes), std::end(range_nodes), 0); //0 is the starting number
-
-        std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
+        auto active_nodes = _check_active_nodes(nodes);
 
         BoundsContainer val_container;
 
@@ -94,10 +111,10 @@ public:
                            std::vector<int> nodes = {})
     {
 
-        std::vector<int> range_nodes(_n_nodes);
-        std::iota(std::begin(range_nodes), std::end(range_nodes), 0); //0 is the starting number
-
-        std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
+        /*
+         * add to horizon parameter a desired value
+         */
+        auto active_nodes = _check_active_nodes(nodes);
 
         ValuesContainer val_container;
 
@@ -109,16 +126,21 @@ public:
         return 1;
     }
 
+
+    std::unordered_map<ItemBase::Ptr, std::vector<int>> getItems();
     std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> getConstraints();
     std::unordered_map<ItemBase::Ptr, std::vector<int>> getCosts();
     std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer> getVariables();
     std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> getParameters();
+
 
 private:
 
     std::string _name;
     int _n_nodes;
 
+    // generic item that must have a method setNodes()
+    std::unordered_map<ItemBase::Ptr, std::vector<int>> _items_base;
     std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> _constraints;
     std::unordered_map<ItemBase::Ptr, std::vector<int>> _costs;
     std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer> _variables;
@@ -130,6 +152,11 @@ private:
 
 class PhaseToken
 {
+    /*
+     * generated given the abstract class Phase.
+     * Keeps track of the active nodes set nodes to the objects inside it (constraints, costs, tasks ...)
+     */
+
     friend class SinglePhaseManager;
     friend class HorizonManager;
 
@@ -146,6 +173,8 @@ private:
     Phase::Ptr _abstract_phase;
     std::vector<int> _active_nodes;
 
+    // all these updates gets called by the SinglePhaseManager
+    bool _update_items(int initial_node);
     bool _update_constraints(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
     bool _update_variables(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
     bool _update_costs(int initial_node);

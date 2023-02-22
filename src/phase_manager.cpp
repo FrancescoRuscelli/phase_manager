@@ -13,7 +13,14 @@ SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name):
 
 bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
 {
+    // HORRIBLE
+    // TODO also this should be automatic, everything that i get from phase get added to horizon_manager)
     _registered_phases.push_back(phase);
+
+    for (auto item : phase->getItems())
+    {
+        _horizon_manager->addItem(item.first);
+    }
 
     for (auto constraint : phase->getConstraints())
     {
@@ -39,7 +46,7 @@ bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
 
 bool SinglePhaseManager::_add_phases(int pos)
 {
-    //  TODO: cannot add a phase if it is not registered
+    //  TODO: cannot add a phase if it is not registered (done with nullptr)
 
 //    for (auto phase : _phases_to_add)
 //    {
@@ -344,12 +351,20 @@ bool SinglePhaseManager::addPhase(std::vector<Phase::Ptr> phases, int pos)
 
 bool SinglePhaseManager::addPhase(Phase::Ptr phase, int pos)
 {
+    if (!phase)
+    {
+        return false;
+    }
+
     _phases_to_add.push_back(_generate_phase_token(phase));
+
 
     _add_phases(pos);
     _phases_to_add.clear();
 
     return true;
+
+
 }
 
 Phase::Ptr SinglePhaseManager:: getRegisteredPhase(std::string name)
@@ -367,7 +382,7 @@ Phase::Ptr SinglePhaseManager:: getRegisteredPhase(std::string name)
     }
 
 //    std::cout << "NOT found registered phase with name '" << name << "'" <<std::endl;
-    return NULL;
+    return nullptr;
 }
 
 //std::vector<PhaseToken::Ptr> SinglePhaseManager::getActivePhase()

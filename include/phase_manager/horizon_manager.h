@@ -13,6 +13,7 @@ public:
 
     HorizonManager();
 
+    bool addItem(ItemBase::Ptr item);
     bool addConstraint(ItemWithBoundsBase::Ptr constraint);
     bool addCost(ItemBase::Ptr cost);
     bool addVariable(ItemWithBoundsBase::Ptr variable);
@@ -24,6 +25,7 @@ public:
 
 private:
 
+    std::vector<ItemBase::Ptr> _items;
     std::vector<ItemWithBoundsBase::Ptr> _constraints;
     std::vector<ItemBase::Ptr> _costs;
     std::vector<ItemWithBoundsBase::Ptr> _variables;

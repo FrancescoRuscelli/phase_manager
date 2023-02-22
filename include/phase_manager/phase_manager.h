@@ -35,6 +35,7 @@ private:
     bool _add_phases(int pos=-1); // TODO substitute with pointer
     PhaseToken::Ptr _generate_phase_token(Phase::Ptr phase);
 
+    // horizon manager manages nodes for Horizon
     std::unique_ptr<HorizonManager> _horizon_manager;
 
     std::string _name;
