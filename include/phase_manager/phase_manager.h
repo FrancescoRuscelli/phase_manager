@@ -25,6 +25,7 @@ public:
     bool addPhase(std::vector<Phase::Ptr> phases, int pos=-1);
     bool addPhase(Phase::Ptr phase, int pos=-1);
     Phase::Ptr getRegisteredPhase(std::string name);
+    int getEmptyNodes();
 //    std::vector<PhaseToken::Ptr> getActivePhase();
     bool _shift_phases();
 

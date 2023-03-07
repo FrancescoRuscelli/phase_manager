@@ -385,6 +385,11 @@ Phase::Ptr SinglePhaseManager:: getRegisteredPhase(std::string name)
     return nullptr;
 }
 
+int SinglePhaseManager::getEmptyNodes()
+{
+    return _trailing_empty_nodes;
+}
+
 //std::vector<PhaseToken::Ptr> SinglePhaseManager::getActivePhase()
 //{
 //    std::vector<Phase::Ptr> registered_active_phases;
