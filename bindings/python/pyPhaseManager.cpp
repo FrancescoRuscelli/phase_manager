@@ -13,6 +13,7 @@ PYBIND11_MODULE(pymanager, m) {
             .def("addPhase", static_cast<bool (SinglePhaseManager::*)(std::vector<Phase::Ptr>, int)>(&SinglePhaseManager::addPhase), py::arg("phases"), py::arg("pos") = -1)
             .def("addPhase", static_cast<bool (SinglePhaseManager::*)(Phase::Ptr, int)>(&SinglePhaseManager::addPhase), py::arg("phase"), py::arg("pos") = -1)
             .def("getRegisteredPhase", &SinglePhaseManager::getRegisteredPhase)
+            .def("getEmptyNodes", &SinglePhaseManager::getEmptyNodes)
 //            .def("getActivePhase", &SinglePhaseManager::getActivePhase)
             .def("shift_phases", &SinglePhaseManager::_shift_phases)
             ;
