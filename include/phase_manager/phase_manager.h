@@ -61,6 +61,7 @@ public:
     PhaseManager(int n_nodes);
 
     SinglePhaseManager::Ptr addTimeline(std::string name);
+    SinglePhaseManager::Ptr getTimeline(std::string name);
 
     bool registerPhase(std::string name, Phase::Ptr phase);
     bool addPhase(std::string name, Phase::Ptr phase);

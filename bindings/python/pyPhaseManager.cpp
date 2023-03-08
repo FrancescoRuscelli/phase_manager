@@ -21,6 +21,7 @@ PYBIND11_MODULE(pymanager, m) {
     py::class_<PhaseManager>(m, "PhaseManager")
             .def(py::init<int>())
             .def("addTimeline", &PhaseManager::addTimeline)
+            .def("getTimeline", &PhaseManager::getTimeline)
             .def("addPhase", &PhaseManager::addPhase)
             .def("registerPhase", &PhaseManager::registerPhase)
             .def("_shift_phases", &PhaseManager::_shift_phases)

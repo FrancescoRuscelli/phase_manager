@@ -413,6 +413,13 @@ SinglePhaseManager::Ptr PhaseManager::addTimeline(std::string name)
     return timeline;
 }
 
+SinglePhaseManager::Ptr PhaseManager::getTimeline(std::string name)
+{
+    // add guards
+    auto it = _timelines[name];
+    return it;
+}
+
 bool PhaseManager::registerPhase(std::string name, Phase::Ptr phase)
 {
     return _timelines[name]->registerPhase(phase);
