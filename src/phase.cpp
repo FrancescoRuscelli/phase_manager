@@ -21,6 +21,11 @@ std::unordered_map<ItemBase::Ptr, std::vector<int>> Phase::getItems()
     return _items_base;
 }
 
+std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer> Phase::getItemsReference()
+{
+    return _items_ref;
+}
+
 std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> Phase::getConstraints()
 {
     return _constraints;
@@ -39,6 +44,16 @@ std::unordered_map<ItemWithBoundsBase::Ptr, Phase::BoundsContainer> Phase::getVa
 std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer> Phase::getParameters()
 {
     return _parameters;
+}
+
+std::string PhaseToken::getName()
+{
+    return _abstract_phase->getName();
+}
+
+std::vector<int> PhaseToken::getActiveNodes()
+{
+    return _active_nodes;
 }
 
 PhaseToken::PhaseToken(Phase::Ptr phase):
@@ -72,6 +87,26 @@ bool PhaseToken::_update_items(int initial_node)
         item_map.first->addNodes(pair_nodes.second);
     }
 
+    return true;
+}
+
+bool PhaseToken::_update_item_reference(int initial_node)
+{
+    for (auto item_ref_map : _abstract_phase->getItemsReference())
+    {
+        auto pair_nodes = _compute_horizon_nodes(item_ref_map.second.nodes, initial_node);
+
+        Eigen::MatrixXd bring_me_to_eigen_3_4_val;
+        bring_me_to_eigen_3_4_val.resize(item_ref_map.second.values.rows(), pair_nodes.first.size());
+
+        for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
+        {
+            bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second.values.col(pair_nodes.first.at(col_i));
+        }
+
+        item_ref_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
+//        item_ref_map.first->addValues(pair_nodes.second, item_ref_map.second.values(Eigen::indexing::all, pair_nodes.first));
+    }
     return true;
 }
 
@@ -192,6 +227,7 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
 bool PhaseToken::_update(int initial_node)
 {
     _update_items(initial_node);
+    _update_item_reference(initial_node);
     _update_constraints(initial_node);
     _update_variables(initial_node);
     _update_costs(initial_node);

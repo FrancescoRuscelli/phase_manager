@@ -22,6 +22,12 @@ bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
         _horizon_manager->addItem(item.first);
     }
 
+    for (auto item_ref : phase->getItemsReference())
+    {
+        std::cout << "registering " << item_ref.first->getName() << " from phase " << phase->getName() << std::endl;
+        _horizon_manager->addItemReference(item_ref.first);
+    }
+
     for (auto constraint : phase->getConstraints())
     {
         _horizon_manager->addConstraint(constraint.first);
@@ -157,6 +163,7 @@ bool SinglePhaseManager::_add_phases(int pos)
 //            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
             // important bit: this is where i update the phase
             phase_token_i->_update(pos_in_horizon);
+//            std::cout << "adding phaseToken " << phase_token_i->getName() << " to active phases" << std::endl;
             _active_phases.push_back(phase_token_i);
         }
 
@@ -385,20 +392,20 @@ Phase::Ptr SinglePhaseManager:: getRegisteredPhase(std::string name)
     return nullptr;
 }
 
+std::vector<Phase::Ptr> SinglePhaseManager::getRegisteredPhases()
+{
+    return _registered_phases;
+}
+
 int SinglePhaseManager::getEmptyNodes()
 {
     return _trailing_empty_nodes;
 }
 
-//std::vector<PhaseToken::Ptr> SinglePhaseManager::getActivePhase()
-//{
-//    std::vector<Phase::Ptr> registered_active_phases;
-//    for (auto active_phase : _active_phases)
-//    {
-
-//        registered_active_phases.back(_pha)
-//    }
-//}
+std::vector<PhaseToken::Ptr> SinglePhaseManager::getActivePhases()
+{
+    return _active_phases;
+}
 
 SinglePhaseManager::~SinglePhaseManager()
 {
@@ -418,7 +425,12 @@ SinglePhaseManager::Ptr PhaseManager::addTimeline(std::string name)
     return timeline;
 }
 
-SinglePhaseManager::Ptr PhaseManager::getTimeline(std::string name)
+std::unordered_map<std::string, SinglePhaseManager::Ptr> PhaseManager::getTimelines()
+{
+    return _timelines;
+}
+
+SinglePhaseManager::Ptr PhaseManager::getTimelines(std::string name)
 {
     // add guards
     auto it = _timelines[name];
@@ -433,6 +445,11 @@ bool PhaseManager::registerPhase(std::string name, Phase::Ptr phase)
 bool PhaseManager::addPhase(std::string name, Phase::Ptr phase)
 {
     return _timelines[name]->addPhase(phase);
+}
+
+int PhaseManager::getNodes()
+{
+    return _n_nodes;
 }
 
 bool PhaseManager::_shift_phases()

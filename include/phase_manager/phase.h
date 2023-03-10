@@ -68,6 +68,23 @@ public:
 
     }
 
+    bool addItemReference(ItemWithValuesBase::Ptr item_with_ref,
+                          Eigen::MatrixXd values,
+                          std::vector<int> nodes = {})
+    {
+        auto active_nodes = _check_active_nodes(nodes);
+
+        ValuesContainer val_container;
+
+        val_container.nodes = active_nodes;
+        val_container.values = values;
+
+        _items_ref[item_with_ref] = val_container;
+
+        return 1;
+
+    }
+
     bool addConstraint(ItemWithBoundsBase::Ptr constraint, std::vector<int> nodes = {})
     {
 
@@ -107,8 +124,8 @@ public:
     }
 
     bool addParameterValues(ItemWithValuesBase::Ptr parameter,
-                           Eigen::MatrixXd values,
-                           std::vector<int> nodes = {})
+                            Eigen::MatrixXd values,
+                            std::vector<int> nodes = {})
     {
 
         /*
@@ -128,6 +145,8 @@ public:
 
 
     std::unordered_map<ItemBase::Ptr, std::vector<int>> getItems();
+    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> getItemsReference();
+
     std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> getConstraints();
     std::unordered_map<ItemBase::Ptr, std::vector<int>> getCosts();
     std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer> getVariables();
@@ -141,6 +160,8 @@ private:
 
     // generic item that must have a method setNodes()
     std::unordered_map<ItemBase::Ptr, std::vector<int>> _items_base;
+    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> _items_ref;
+
     std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> _constraints;
     std::unordered_map<ItemBase::Ptr, std::vector<int>> _costs;
     std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer> _variables;
@@ -163,6 +184,9 @@ class PhaseToken
 public:
 
     typedef std::shared_ptr<PhaseToken> Ptr;
+    std::string getName();
+    std::vector<int> getActiveNodes();
+    // get name, get nodes...
 
 protected:
 
@@ -175,6 +199,7 @@ private:
 
     // all these updates gets called by the SinglePhaseManager
     bool _update_items(int initial_node);
+    bool _update_item_reference(int initial_node);
     bool _update_constraints(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
     bool _update_variables(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
     bool _update_costs(int initial_node);

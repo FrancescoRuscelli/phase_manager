@@ -83,8 +83,11 @@ struct PyObjWrapperWithValues : ItemWithValuesBase {
     PyObjWrapperWithValues(py::object pyobj):
         _pyobj(pyobj)
     {
+        // TODO
         // what if empty?
+        // what if the parameter starts with zero nodes
         _values = Eigen::MatrixXd::Zero(getDim(), getNodes().size());
+        std::cout << "initialization of nodes: " << _values << std::endl;
 
         _initial_values = _values;
     }
@@ -119,6 +122,15 @@ bool add_item_pyobject(Phase& self,
     return true;
 }
 
+bool add_item_reference_pyobject(Phase& self, py::object item,
+                                 Eigen::MatrixXd values,
+                                 std::vector<int> nodes)
+{
+    ItemWithValuesBase::Ptr item_converted = std::make_shared<PyObjWrapperWithValues>(item);
+    self.addItemReference(item_converted, values, nodes);
+    return true;
+}
+
 bool add_cost_pyobject(Phase& self,
                        py::object item,
                        std::vector<int> nodes = {})
@@ -149,8 +161,8 @@ bool add_variable_pyobject(Phase& self,
 }
 
 bool add_parameter_pyobject(Phase& self, py::object item,
-                           Eigen::MatrixXd values,
-                           std::vector<int> nodes)
+                            Eigen::MatrixXd values,
+                            std::vector<int> nodes)
 {
     ItemWithValuesBase::Ptr item_converted = std::make_shared<PyObjWrapperWithValues>(item);
     self.addParameterValues(item_converted, values, nodes);
@@ -186,10 +198,16 @@ PYBIND11_MODULE(pyphase, m) {
             .def("getName", &Phase::getName)
             .def("getNNodes", &Phase::getNNodes)
             .def("addItem", add_item_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
+            .def("addItemReference", add_item_reference_pyobject, py::arg("item"), py::arg("values"), py::arg("nodes") = std::vector<int>())
             .def("addCost", add_cost_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
             .def("addConstraint", add_constraint_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
             .def("addVariableBounds", add_variable_pyobject, py::arg("item"), py::arg("lower_bounds"), py::arg("upper_bounds"), py::arg("nodes") = std::vector<int>())
             .def("addParameterValues", add_parameter_pyobject, py::arg("item"), py::arg("values"), py::arg("nodes") = std::vector<int>())
             .def("getConstraints", get_constraint_item) // py::return_value_policy::reference_internal
+            ;
+
+    py::class_<PhaseToken, PhaseToken::Ptr>(m, "PhaseToken")
+            .def("getName", &PhaseToken::getName)
+            .def("getActiveNodes", &PhaseToken::getActiveNodes)
             ;
 }

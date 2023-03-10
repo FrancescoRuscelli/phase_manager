@@ -36,6 +36,13 @@ public:
     }
     bool flushNodes()
     {
+//        std::cout << "nodes: ";
+//        for (auto node : _nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
+
         _nodes.erase(std::unique(_nodes.begin(), _nodes.end()), _nodes.end());
         setNodes(_nodes);
 
@@ -168,6 +175,7 @@ public:
 
     bool flushValues()
     {
+//        std::cout << "assigning values: " << _values << std::endl;
         assign(_values);
         return true;
     }
@@ -240,7 +248,6 @@ public:
         {
             // what if empty?
             _values = Eigen::MatrixXd::Zero(getDim(), getNodes().size());
-
             _initial_values = _values;
         }
 

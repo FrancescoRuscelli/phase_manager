@@ -28,6 +28,26 @@ bool HorizonManager::addItem(ItemBase::Ptr item)
     return true;
 }
 
+bool HorizonManager::addItemReference(ItemWithValuesBase::Ptr item_ref)
+{
+    bool duplicate_flag = false;
+
+    for (auto it : _items_ref)
+    {
+        if (item_ref->getName() == it->getName())
+        {
+            duplicate_flag = true;
+        }
+
+    }
+
+    if (duplicate_flag == false)
+    {
+        _items_ref.push_back(item_ref);
+    }
+    return true;
+}
+
 bool HorizonManager::addConstraint(ItemWithBoundsBase::Ptr constraint)
 {
     bool duplicate_flag = false;
@@ -107,29 +127,37 @@ bool HorizonManager::addParameter(ItemWithValuesBase::Ptr parameter)
 
 bool HorizonManager::flush()
 {
+    // todo: this flush all the nodes at each call, regardless of the item being updated or not
 
+    std::cout << "flushing all the nodes to horizon:" << std::endl;
     for (auto item : _items)
     {
+        std::cout << "flushing item: " << item->getName() << std::endl;
         item->flushNodes();
     }
 
-    for (auto constraint : _constraints)
+    for (auto item_ref : _items_ref)
     {
-        constraint->flushNodes();
+        std::cout << "flushing item: " << item_ref->getName() << std::endl;
+        item_ref->flushNodes();
+        item_ref->flushValues();
     }
 
     for (auto constraint : _constraints)
     {
+        std::cout << "flushing constraints: " << constraint->getName() << std::endl;
         constraint->flushNodes();
     }
 
     for (auto cost : _costs)
     {
+        std::cout << "flushing costs: " << cost->getName() << std::endl;
         cost->flushNodes();
     }
 
     for (auto variable : _variables)
     {
+        std::cout << "flushing variables: " << variable->getName() << std::endl;
 //        variable->flushNodes();
         variable->flushBounds();
 
@@ -137,6 +165,7 @@ bool HorizonManager::flush()
 
     for (auto parameter : _parameters)
     {
+        std::cout << "flushing parameters: " << parameter->getName() << std::endl;
 //        parameter->flushNodes();
         parameter->flushValues();
     }
@@ -153,6 +182,10 @@ bool HorizonManager::reset()
         item->clearNodes();
     }
 
+    for (auto item_ref : _items_ref)
+    {
+        item_ref->clearNodes();
+    }
 
     for (auto constraint : _constraints)
     {
