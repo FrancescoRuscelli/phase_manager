@@ -23,6 +23,7 @@ bool HorizonManager::addItem(ItemBase::Ptr item)
 
     if (duplicate_flag == false)
     {
+//        std::cout << "pushing back item: " << item->getName() << std::endl;
         _items.push_back(item);
     }
     return true;
@@ -129,35 +130,35 @@ bool HorizonManager::flush()
 {
     // todo: this flush all the nodes at each call, regardless of the item being updated or not
 
-    std::cout << "flushing all the nodes to horizon:" << std::endl;
+//    std::cout << "flushing all the nodes to horizon:" << std::endl;
     for (auto item : _items)
     {
-        std::cout << "flushing item: " << item->getName() << std::endl;
+//        std::cout << "flushing item: " << item->getName() << std::endl;
         item->flushNodes();
     }
 
     for (auto item_ref : _items_ref)
     {
-        std::cout << "flushing item: " << item_ref->getName() << std::endl;
+//        std::cout << "flushing item: " << item_ref->getName() << std::endl;
         item_ref->flushNodes();
         item_ref->flushValues();
     }
 
     for (auto constraint : _constraints)
     {
-        std::cout << "flushing constraints: " << constraint->getName() << std::endl;
+//        std::cout << "flushing constraints: " << constraint->getName() << std::endl;
         constraint->flushNodes();
     }
 
     for (auto cost : _costs)
     {
-        std::cout << "flushing costs: " << cost->getName() << std::endl;
+//        std::cout << "flushing costs: " << cost->getName() << std::endl;
         cost->flushNodes();
     }
 
     for (auto variable : _variables)
     {
-        std::cout << "flushing variables: " << variable->getName() << std::endl;
+//        std::cout << "flushing variables: " << variable->getName() << std::endl;
 //        variable->flushNodes();
         variable->flushBounds();
 
@@ -165,7 +166,7 @@ bool HorizonManager::flush()
 
     for (auto parameter : _parameters)
     {
-        std::cout << "flushing parameters: " << parameter->getName() << std::endl;
+//        std::cout << "flushing parameters: " << parameter->getName() << std::endl;
 //        parameter->flushNodes();
         parameter->flushValues();
     }

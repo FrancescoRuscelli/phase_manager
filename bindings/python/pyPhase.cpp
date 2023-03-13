@@ -87,7 +87,7 @@ struct PyObjWrapperWithValues : ItemWithValuesBase {
         // what if empty?
         // what if the parameter starts with zero nodes
         _values = Eigen::MatrixXd::Zero(getDim(), getNodes().size());
-        std::cout << "initialization of nodes: " << _values << std::endl;
+//        std::cout << "initialization of nodes: " << _values << std::endl;
 
         _initial_values = _values;
     }

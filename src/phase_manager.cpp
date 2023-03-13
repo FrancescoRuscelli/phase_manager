@@ -24,7 +24,7 @@ bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
 
     for (auto item_ref : phase->getItemsReference())
     {
-        std::cout << "registering " << item_ref.first->getName() << " from phase " << phase->getName() << std::endl;
+//        std::cout << "registering " << item_ref.first->getName() << " from phase " << phase->getName() << std::endl;
         _horizon_manager->addItemReference(item_ref.first);
     }
 
