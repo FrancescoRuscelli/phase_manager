@@ -18,7 +18,6 @@ set(LIBRARY_TARGET_NAME phase_manager) # set library name
 
 add_library(${LIBRARY_TARGET_NAME} SHARED
   src/phase_manager.cpp
-  src/horizon_manager.cpp
   src/phase.cpp
 )
 

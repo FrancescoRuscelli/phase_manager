@@ -17,7 +17,7 @@ public:
 
     typedef std::shared_ptr<ItemBase> Ptr;
 
-    virtual bool setNodes(std::vector<int> nodes) = 0;
+    virtual bool setNodes(std::vector<int> nodes, bool erasing) = 0;
     virtual std::string getName() = 0;
     virtual int getDim() = 0;
     virtual std::vector<int> getNodes() = 0;
@@ -32,19 +32,27 @@ public:
 //        std::cout << std::endl;
 
         _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
-        return true;
-    }
-    bool flushNodes()
-    {
-//        std::cout << "nodes: ";
+
+//        std::cout << "Nodes after adding: ";
 //        for (auto node : _nodes)
 //        {
 //            std::cout << node << " ";
 //        }
 //        std::cout << std::endl;
 
+        return true;
+    }
+    bool flushNodes()
+    {
+        std::cout << "FLUSHING NODES: ";
+        for (auto node : _nodes)
+        {
+            std::cout << node << " ";
+        }
+        std::cout << std::endl;
+
         _nodes.erase(std::unique(_nodes.begin(), _nodes.end()), _nodes.end());
-        setNodes(_nodes);
+        setNodes(_nodes, false);
 
         return true;
     }
@@ -65,7 +73,7 @@ public:
 
     typedef std::shared_ptr<ItemWithBoundsBase> Ptr;
 
-    virtual bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds) = 0;
+    virtual bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes) = 0;
 
 
     bool addBounds(std::vector<int> nodes, Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds)
@@ -112,15 +120,16 @@ public:
     bool flushBounds()
     {
 //        std::cout << _lower_bounds << std::endl;
-        setBounds(_lower_bounds, _upper_bounds);
+//        setBounds(_lower_bounds, _upper_bounds, _nodes);
         return true;
     }
 
 
     bool clearBounds()
     {
-        _lower_bounds = _initial_lower_bounds;
-        _upper_bounds = _initial_upper_bounds;
+        setBounds(_initial_lower_bounds, _initial_upper_bounds, getNodes());
+//        _lower_bounds = _initial_lower_bounds;
+//        _upper_bounds = _initial_upper_bounds;
 
         return true;
     }
@@ -140,7 +149,7 @@ class ItemWithValuesBase : public ItemBase
 public:
 
     typedef std::shared_ptr<ItemWithValuesBase> Ptr;
-    virtual bool assign(Eigen::MatrixXd values) = 0;
+    virtual bool assign(Eigen::MatrixXd values, std::vector<int> nodes) = 0;
 
 
     bool addValues(std::vector<int> nodes, Eigen::MatrixXd values)
@@ -176,13 +185,14 @@ public:
     bool flushValues()
     {
 //        std::cout << "assigning values: " << _values << std::endl;
-        assign(_values);
+//        assign(_values);
         return true;
     }
 
     bool clearValues()
     {
-        _values = _initial_values;
+        assign(_initial_values, getNodes());
+//        _values = _initial_values;
         return true;
     }
 

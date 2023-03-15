@@ -62,6 +62,7 @@ public:
     bool addItem(ItemBase::Ptr item, std::vector<int> nodes = {})
     {
         auto active_nodes = _check_active_nodes(nodes);
+        std::cout << "adding item: " << item << std::endl;
         _items_base[item] = active_nodes;
 
         return 1;

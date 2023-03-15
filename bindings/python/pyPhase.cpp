@@ -21,9 +21,9 @@ public:
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
 
-    bool setNodes(std::vector<int> nodes)
+    bool setNodes(std::vector<int> nodes, bool erasing)
     {
-        _pyobj.attr("setNodes")(nodes);
+        _pyobj.attr("setNodes")(nodes, erasing);
         return true;
     }
 
@@ -51,7 +51,7 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
 
-    bool setNodes(std::vector<int> nodes)
+    bool setNodes(std::vector<int> nodes, bool erasing)
     {
 //        std::cout << "(pyphase) setting nodes: " << std::endl;
 //        for (auto node: nodes)
@@ -59,14 +59,14 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
 //            std::cout << node << " ";
 //        }
 //        std::cout << std::endl;
-        _pyobj.attr("setNodes")(nodes);
+        _pyobj.attr("setNodes")(nodes, erasing);
         return true;
     }
 
-    bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds)
+    bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes)
     {
 //        std::cout << "(pyphase) setting bounds: " << lower_bounds << std::endl;
-        _pyobj.attr("setBounds")(lower_bounds, upper_bounds);
+        _pyobj.attr("setBounds")(lower_bounds, upper_bounds, nodes);
         return true;
     }
 
@@ -95,15 +95,15 @@ struct PyObjWrapperWithValues : ItemWithValuesBase {
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
 
-    bool setNodes(std::vector<int> nodes)
+    bool setNodes(std::vector<int> nodes, bool erasing)
     {
-        _pyobj.attr("setNodes")(nodes);
+        _pyobj.attr("setNodes")(nodes, erasing);
         return true;
     }
 
-    bool assign(Eigen::MatrixXd values)
+    bool assign(Eigen::MatrixXd values, std::vector<int> nodes)
     {
-        _pyobj.attr("assign")(values);
+        _pyobj.attr("assign")(values, nodes);
         return true;
     }
 

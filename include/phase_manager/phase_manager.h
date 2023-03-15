@@ -29,16 +29,13 @@ public:
     int getEmptyNodes();
     std::vector<PhaseToken::Ptr> getActivePhases();
     bool _shift_phases();
-
+    bool reset();
     ~SinglePhaseManager();
 
 private:
 
     bool _add_phases(int pos=-1); // TODO substitute with pointer
     PhaseToken::Ptr _generate_phase_token(Phase::Ptr phase);
-
-    // horizon manager manages nodes for Horizon
-    std::unique_ptr<HorizonManager> _horizon_manager;
 
     std::string _name;
     std::vector<Phase::Ptr> _registered_phases; // container of all the registered phases
@@ -49,6 +46,15 @@ private:
     std::vector<PhaseToken::Ptr> _phases; // list of all the phases
     std::vector<PhaseToken::Ptr> _active_phases; // list of all active phases
     int _trailing_empty_nodes; // empty nodes in horizon --> at the very beginning, all
+
+    // keep all the items from horizon
+    std::vector<ItemBase::Ptr> _items;
+    std::vector<ItemWithValuesBase::Ptr> _items_ref;
+
+    std::vector<ItemWithBoundsBase::Ptr> _constraints;
+    std::vector<ItemBase::Ptr> _costs;
+    std::vector<ItemWithBoundsBase::Ptr> _variables;
+    std::vector<ItemWithValuesBase::Ptr> _parameters;
 
 
 //  self.default_action = Phase('default', 1)

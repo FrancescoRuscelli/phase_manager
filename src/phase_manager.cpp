@@ -1,6 +1,4 @@
 #include <phase_manager/phase_manager.h>
-#include <phase_manager/horizon_manager.h>
-
 #include <chrono>
 
 SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name):
@@ -8,44 +6,102 @@ SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name):
     _n_nodes(n_nodes),
     _trailing_empty_nodes(_n_nodes)
 {
-    _horizon_manager = std::make_unique<HorizonManager>();
 }
 
 bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
 {
     // HORRIBLE
-    // TODO also this should be automatic, everything that i get from phase get added to horizon_manager)
+    // TODO also this should be automatic, everything that i get from phase get added
+
+    // this is correct, I want to add horizon items (items, constraints, costs...) only one time.
+
+    // registering phases
+    std::cout << "registering phase " << phase->getName() << std::endl;
     _registered_phases.push_back(phase);
 
+    // registering the items inside the phase, if not already registered
     for (auto item : phase->getItems())
     {
-        _horizon_manager->addItem(item.first);
+        for (auto it : _items)
+        {
+            if (item.first->getName() == it->getName())
+            {
+                return false;
+            }
+        }
+
+        _items.push_back(item.first);
+        return true;
     }
 
     for (auto item_ref : phase->getItemsReference())
     {
-//        std::cout << "registering " << item_ref.first->getName() << " from phase " << phase->getName() << std::endl;
-        _horizon_manager->addItemReference(item_ref.first);
+        for (auto it : _items_ref)
+        {
+            if (item_ref.first->getName() == it->getName())
+            {
+                return false;
+            }
+        }
+
+        _items_ref.push_back(item_ref.first);
+        return true;
     }
 
     for (auto constraint : phase->getConstraints())
     {
-        _horizon_manager->addConstraint(constraint.first);
+        for (auto it : _constraints)
+        {
+            if (constraint.first->getName() == it->getName())
+            {
+                return false;
+            }
+        }
+
+        _constraints.push_back(constraint.first);
+        return true;
     }
 
     for (auto variable : phase->getVariables())
     {
-        _horizon_manager->addVariable(variable.first);
+        for (auto it : _variables)
+        {
+            if (variable.first->getName() == it->getName())
+            {
+                return false;
+            }
+        }
+
+        _variables.push_back(variable.first);
+        return true;
     }
 
     for (auto cost : phase->getCosts())
     {
-        _horizon_manager->addCost(cost.first);
+        for (auto it : _costs)
+        {
+            if (cost.first->getName() == it->getName())
+            {
+                return false;
+            }
+        }
+
+        _costs.push_back(cost.first);
+        return true;
     }
 
     for (auto parameter : phase->getParameters())
     {
-        _horizon_manager->addParameter(parameter.first);
+        for (auto it : _parameters)
+        {
+            if (parameter.first->getName() == it->getName())
+            {
+                return false;
+            }
+        }
+
+        _parameters.push_back(parameter.first);
+        return true;
     }
     return true;
 }
@@ -98,8 +154,8 @@ bool SinglePhaseManager::_add_phases(int pos)
             // remove all the active_phases after the position
             _active_phases.resize(pos);
 
-            // reset the horizon_manager (holding all the active nodes)
-            _horizon_manager->reset();
+            // reset the the items (holding all the active nodes)
+            reset();
 
             // recompute empty nodes in horizon until pos
             _trailing_empty_nodes = _n_nodes;
@@ -108,7 +164,7 @@ bool SinglePhaseManager::_add_phases(int pos)
                 _trailing_empty_nodes -= _phases[i]->_get_active_nodes().size();
             }
 
-            // update again phases before the position (before i resetted horizon_manager)
+            // update again phases before the position (before i resetted)
             int pos_in_horizon = 0;
 
 
@@ -159,8 +215,8 @@ bool SinglePhaseManager::_add_phases(int pos)
                 phase_token_i->_get_active_nodes().push_back(i);
             }
 
-//            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
-//            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
+            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
+            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
             // important bit: this is where i update the phase
             phase_token_i->_update(pos_in_horizon);
 //            std::cout << "adding phaseToken " << phase_token_i->getName() << " to active phases" << std::endl;
@@ -190,15 +246,9 @@ bool SinglePhaseManager::_add_phases(int pos)
 //    }
 //    std::cout << ">> "<< std::endl;
 
-
-    _horizon_manager->flush();
 //    std::cout << "= = = = = = = = = = = = = = = = = = = = = = = = = = =" << std::endl;
 
     return true;
-
-//     update only if phase_to_add is inside horizon ( --> :current_phase)
-//     [self.horizon_manager.update_phase(phase) for phase in phases_to_add[:current_phase]]
-//     self.horizon_manager.set_horizon_nodes()
 
 
 }
@@ -219,11 +269,12 @@ PhaseToken::Ptr SinglePhaseManager::_generate_phase_token(Phase::Ptr phase)
 
 bool SinglePhaseManager::_shift_phases()
 {
-
-    _horizon_manager->reset();
+    // reset all nodes
+    reset();
 
 //    auto start_time = std::chrono::high_resolution_clock::now();
 //    std::cout << " ============ shifting phases ============ : " << std::endl;
+
     //  if phases is empty, skip everything
     if (_phases.size() > 0)
     {
@@ -310,14 +361,13 @@ bool SinglePhaseManager::_shift_phases()
 //            std::cout << std::endl;
 //        }
 
+        // update every active phase
         int i = 0;
         for (auto phase : _active_phases)
         {
             phase->_update(i);
             i += phase->_active_nodes.size();
         }
-
-        _horizon_manager->flush();
 
     }
     int num_nodes = 0;
@@ -337,6 +387,51 @@ bool SinglePhaseManager::_shift_phases()
 
 //    std::chrono::duration<double> elapsed_time = std::chrono::system_clock::now() - start_time;
 //    std::cout << "elapsed time: " << elapsed_time.count() << std::endl;
+    return true;
+}
+
+bool SinglePhaseManager::reset()
+{
+    for (auto item : _items)
+    {
+        std::vector<int> empty_nodes;
+        bool erasing = true;
+
+        item->setNodes(empty_nodes, erasing);
+    }
+
+//    for (auto item_ref : _items_ref)
+//    {
+//        item_ref->clearNodes();
+//    }
+
+    for (auto constraint : _constraints)
+    {
+        std::vector<int> empty_nodes;
+        bool erasing = true;
+
+        constraint->setNodes(empty_nodes, erasing);
+//        constraint->clearBounds(); // this cleared bounds here
+    }
+
+    for (auto cost : _costs)
+    {
+        std::vector<int> empty_nodes;
+        bool erasing = true;
+        cost->setNodes(empty_nodes, erasing);
+//        cost->clearNodes();
+    }
+
+    for (auto variable : _variables)
+    {
+//        variable->clearNodes();
+        variable->clearBounds();
+    }
+
+    for (auto parameter : _parameters)
+    {
+        parameter->clearValues();
+    }
     return true;
 }
 

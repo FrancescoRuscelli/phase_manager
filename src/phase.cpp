@@ -84,7 +84,14 @@ bool PhaseToken::_update_items(int initial_node)
     for (auto item_map : _abstract_phase->getItems())
     {
         auto pair_nodes = _compute_horizon_nodes(item_map.second, initial_node);
-        item_map.first->addNodes(pair_nodes.second);
+//        std::cout << "         item: " << item_map.first->getName() << std::endl << "Nodes: ";
+//        for (int node : pair_nodes.second)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
+        // adding nodes/resetting nodes is a duty of horizon
+        item_map.first->setNodes(pair_nodes.second, false);
     }
 
     return true;
@@ -99,12 +106,22 @@ bool PhaseToken::_update_item_reference(int initial_node)
         Eigen::MatrixXd bring_me_to_eigen_3_4_val;
         bring_me_to_eigen_3_4_val.resize(item_ref_map.second.values.rows(), pair_nodes.first.size());
 
+
         for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
         {
             bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second.values.col(pair_nodes.first.at(col_i));
         }
 
-        item_ref_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
+        std::cout << "assiging values:" << bring_me_to_eigen_3_4_val << "to nodes:" << std::endl;
+        for (int node : pair_nodes.second)
+                {
+                    std::cout << node << " ";
+                }
+                std::cout << std::endl;
+
+        item_ref_map.first->setNodes(pair_nodes.second, false);
+        item_ref_map.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
+//        item_ref_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
 //        item_ref_map.first->addValues(pair_nodes.second, item_ref_map.second.values(Eigen::indexing::all, pair_nodes.first));
     }
     return true;
@@ -116,7 +133,8 @@ bool PhaseToken::_update_constraints(int initial_node)
     for (auto cnstr_map : _abstract_phase->getConstraints())
     {
         auto pair_nodes = _compute_horizon_nodes(cnstr_map.second, initial_node);
-        cnstr_map.first->addNodes(pair_nodes.second);
+        cnstr_map.first->setNodes(pair_nodes.second, false);
+//        cnstr_map.first->addNodes(pair_nodes.second);
     }
 
     return true;
@@ -146,10 +164,14 @@ bool PhaseToken::_update_variables(int initial_node)
             bring_me_to_eigen_3_4_ub.col(col_i) = var_map.second.upper_bounds.col(pair_nodes.first.at(col_i));
         }
 
+        var_map.first->setBounds(bring_me_to_eigen_3_4_lb,
+                                 bring_me_to_eigen_3_4_ub,
+                                 pair_nodes.second);
 
-        var_map.first->addBounds(pair_nodes.second,
-                                 bring_me_to_eigen_3_4_lb,
-                                 bring_me_to_eigen_3_4_ub);
+
+//        var_map.first->addBounds(pair_nodes.second,
+//                                 bring_me_to_eigen_3_4_lb,
+//                                 bring_me_to_eigen_3_4_ub);
 
 //        var_map.first->addBounds(pair_nodes.second,
 //                                 var_map.second.lower_bounds(Eigen::indexing::all, pair_nodes.first),
@@ -166,7 +188,9 @@ bool PhaseToken::_update_costs(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(cost_map.second, initial_node);
 
-        cost_map.first->addNodes(pair_nodes.second);
+        // add nodes without erasing the old ones
+        cost_map.first->setNodes(pair_nodes.second, false);
+//        cost_map.first->addNodes(pair_nodes.second);
 
 //        std::cout << " adding horizon nodes: ";
 //        for (auto elem : pair_nodes.second)
@@ -193,7 +217,16 @@ bool PhaseToken::_update_parameters(int initial_node)
             bring_me_to_eigen_3_4_val.col(col_i) = par_map.second.values.col(pair_nodes.first.at(col_i));
         }
 
-        par_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
+//        std::cout << "assigning values:" << bring_me_to_eigen_3_4_val << "to nodes:" << std::endl;
+//        for (int node : pair_nodes.second)
+//            {
+//                std::cout << node << " ";
+//            }
+//            std::cout << std::endl;
+
+        par_map.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
+
+//        par_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
 //        par_map.first->addValues(pair_nodes.second, par_map.second.values(Eigen::indexing::all, pair_nodes.first));
 
     }
