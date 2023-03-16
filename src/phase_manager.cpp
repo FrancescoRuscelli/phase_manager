@@ -42,6 +42,8 @@ bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
     _register_items_from_phase(_variables,  phase->getVariables());
     _register_items_from_phase(_costs,  phase->getCosts());
     _register_items_from_phase(_parameters,  phase->getParameters());
+
+    return true;
 }
 
 bool SinglePhaseManager::_add_phases(int pos)
