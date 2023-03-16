@@ -8,21 +8,13 @@ SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name):
 {
 }
 
-bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
+template <typename T, typename U>
+bool _register_items_from_phase(std::vector<T>& container, std::unordered_map<T, U> items)
 {
-    // HORRIBLE
-    // TODO also this should be automatic, everything that i get from phase get added
-
-    // this is correct, I want to add horizon items (items, constraints, costs...) only one time.
-
-    // registering phases
-    std::cout << "registering phase " << phase->getName() << std::endl;
-    _registered_phases.push_back(phase);
-
     // registering the items inside the phase, if not already registered
-    for (auto item : phase->getItems())
+    for (auto item : items)
     {
-        for (auto it : _items)
+        for (auto it : container)
         {
             if (item.first->getName() == it->getName())
             {
@@ -30,80 +22,26 @@ bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
             }
         }
 
-        _items.push_back(item.first);
+//        std::cout << "pushing back item " << item.first->getName() << std::endl;
+        container.push_back(item.first);
         return true;
     }
+    return false;
+}
 
-    for (auto item_ref : phase->getItemsReference())
-    {
-        for (auto it : _items_ref)
-        {
-            if (item_ref.first->getName() == it->getName())
-            {
-                return false;
-            }
-        }
+bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
+{
+    // registering phases
 
-        _items_ref.push_back(item_ref.first);
-        return true;
-    }
+//    std::cout << "registering phase " << phase->getName() << std::endl;
+    _registered_phases.push_back(phase);
 
-    for (auto constraint : phase->getConstraints())
-    {
-        for (auto it : _constraints)
-        {
-            if (constraint.first->getName() == it->getName())
-            {
-                return false;
-            }
-        }
-
-        _constraints.push_back(constraint.first);
-        return true;
-    }
-
-    for (auto variable : phase->getVariables())
-    {
-        for (auto it : _variables)
-        {
-            if (variable.first->getName() == it->getName())
-            {
-                return false;
-            }
-        }
-
-        _variables.push_back(variable.first);
-        return true;
-    }
-
-    for (auto cost : phase->getCosts())
-    {
-        for (auto it : _costs)
-        {
-            if (cost.first->getName() == it->getName())
-            {
-                return false;
-            }
-        }
-
-        _costs.push_back(cost.first);
-        return true;
-    }
-
-    for (auto parameter : phase->getParameters())
-    {
-        for (auto it : _parameters)
-        {
-            if (parameter.first->getName() == it->getName())
-            {
-                return false;
-            }
-        }
-
-        _parameters.push_back(parameter.first);
-        return true;
-    }
-    return true;
+    _register_items_from_phase(_items,  phase->getItems());
+    _register_items_from_phase(_items_ref,  phase->getItemsReference());
+    _register_items_from_phase(_constraints,  phase->getConstraints());
+    _register_items_from_phase(_variables,  phase->getVariables());
+    _register_items_from_phase(_costs,  phase->getCosts());
+    _register_items_from_phase(_parameters,  phase->getParameters());
 }
 
 bool SinglePhaseManager::_add_phases(int pos)
@@ -215,8 +153,8 @@ bool SinglePhaseManager::_add_phases(int pos)
                 phase_token_i->_get_active_nodes().push_back(i);
             }
 
-            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
-            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
+//            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
+//            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
             // important bit: this is where i update the phase
             phase_token_i->_update(pos_in_horizon);
 //            std::cout << "adding phaseToken " << phase_token_i->getName() << " to active phases" << std::endl;
@@ -430,6 +368,7 @@ bool SinglePhaseManager::reset()
 
     for (auto parameter : _parameters)
     {
+//        std::cout << "resetting parameter: " << parameter->getName() << std::endl;
         parameter->clearValues();
     }
     return true;
