@@ -150,48 +150,21 @@ public:
 
     typedef std::shared_ptr<ItemWithValuesBase> Ptr;
     virtual bool assign(Eigen::MatrixXd values, std::vector<int> nodes) = 0;
-
-
-    bool addValues(std::vector<int> nodes, Eigen::MatrixXd values)
-    {
-//        std::cout << "setting bounds to nodes: ";
-//        for (auto node : nodes)
-//        {
-//            std::cout << node << " ";
-//        }
-
-        int col_val = 0;
-        for (int col : nodes)
-        {
-            _values.col(col) = values.col(col_val);
-            col_val++;
-        }
-
-        // todo: only available in Eigen 3.4, what a pity
-//        _values(Eigen::indexing::all, nodes) << values;
-
-        _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
-
-        return true;
-
-    }
-
-    bool flushNodes()
-    {
-        ItemBase::flushNodes();
-        return true;
-    }
-
-    bool flushValues()
-    {
-//        std::cout << "assigning values: " << _values << std::endl;
-//        assign(_values);
-        return true;
-    }
+    virtual bool assign(Eigen::MatrixXd values) = 0;
 
     bool clearValues()
     {
-        assign(_initial_values, getNodes());
+//        std::cout << "assigning values: " << std::endl;
+//        std::cout << _values << std::endl;
+//        std::cout << " to nodes: ";
+//        for (auto node : getNodes())
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
+
+        assign(_initial_values);
+
 //        _values = _initial_values;
         return true;
     }

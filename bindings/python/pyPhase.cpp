@@ -83,17 +83,27 @@ struct PyObjWrapperWithValues : ItemWithValuesBase {
     PyObjWrapperWithValues(py::object pyobj):
         _pyobj(pyobj)
     {
+//        std::cout << getName() << std::endl;
         // TODO
         // what if empty?
         // what if the parameter starts with zero nodes
-        _values = Eigen::MatrixXd::Zero(getDim(), getNodes().size());
-//        std::cout << "initialization of nodes: " << _values << std::endl;
-
+        _values = getValues();
         _initial_values = _values;
+
+//        std::cout << "initialization of param: " << _values << std::endl;
+
+//        std::cout << "with nodes: " << std::endl;
+//        for (auto node: getNodes())
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
+
     }
     std::string getName() {return _pyobj.attr("getName")().cast<std::string>(); }
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
+    Eigen::MatrixXd getValues() {return _pyobj.attr("getValues")().cast<Eigen::MatrixXd>(); }
 
     bool setNodes(std::vector<int> nodes, bool erasing)
     {
@@ -104,6 +114,12 @@ struct PyObjWrapperWithValues : ItemWithValuesBase {
     bool assign(Eigen::MatrixXd values, std::vector<int> nodes)
     {
         _pyobj.attr("assign")(values, nodes);
+        return true;
+    }
+
+    bool assign(Eigen::MatrixXd values)
+    {
+        _pyobj.attr("assign")(values);
         return true;
     }
 

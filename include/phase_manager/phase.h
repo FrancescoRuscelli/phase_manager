@@ -8,6 +8,7 @@
 #include <vector>
 #include <iostream>
 #include <memory>
+#include <stdexcept>
 
 
 class Phase
@@ -62,10 +63,9 @@ public:
     bool addItem(ItemBase::Ptr item, std::vector<int> nodes = {})
     {
         auto active_nodes = _check_active_nodes(nodes);
-        std::cout << "adding item: " << item << std::endl;
         _items_base[item] = active_nodes;
 
-        return 1;
+        return true;
 
     }
 
@@ -76,6 +76,14 @@ public:
         auto active_nodes = _check_active_nodes(nodes);
 
         ValuesContainer val_container;
+
+        if (values.cols() != active_nodes.size())
+        {
+            throw std::invalid_argument("Row dimension of values inserted ("
+                                  + std::to_string(values.cols())
+                                  + ") does not match number of nodes specified ("
+                                  + std::to_string(active_nodes.size()) + ")");
+        }
 
         val_container.nodes = active_nodes;
         val_container.values = values;

@@ -332,32 +332,33 @@ bool SinglePhaseManager::_shift_phases()
 
 bool SinglePhaseManager::reset()
 {
+    // todo: could be made faster?
+    // this call at every loop a set nodes, even on the items that were not touched
+
+    bool erasing = true;
+    std::vector<int> empty_nodes;
+
+
     for (auto item : _items)
     {
-        std::vector<int> empty_nodes;
-        bool erasing = true;
-
+        std::cout << "resetting nodes of item " << item->getName() << std::endl;
         item->setNodes(empty_nodes, erasing);
     }
 
-//    for (auto item_ref : _items_ref)
-//    {
-//        item_ref->clearNodes();
-//    }
+    for (auto item_ref : _items_ref)
+    {
+        item_ref->setNodes(empty_nodes, erasing);
+        item_ref->clearValues();
+    }
 
     for (auto constraint : _constraints)
     {
-        std::vector<int> empty_nodes;
-        bool erasing = true;
-
         constraint->setNodes(empty_nodes, erasing);
 //        constraint->clearBounds(); // this cleared bounds here
     }
 
     for (auto cost : _costs)
     {
-        std::vector<int> empty_nodes;
-        bool erasing = true;
         cost->setNodes(empty_nodes, erasing);
 //        cost->clearNodes();
     }

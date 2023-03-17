@@ -84,12 +84,12 @@ bool PhaseToken::_update_items(int initial_node)
     for (auto item_map : _abstract_phase->getItems())
     {
         auto pair_nodes = _compute_horizon_nodes(item_map.second, initial_node);
-//        std::cout << "         item: " << item_map.first->getName() << std::endl << "Nodes: ";
-//        for (int node : pair_nodes.second)
-//        {
-//            std::cout << node << " ";
-//        }
-//        std::cout << std::endl;
+        std::cout << "updating item: " << item_map.first->getName() << std::endl << "Nodes: ";
+        for (int node : pair_nodes.second)
+        {
+            std::cout << node << " ";
+        }
+        std::cout << std::endl;
         // adding nodes/resetting nodes is a duty of horizon
         item_map.first->setNodes(pair_nodes.second, false);
     }
@@ -103,6 +103,8 @@ bool PhaseToken::_update_item_reference(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(item_ref_map.second.nodes, initial_node);
 
+//        std::cout << "value assigned by user:" << item_ref_map.second.values << std::endl;
+
         Eigen::MatrixXd bring_me_to_eigen_3_4_val;
         bring_me_to_eigen_3_4_val.resize(item_ref_map.second.values.rows(), pair_nodes.first.size());
 
@@ -112,12 +114,12 @@ bool PhaseToken::_update_item_reference(int initial_node)
             bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second.values.col(pair_nodes.first.at(col_i));
         }
 
-        std::cout << "assiging values:" << bring_me_to_eigen_3_4_val << "to nodes:" << std::endl;
-        for (int node : pair_nodes.second)
-                {
-                    std::cout << node << " ";
-                }
-                std::cout << std::endl;
+//        std::cout << "assigning values:" << bring_me_to_eigen_3_4_val << "to nodes:" << std::endl;
+//        for (int node : pair_nodes.second)
+//                {
+//                    std::cout << node << " ";
+//                }
+//                std::cout << std::endl;
 
         item_ref_map.first->setNodes(pair_nodes.second, false);
         item_ref_map.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
