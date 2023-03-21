@@ -44,12 +44,12 @@ public:
     }
     bool flushNodes()
     {
-        std::cout << "FLUSHING NODES: ";
-        for (auto node : _nodes)
-        {
-            std::cout << node << " ";
-        }
-        std::cout << std::endl;
+//        std::cout << "FLUSHING NODES: ";
+//        for (auto node : _nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
 
         _nodes.erase(std::unique(_nodes.begin(), _nodes.end()), _nodes.end());
         setNodes(_nodes, false);
