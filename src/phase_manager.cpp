@@ -341,7 +341,7 @@ bool SinglePhaseManager::reset()
 
     for (auto item : _items)
     {
-        std::cout << "resetting nodes of item " << item->getName() << std::endl;
+//        std::cout << "resetting nodes of item " << item->getName() << std::endl;
         item->setNodes(empty_nodes, erasing);
     }
 
