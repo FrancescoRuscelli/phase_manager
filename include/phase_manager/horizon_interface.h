@@ -17,53 +17,27 @@ public:
 
     typedef std::shared_ptr<ItemBase> Ptr;
 
-    virtual bool setNodes(std::vector<int> nodes, bool erasing) = 0;
+    virtual bool setNodesInternal(std::vector<int> nodes, bool erasing) = 0;
     virtual std::string getName() = 0;
     virtual int getDim() = 0;
     virtual std::vector<int> getNodes() = 0;
 
-    bool addNodes(std::vector<int> nodes)
+    bool isChanged()
     {
-//        std::cout << "adding nodes to " << getName() << ": ";
-//        for (auto node : nodes)
-//        {
-//            std::cout << node << " ";
-//        }
-//        std::cout << std::endl;
-
-        _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
-
-//        std::cout << "Nodes after adding: ";
-//        for (auto node : _nodes)
-//        {
-//            std::cout << node << " ";
-//        }
-//        std::cout << std::endl;
-
-        return true;
+        return _is_changed;
     }
-    bool flushNodes()
-    {
-//        std::cout << "FLUSHING NODES: ";
-//        for (auto node : _nodes)
-//        {
-//            std::cout << node << " ";
-//        }
-//        std::cout << std::endl;
 
-        _nodes.erase(std::unique(_nodes.begin(), _nodes.end()), _nodes.end());
-        setNodes(_nodes, false);
-
-        return true;
-    }
-    bool clearNodes()
+    bool setNodes(std::vector<int> nodes, bool erasing)
     {
-        _nodes.clear();
+        _is_changed = true;
+        setNodesInternal(nodes, erasing);
         return true;
     }
 
 protected:
+
     std::vector<int> _nodes;
+    bool _is_changed;
 };
 
 // + bounds
@@ -75,62 +49,9 @@ public:
 
     virtual bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes) = 0;
 
-
-    bool addBounds(std::vector<int> nodes, Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds)
-    {
-//        std::cout << "setting bounds to nodes: ";
-//        for (auto node : nodes)
-//        {
-//            std::cout << node << " ";
-//        }
-//        std::cout << std::endl;
-//        std::cout << _lower_bounds(Eigen::indexing::all, nodes) << std::endl;
-//        std::cout << lower_bounds << std::endl;
-//        auto const lb_rows = _lower_bounds.rows();
-
-        int col_lb = 0;
-        for (int col : nodes)
-        {
-            _lower_bounds.col(col) = lower_bounds.col(col_lb);
-            col_lb++;
-        }
-
-        int col_ub = 0;
-        for (int col : nodes)
-        {
-            _upper_bounds.col(col) = upper_bounds.col(col_ub);
-            col_ub++;
-        }
-        // todo: only available in Eigen  3.4, what a pity
-//        _lower_bounds1(Eigen::indexing::all, nodes) << lower_bounds;
-//        _upper_bounds(Eigen::indexing::all, nodes) << upper_bounds;
-
-        _nodes.insert(_nodes.end(), nodes.begin(), nodes.end());
-
-        return true;
-
-    }
-
-    bool flushNodes()
-    {
-        ItemBase::flushNodes();
-        return true;
-    }
-
-    bool flushBounds()
-    {
-//        std::cout << _lower_bounds << std::endl;
-//        setBounds(_lower_bounds, _upper_bounds, _nodes);
-        return true;
-    }
-
-
     bool clearBounds()
     {
         setBounds(_initial_lower_bounds, _initial_upper_bounds, getNodes());
-//        _lower_bounds = _initial_lower_bounds;
-//        _upper_bounds = _initial_upper_bounds;
-
         return true;
     }
 
@@ -154,18 +75,7 @@ public:
 
     bool clearValues()
     {
-//        std::cout << "assigning values: " << std::endl;
-//        std::cout << _values << std::endl;
-//        std::cout << " to nodes: ";
-//        for (auto node : getNodes())
-//        {
-//            std::cout << node << " ";
-//        }
-//        std::cout << std::endl;
-
         assign(_initial_values);
-
-//        _values = _initial_values;
         return true;
     }
 
@@ -184,7 +94,7 @@ public:
     Wrapper(std::shared_ptr<T> item):
         m_item(item) {}
 
-    bool setNodes(std::vector<int> nodes) { return m_item->setNodes(nodes); }
+    bool setNodesInternal(std::vector<int> nodes) { return m_item->setNodes(nodes); }
     std::string getName() { return m_item->getName(); }
     int getDim() { return m_item->getDim(); }
     std::vector<int> getNodes() { return m_item->getNodes(); }
@@ -210,7 +120,7 @@ public:
             _initial_upper_bounds =  _upper_bounds;
         }
 
-    bool setNodes(std::vector<int> nodes) { return m_item->setNodes(nodes); }
+    bool setNodesInternal(std::vector<int> nodes) { return m_item->setNodes(nodes); }
     bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds) { return m_item->setBounds(lower_bounds, upper_bounds); }
     int getDim() { return m_item->getDim(); }
     std::vector<int> getNodes() { return m_item->getNodes(); }
@@ -234,7 +144,7 @@ public:
             _initial_values = _values;
         }
 
-    bool setNodes(std::vector<int> nodes) { return m_item->setNodes(nodes); }
+    bool setNodesInternal(std::vector<int> nodes) { return m_item->setNodes(nodes); }
     bool assign(Eigen::MatrixXd values) { return m_item->assign(values); }
     int getDim() { return m_item->getDim(); }
     std::vector<int> getNodes() { return m_item->getNodes(); }

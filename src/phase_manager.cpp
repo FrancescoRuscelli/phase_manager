@@ -341,38 +341,72 @@ bool SinglePhaseManager::reset()
 
     for (auto item : _items)
     {
+        std::cout << "Item '" << item->getName() << ": ";
 //        std::cout << "resetting nodes of item " << item->getName() << std::endl;
-        item->setNodes(empty_nodes, erasing);
+        if (item->isChanged())
+        {
+            std::cout << "resetting as it was updated.";
+            item->setNodes(empty_nodes, erasing);
+        }
+
+        std::cout << std::endl;
     }
 
     for (auto item_ref : _items_ref)
     {
-        item_ref->setNodes(empty_nodes, erasing);
-        item_ref->clearValues();
+        std::cout << "Item ref '" << item_ref->getName() << ": ";
+        if (item_ref->isChanged())
+        {
+            std::cout << "resetting as it was updated.";
+            item_ref->setNodes(empty_nodes, erasing);
+            item_ref->clearValues();
+        }
+
+        std::cout << std::endl;
     }
 
     for (auto constraint : _constraints)
     {
-        constraint->setNodes(empty_nodes, erasing);
+        std::cout << "Constraint '" << constraint->getName() << ": ";
+        if (constraint->isChanged())
+        {
+            std::cout << "resetting as it was updated.";
+            constraint->setNodes(empty_nodes, erasing);
 //        constraint->clearBounds(); // this cleared bounds here
+        }
     }
 
     for (auto cost : _costs)
     {
-        cost->setNodes(empty_nodes, erasing);
+        std::cout << "Cost '" << cost->getName() << ": ";
+        if (cost->isChanged())
+        {
+            std::cout << "resetting as it was updated.";
+            cost->setNodes(empty_nodes, erasing);
+        }
 //        cost->clearNodes();
     }
 
     for (auto variable : _variables)
     {
-//        variable->clearNodes();
-        variable->clearBounds();
+        std::cout << "Variable '" << variable->getName() << ": ";
+        if (variable->isChanged())
+        {
+            std::cout << "resetting as it was updated.";
+//          variable->clearNodes();
+            variable->clearBounds();
+        }
     }
 
     for (auto parameter : _parameters)
     {
-//        std::cout << "resetting parameter: " << parameter->getName() << std::endl;
-        parameter->clearValues();
+        std::cout << "Variable '" << parameter->getName() << ": ";
+        if (parameter->isChanged())
+        {
+            std::cout << "resetting as it was updated.";
+//          std::cout << "resetting parameter: " << parameter->getName() << std::endl;
+            parameter->clearValues();
+        }
     }
     return true;
 }

@@ -21,7 +21,7 @@ public:
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
 
-    bool setNodes(std::vector<int> nodes, bool erasing)
+    bool setNodesInternal(std::vector<int> nodes, bool erasing)
     {
         _pyobj.attr("setNodes")(nodes, erasing);
         return true;
@@ -51,7 +51,7 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
 
-    bool setNodes(std::vector<int> nodes, bool erasing)
+    bool setNodesInternal(std::vector<int> nodes, bool erasing)
     {
 //        std::cout << "(pyphase) setting nodes: " << std::endl;
 //        for (auto node: nodes)
@@ -105,7 +105,7 @@ struct PyObjWrapperWithValues : ItemWithValuesBase {
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
     Eigen::MatrixXd getValues() {return _pyobj.attr("getValues")().cast<Eigen::MatrixXd>(); }
 
-    bool setNodes(std::vector<int> nodes, bool erasing)
+    bool setNodesInternal(std::vector<int> nodes, bool erasing)
     {
         _pyobj.attr("setNodes")(nodes, erasing);
         return true;
