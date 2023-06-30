@@ -120,8 +120,8 @@ public:
             _initial_upper_bounds =  _upper_bounds;
         }
 
-    bool setNodesInternal(std::vector<int> nodes) { return m_item->setNodes(nodes); }
-    bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds) { return m_item->setBounds(lower_bounds, upper_bounds); }
+    bool setNodesInternal(std::vector<int> nodes, bool erasing) { return m_item->setNodes(nodes, erasing); }
+    bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes) { return m_item->setBounds(lower_bounds, upper_bounds, nodes); }
     int getDim() { return m_item->getDim(); }
     std::vector<int> getNodes() { return m_item->getNodes(); }
 

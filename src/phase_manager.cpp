@@ -76,14 +76,14 @@ bool SinglePhaseManager::_add_phases(int pos)
 
     if (pos == -1 || pos > _phases.size())
     {
-        // add phase_tokens to stack
+        // add phase_tokens in temporary container (_phase_to_add) to stack
 //        std::cout << "...adding at tail: " << "(" << _phases.size() << ")";
         _phases.insert(_phases.end(), _phases_to_add.begin(), _phases_to_add.end());
 //        std::cout << " ...done." << " (" << _phases.size() << ")" << std::endl;
     }
     else
     {
-        // insert phase_tokens in stack at pos
+        // insert phase_tokens of temporary container (_phase_to_add) in stack at pos
 //        std::cout << "...inserting at pos: " << pos << " (" << _phases.size() << ")";
         _phases.insert(_phases.begin() + pos, _phases_to_add.begin(), _phases_to_add.end());
 //        std::cout << "...done." << " (" << _phases.size() << ")" << std::endl;
@@ -94,7 +94,8 @@ bool SinglePhaseManager::_add_phases(int pos)
             // remove all the active_phases after the position
             _active_phases.resize(pos);
 
-            // reset the the items (holding all the active nodes)
+            // reset the items (holding all the active nodes)
+            // TODO: should I do it only for the items before pos?
             reset();
 
             // recompute empty nodes in horizon until pos
@@ -115,10 +116,10 @@ bool SinglePhaseManager::_add_phases(int pos)
 
             }
 
-            // add tail of phases after the one added
+            // add tail of all the phases after the one inserted (nodes need to be recomputed)
             _phases_to_add.insert(_phases_to_add.end(), _phases.begin() + pos + 1, _phases.end());
 
-            // remove active nodes from phases to add
+            // remove active nodes from phases to add, needs to be recomputed (all the phases that were active may not be active anymore after being pushed back)
             for (auto phase_to_add : _phases_to_add)
             {
                 phase_to_add->_get_active_nodes().clear();
@@ -397,6 +398,7 @@ bool SinglePhaseManager::reset()
 bool SinglePhaseManager::addPhase(std::vector<Phase::Ptr> phases, int pos)
 {
 
+    // add phase in temporary container (_phase_to_add), do computation and clean it
     for (auto phase : phases)
     {
         _phases_to_add.push_back(_generate_phase_token(phase));
