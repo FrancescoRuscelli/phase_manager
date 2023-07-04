@@ -41,8 +41,12 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
         _pyobj(pyobj)
     {
         // what if empty?
-        _lower_bounds = - std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
-        _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+//        _lower_bounds = - std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+//        _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+
+        //TODO: why inf? better like this
+        _lower_bounds = std::get<0>(getBounds());
+        _upper_bounds = std::get<1>(getBounds());
 
         _initial_lower_bounds =  _lower_bounds;
         _initial_upper_bounds =  _upper_bounds;
@@ -50,6 +54,7 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
     std::string getName(){return _pyobj.attr("getName")().cast<std::string>();}
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
+    std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> getBounds() {return _pyobj.attr("getBounds")().cast<std::tuple<Eigen::MatrixXd, Eigen::MatrixXd>>(); }
 
     bool setNodesInternal(std::vector<int> nodes, bool erasing)
     {

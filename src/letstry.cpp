@@ -108,6 +108,8 @@ public:
         _name(name),
         _dim(dim)
     {
+        _lower_bounds.setZero(1, 50);
+        _upper_bounds.setZero(1, 50);
     }
 
     bool setNodes(std::vector<int> nodes, bool erasing)
@@ -118,22 +120,25 @@ public:
 
     bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes)
     {
-        for (size_t i = 0; i < nodes.size(); i++)
-        {
-            int index = nodes[i];
-            int row = index / _dim;
-            int col = index % _dim;
-            std::cout << " adding " << lower_bounds(i, 0) << " to row " << row << " and col " << col << std::endl;
-            _lower_bounds.coeffRef(row, col) = lower_bounds(i, 0);
-         }
 
-        for (size_t i = 0; i < nodes.size(); i++)
-        {
-            int index = nodes[i];
-            int row = index / _dim;
-            int col = index % _dim;
-            _upper_bounds.coeffRef(row, col) = upper_bounds(i, 0);
-         }
+//        std::cout << "setting bounds of variable at nodes:" << std::endl;
+
+//        for (int elem : nodes)
+//        {
+//            std::cout << elem << " ";
+//        }
+//        std::cout << std::endl;
+
+//        std::cout << "with values: " << lower_bounds << std::endl;
+
+        for (int i = 0; i < nodes.size(); i++) {
+            _lower_bounds(nodes[i]) = lower_bounds(i);
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            _upper_bounds(nodes[i]) = upper_bounds(i);
+        }
+
         return true;
     }
 
@@ -245,20 +250,21 @@ int main()
 
 //    Parameter::ParameterPtr fake_flight_p_1 = std::make_shared<Parameter>("flight_p_1", 3);
 
-
-    Eigen::MatrixXd bounds_var_1 = Eigen::MatrixXd::Zero(3,5);
-    std::vector<int> prb_nodes(n_nodes);
-    std::iota(prb_nodes.begin(), prb_nodes.end(), 0);
-
     // fake setting of bounds
     // Print the initialized matrix
-    std::vector<int> bounds_nodes(50);
+    std::vector<int> prb_nodes(n_nodes);
+    std::vector<int> bounds_nodes;
+    std::iota(prb_nodes.begin(), prb_nodes.end(), 0);
+
+    for (int i = 0; i < 50; ++i) {
+            bounds_nodes.push_back(i);
+        }
+
     int value = 25;
-    Eigen::MatrixXd bounds_lim(3, n_nodes);
+    Eigen::MatrixXd bounds_lim(1, n_nodes);
     bounds_lim.setConstant(value);
 
     fake_var_1->setBounds(-bounds_lim, bounds_lim, bounds_nodes); // third argument here is useless
-
     fake_var_1->setNodes(prb_nodes, true);
 
     // check nodes of variable
@@ -269,11 +275,13 @@ int main()
         std::cout << elem << " ";
     }
     std::cout << std::endl;
+
+
     // check bounds
-    std::cout << "variable fake_var_1 has bounds: " << std::endl;
-    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
-    std::cout << std::get<1>(fake_var_1->getBounds()) << std::endl;
-    std::cout << std::endl;
+//    std::cout << "variable fake_var_1 has bounds: " << std::endl;
+//    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+//    std::cout << std::get<1>(fake_var_1->getBounds()) << std::endl;
+//    std::cout << std::endl;
 
 
 ////    for (auto element : prb_nodes)
@@ -311,20 +319,27 @@ int main()
     stance->addConstraint(stance_c_1); //, my_nodes);
 //    stance->addConstraint(stance_c_2);
 
-    stance->addVariableBounds(var_1, bounds_var_1, bounds_var_1);
+
+
+    Eigen::MatrixXd bounds_var_1 = Eigen::MatrixXd::Zero(1,5);
+    std::vector<int> var_phase_nodes;
+    for (int i = 0; i < 5; ++i) {
+            var_phase_nodes.push_back(i);
+        }
+
+
+    stance->addVariableBounds(var_1, bounds_var_1, bounds_var_1, var_phase_nodes);
 
 
 //    flight->addVariableBounds(var_1, bounds_var_1, bounds_var_1);
 
 //    flight->addConstraint(flight_c_1);
 
-//    Eigen::MatrixXd values(3, 5);
-//    values << 1.5, 1.5, 1.5, 1.5, 1.5,
-//              1.5, 1.5, 1.5, 1.5, 1.5,
-//              1.5, 1.5, 1.5, 1.5, 1.5;
-
 //    flight->addParameterValues(flight_p_1, values);
 
+    std::cout << "variable var_1 has bounds: " << std::endl;
+    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+    std::cout << std::endl;
 
 //    //  without registering, cannot link horizon constraints to updater
     timeline_1->registerPhase(stance);
@@ -332,16 +347,27 @@ int main()
 
 ////    auto start_time = std::chrono::high_resolution_clock::now();
     timeline_1->addPhase(stance);
+
+    std::cout << "ADD PHASE: " << std::endl;
+    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+    std::cout << std::endl;
+
+
     timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
+
+    std::cout << "ADD PHASE: " << std::endl;
+    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+    std::cout << std::endl;
+
+//    timeline_1->addPhase(stance);
+//    timeline_1->addPhase(stance);
+//    timeline_1->addPhase(stance);
+//    timeline_1->addPhase(stance);
+//    timeline_1->addPhase(stance);
+//    timeline_1->addPhase(stance);
+//    timeline_1->addPhase(stance);
+//    timeline_1->addPhase(stance);
+//    timeline_1->addPhase(stance);
 //    timeline_1->addPhase(stance);
 //    timeline_1->addPhase(stance);
 //    timeline_1->addPhase(flight, 10);
@@ -354,12 +380,12 @@ int main()
 ////    }
 
 
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : fake_stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "constraint stance_c_1 has nodes: ";
+//    for (int i : fake_stance_c_1->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
 //    std::cout << "constraint stance_c_2 has nodes: ";
 //    for (int i : fake_stance_c_2->getNodes())
@@ -388,7 +414,17 @@ int main()
 // bounds not set to zero
 
     timeline_1->_shift_phases();
+
+    std::cout << "SHIFT ONCE: " << std::endl;
+    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+    std::cout << std::endl;
+
     timeline_1->_shift_phases();
+
+    std::cout << "SHIFT ONCE: " << std::endl;
+    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+    std::cout << std::endl;
+
     timeline_1->_shift_phases();
     timeline_1->_shift_phases();
     timeline_1->_shift_phases();

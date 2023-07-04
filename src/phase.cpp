@@ -83,6 +83,12 @@ bool PhaseToken::_update_items(int initial_node)
 {
     for (auto item_map : _abstract_phase->getItems())
     {
+//        std::cout << "active nodes in phase: ";
+//        for (auto n : item_map.second)
+//        {
+//            std::cout << n << " ";
+//        }
+//        std::cout << std::endl;
         auto pair_nodes = _compute_horizon_nodes(item_map.second, initial_node);
 //        std::cout << "updating item: " << item_map.first->getName() << std::endl << "Nodes: ";
 //        for (int node : pair_nodes.second)
@@ -144,10 +150,12 @@ bool PhaseToken::_update_constraints(int initial_node)
 
 bool PhaseToken::_update_variables(int initial_node)
 {
+    // should this also take care of setNodes()?
+    // right now only bounds
+
     for (auto var_map : _abstract_phase->getVariables())
     {
         auto pair_nodes = _compute_horizon_nodes(var_map.second.nodes, initial_node);
-
 
         Eigen::MatrixXd bring_me_to_eigen_3_4_lb;
         bring_me_to_eigen_3_4_lb.resize(var_map.second.lower_bounds.rows(), pair_nodes.first.size());
@@ -166,9 +174,13 @@ bool PhaseToken::_update_variables(int initial_node)
             bring_me_to_eigen_3_4_ub.col(col_i) = var_map.second.upper_bounds.col(pair_nodes.first.at(col_i));
         }
 
+//            return std::make_pair(active_fun_nodes, horizon_nodes);
+
         var_map.first->setBounds(bring_me_to_eigen_3_4_lb,
                                  bring_me_to_eigen_3_4_ub,
                                  pair_nodes.second);
+
+//        var_map.first->setNodes(pair_nodes.second, true);
 
 
 //        var_map.first->addBounds(pair_nodes.second,
@@ -238,23 +250,31 @@ bool PhaseToken::_update_parameters(int initial_node)
 
 std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes(std::vector<int> nodes, int initial_node)
 {
-    std::vector<int> active_fun_nodes;
+    ///
+    /// \brief _active_nodes: active nodes of the phase
+    /// \brief nodes: nodes of the item
+    /// \brief initial_node: where the item is positioned in the horizon, in terms of nodes
+    /// \brief active_item_nodes: nodes of item in phase that are active
+    /// \brief horizon_nodes: active nodes of item in horizon
+    std::vector<int> active_item_nodes;
 
+    // check which node of the item (constraint, cost, var...) is active inside the phase, given the active nodes of the phase
     std::set_intersection(nodes.begin(), nodes.end(),
                           _active_nodes.begin(), _active_nodes.end(),
-                          std::back_inserter(active_fun_nodes));
+                          std::back_inserter(active_item_nodes));
 
-    std::vector<int> horizon_nodes(active_fun_nodes.size());
-    // active phase nodes        : [1 2 3 4]
-    // active fun in phase nodes : [2 3]
-    // phase pos in horizon      : 7
-    // constr pos in horizon     : 7 + 2 - 1 = 8
-    for (int node_i; node_i < horizon_nodes.size(); node_i++)
+    std::vector<int> horizon_nodes(active_item_nodes.size());
+    // active phase nodes             : [2 3 4 5]
+    // active nodes of item in phase  : [3 4]
+    // phase position in horizon      : 7
+    // item node position in horizon  : 7 + 3 (node 0 of 'active nodes') - 2 (first node of 'active_phase_nodes') = 8
+    // item node position in horizon  : 7 + 4 (node 1 of 'active nodes') - 2 (first node of 'active_phase_nodes') = 9
+    for (int node_i = 0; node_i < horizon_nodes.size(); node_i++)
     {
-        horizon_nodes[node_i] = initial_node + active_fun_nodes[node_i] - _active_nodes[0];
+        horizon_nodes[node_i] = initial_node + active_item_nodes[node_i] - _active_nodes[0];
     }
 
-    return std::make_pair(active_fun_nodes, horizon_nodes);
+    return std::make_pair(active_item_nodes, horizon_nodes);
 
 }
 

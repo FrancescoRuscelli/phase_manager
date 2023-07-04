@@ -113,8 +113,11 @@ public:
         m_item(item)
         {
             // what if empty?
-            _lower_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
-            _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+//            _lower_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+//            _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
+
+            _lower_bounds = std::get<0>(m_item->getBounds());
+            _upper_bounds = std::get<1>(m_item->getBounds());
 
             _initial_lower_bounds =  _lower_bounds;
             _initial_upper_bounds =  _upper_bounds;

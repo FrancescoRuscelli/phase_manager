@@ -52,10 +52,11 @@ bool SinglePhaseManager::_add_phases(int pos)
 
 //    for (auto phase : _phases_to_add)
 //    {
-//        std::cout << "phase: (" << phase << ") ";
+//        std::cout << "adding phase: (" << phase << ") ";
 //        std::cout << phase->get_phase()->getName() << std::endl;
 //        for (auto item : phase->get_phase()->getConstraints())
 //        {
+//            std::cout << "constraint: ";
 //            std::cout << item.first->getName() << ": ";
 
 //            for (auto node : item.second)
@@ -65,8 +66,38 @@ bool SinglePhaseManager::_add_phases(int pos)
 
 //            std::cout << std::endl;
 //        }
+
+//        for (auto item : phase->get_phase()->getItems())
+//        {
+//            std::cout << "item: ";
+//            std::cout << item.first->getName() << ": ";
+
+//            for (auto node : item.second)
+//            {
+//                std::cout << node << " ";
+//            }
+
+//            std::cout << std::endl;
+//        }
+
+//        for (auto item : phase->get_phase()->getVariables())
+//        {
+//            std::cout << "variable: ";
+//            std::cout << item.first->getName() << ": ";
+
+//            for (auto node : item.second.nodes)
+//            {
+//                std::cout << node << " ";
+//            }
+
+//            std::cout << std::endl;
+//        }
+
+
 //    }
 //    std::cout << std::endl;
+
+      // SHORT VERSION LOGGER
 //    std::cout << "= = = = = = = = = = = = = =adding phase: < ";
 //    for (auto phase : _phases_to_add)
 //    {
@@ -146,6 +177,8 @@ bool SinglePhaseManager::_add_phases(int pos)
                     phase_token_i->_get_active_nodes().push_back(i);
                 }
 
+//                std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
+//                std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
                 phase_token_i->_update(pos_in_horizon);
                 _trailing_empty_nodes = 0;
                 break;
@@ -158,7 +191,7 @@ bool SinglePhaseManager::_add_phases(int pos)
 
 //            std::cout << "pos_in_horizon: " << pos_in_horizon << std::endl;
 //            std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
-            // important bit: this is where i update the phase
+//             important bit: this is where i update the phase
             phase_token_i->_update(pos_in_horizon);
 //            std::cout << "adding phaseToken " << phase_token_i->getName() << " to active phases" << std::endl;
             _active_phases.push_back(phase_token_i);
@@ -229,7 +262,6 @@ bool SinglePhaseManager::_shift_phases()
                 _active_phases.push_back(_phases[i]);
             }
         }
-
 
         auto last_active_phase = _active_phases.back();
 //      if 'last active node' of 'last active phase' is the last of the phase, add new phase, otherwise continue to fill the phase
