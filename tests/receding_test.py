@@ -40,6 +40,8 @@ timeline_1.addPhase(phase_2)
 timeline_1.addPhase(phase_2)
 timeline_1.addPhase(phase_1)
 timeline_1.addPhase(phase_2)
+timeline_1.addPhase(phase_2)
+timeline_1.addPhase(phase_1)
 
 print(" initial condition: ")
 
@@ -48,14 +50,15 @@ print("cnsrt2: ", cnsrt2.getNodes())
 print("cnsrt3: ", cnsrt3.getNodes())
 print("cnsrt4: ", cnsrt4.getNodes())
 
-num_shift = 10
+num_shift = 100
 for i in range(num_shift):
     pm._shift_phases()
-    print(" SHIFT PHASES: ")
+    print(f" SHIFT PHASES: iteration {i}")
 
     print("cnsrt1: ", cnsrt1.getNodes())
     print("cnsrt2: ", cnsrt2.getNodes())
     print("cnsrt3: ", cnsrt3.getNodes())
     print("cnsrt4: ", cnsrt4.getNodes())
+    input()
 
 exit()

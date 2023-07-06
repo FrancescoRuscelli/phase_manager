@@ -88,14 +88,8 @@ bool PhaseToken::_update_items(int initial_node)
 {
     for (auto item_map : _abstract_phase->getItems())
     {
-//        std::cout << "active nodes in phase: ";
-//        for (auto n : item_map.second)
-//        {
-//            std::cout << n << " ";
-//        }
-//        std::cout << std::endl;
         auto pair_nodes = _compute_horizon_nodes(item_map.second, initial_node);
-//        std::cout << "updating item: " << item_map.first->getName() << std::endl << "Nodes: ";
+//        std::cout << "updating item: '" << item_map.first->getName() << "'. Nodes: ";
 //        for (int node : pair_nodes.second)
 //        {
 //            std::cout << node << " ";
