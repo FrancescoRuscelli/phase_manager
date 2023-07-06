@@ -11,6 +11,7 @@ SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name):
 template <typename T, typename U>
 bool _register_items_from_phase(std::vector<T>& container, std::unordered_map<T, U> items)
 {
+    bool flag_repetition = false;
     // registering the items inside the phase, if not already registered
     for (auto item : items)
     {
@@ -18,15 +19,20 @@ bool _register_items_from_phase(std::vector<T>& container, std::unordered_map<T,
         {
             if (item.first->getName() == it->getName())
             {
-                return false;
+                flag_repetition = true;
+                break;
             }
         }
 
-//        std::cout << "pushing back item " << item.first->getName() << std::endl;
+        if (flag_repetition)
+        {
+            flag_repetition = false;
+            continue;
+        }
+
         container.push_back(item.first);
-        return true;
     }
-    return false;
+    return true;
 }
 
 bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
