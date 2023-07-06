@@ -91,7 +91,7 @@ public:
 
         _items_ref[item_with_ref] = val_container;
 
-        return 1;
+        return true;
 
     }
 
@@ -101,7 +101,7 @@ public:
         auto active_nodes = _check_active_nodes(nodes);
         _constraints[constraint] = active_nodes;
 
-        return 1;
+        return true;
     }
 
     bool addCost(ItemBase::Ptr cost, std::vector<int> nodes = {})
@@ -110,7 +110,7 @@ public:
         auto active_nodes = _check_active_nodes(nodes);
         _costs[cost] = active_nodes;
 
-        return 1;
+        return true;
     }
 
 
@@ -130,7 +130,7 @@ public:
 
         _variables[variable] = val_container;
 
-        return 1;
+        return true;
     }
 
     bool addParameterValues(ItemWithValuesBase::Ptr parameter,
@@ -150,7 +150,7 @@ public:
 
         _parameters[parameter] = val_container;
 
-        return 1;
+        return true;
     }
 
 
