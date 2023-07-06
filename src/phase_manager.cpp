@@ -38,6 +38,7 @@ bool _register_items_from_phase(std::vector<T>& container, std::unordered_map<T,
 bool SinglePhaseManager::registerPhase(Phase::Ptr phase)
 {
     // registering phases
+    // todo: make it faster
 
 //    std::cout << "registering phase " << phase->getName() << std::endl;
     _registered_phases.push_back(phase);
@@ -144,7 +145,6 @@ bool SinglePhaseManager::_add_phases(int pos)
 
             // update again phases before the position (before i resetted)
             int pos_in_horizon = 0;
-
 
             for (auto phase_token_i : _active_phases)
             {
@@ -380,9 +380,10 @@ bool SinglePhaseManager::reset()
 
     for (auto item : _items)
     {
+//        std::cout << item->getName() << " (" << item << "): ";
         if (item->isChanged())
         {
-
+//            std::cout << "resetting." << std::endl;
             item->setNodes(empty_nodes, erasing);
         }
     }
@@ -498,7 +499,14 @@ int SinglePhaseManager::getEmptyNodes()
 
 std::vector<PhaseToken::Ptr> SinglePhaseManager::getActivePhases()
 {
+    // return the active phases on the horizon
     return _active_phases;
+}
+
+std::vector<PhaseToken::Ptr> SinglePhaseManager::getPhases()
+{
+    // return all the phases added (regardless of the phase being active on the horizon)
+    return _phases;
 }
 
 SinglePhaseManager::~SinglePhaseManager()

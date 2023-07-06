@@ -56,6 +56,11 @@ std::vector<int> PhaseToken::getActiveNodes()
     return _active_nodes;
 }
 
+std::vector<int> PhaseToken::getNodes()
+{
+    return _nodes;
+}
+
 PhaseToken::PhaseToken(Phase::Ptr phase):
     _abstract_phase(phase)
 
@@ -281,6 +286,7 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
 
 bool PhaseToken::_update(int initial_node)
 {
+
     _update_items(initial_node);
     _update_item_reference(initial_node);
     _update_constraints(initial_node);

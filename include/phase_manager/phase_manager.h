@@ -28,6 +28,7 @@ public:
     std::vector<Phase::Ptr> getRegisteredPhases();
     int getEmptyNodes();
     std::vector<PhaseToken::Ptr> getActivePhases();
+    std::vector<PhaseToken::Ptr> getPhases();
     bool _shift_phases();
     bool reset();
     ~SinglePhaseManager();

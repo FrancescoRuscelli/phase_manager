@@ -63,6 +63,7 @@ public:
     bool addItem(ItemBase::Ptr item, std::vector<int> nodes = {})
     {
         auto active_nodes = _check_active_nodes(nodes);
+//        std::cout << "adding item:" << item->getName() << " to phase. " << std::endl;
         _items_base[item] = active_nodes;
 
         return true;
@@ -195,6 +196,7 @@ public:
     typedef std::shared_ptr<PhaseToken> Ptr;
     std::string getName();
     std::vector<int> getActiveNodes();
+    std::vector<int> getNodes(); // todo: get the absolute position of nodes (even if they are not active)
     // get name, get nodes...
 
 protected:
@@ -205,6 +207,7 @@ private:
 
     Phase::Ptr _abstract_phase;
     std::vector<int> _active_nodes;
+    std::vector<int> _nodes;
 
     // all these updates gets called by the SinglePhaseManager
     bool _update_items(int initial_node);

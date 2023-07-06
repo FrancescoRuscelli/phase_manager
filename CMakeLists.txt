@@ -25,11 +25,6 @@ target_include_directories(${LIBRARY_TARGET_NAME}
     INTERFACE
     ${EIGEN3_INCLUDE_DIR})
 
-add_executable(letstry
-    src/letstry.cpp)
-
-target_link_libraries(letstry ${LIBRARY_TARGET_NAME})
-
 include(GNUInstallDirs)
 install(TARGETS  ${LIBRARY_TARGET_NAME}
         EXPORT   ${LIBRARY_TARGET_NAME}
@@ -46,3 +41,4 @@ install(TARGETS  ${LIBRARY_TARGET_NAME}
 #                            NO_CHECK_REQUIRED_COMPONENTS_MACRO)
 
 add_subdirectory(bindings/python/)
+add_subdirectory(tests/)
