@@ -359,6 +359,15 @@ int main()
     std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
     std::cout << std::endl;
 
+    for (auto phase_i : timeline_1->getPhases())
+    {
+        std::cout <<" active nodes of phase '" << phase_i->getName() << "': ";
+        for (auto node_i : phase_i->getActiveNodes())
+        {
+            std::cout << node_i << " ";
+        }
+        std::cout << std::endl;
+    }
 //    timeline_1->addPhase(stance);
 //    timeline_1->addPhase(stance);
 //    timeline_1->addPhase(stance);
@@ -404,96 +413,96 @@ int main()
 //    std::cout << "parameter flight_p_1 has values: " << std::endl;
 //    std::cout << fake_flight_p_1->getValues() << std::endl;
 
-    std::cout << "variable var_1 has bounds: " << std::endl;
-    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
-    std::cout << std::endl;
+//    std::cout << "variable var_1 has bounds: " << std::endl;
+//    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+//    std::cout << std::endl;
 
 ////    std::chrono::duration<double> elapsed_time = std::chrono::system_clock::now() - start_time;
 ////    std::cout << "elapsed time: " << elapsed_time.count() << std::endl;
 
 // bounds not set to zero
 
-    timeline_1->_shift_phases();
-
-    std::cout << "SHIFT ONCE: " << std::endl;
-    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
-    std::cout << std::endl;
-
-    timeline_1->_shift_phases();
-
-    std::cout << "SHIFT ONCE: " << std::endl;
-    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
-    std::cout << std::endl;
-
-    timeline_1->_shift_phases();
-    timeline_1->_shift_phases();
-    timeline_1->_shift_phases();
-    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
-//    timeline_1->_shift_phases();
 //    timeline_1->_shift_phases();
 
-    std::cout << "constraint stance_c_1 has nodes: ";
-    for (int i : fake_stance_c_1->getNodes())
-    {
-        std::cout << i << " ";
-    }
-    std::cout << std::endl;
+//    std::cout << "SHIFT ONCE: " << std::endl;
+//    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+//    std::cout << std::endl;
+
+//    timeline_1->_shift_phases();
+
+//    std::cout << "SHIFT ONCE: " << std::endl;
+//    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+//    std::cout << std::endl;
+
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+//    timeline_1->_shift_phases();
+
+//    std::cout << "constraint stance_c_1 has nodes: ";
+//    for (int i : fake_stance_c_1->getNodes())
+//    {
+//        std::cout << i << " ";
+//    }
+//    std::cout << std::endl;
 
 //    std::cout << "constraint stance_c_2 has nodes: ";
 //    for (int i : fake_stance_c_2->getNodes())

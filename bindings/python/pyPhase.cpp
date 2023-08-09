@@ -230,5 +230,7 @@ PYBIND11_MODULE(pyphase, m) {
     py::class_<PhaseToken, PhaseToken::Ptr>(m, "PhaseToken")
             .def("getName", &PhaseToken::getName)
             .def("getActiveNodes", &PhaseToken::getActiveNodes)
+            .def("getPosition", &PhaseToken::getPosition)
+            .def("getNNodes", &PhaseToken::getNNodes)
             ;
 }

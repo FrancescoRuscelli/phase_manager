@@ -51,14 +51,22 @@ std::string PhaseToken::getName()
     return _abstract_phase->getName();
 }
 
-std::vector<int> PhaseToken::getActiveNodes()
+const std::vector<int>& PhaseToken::getActiveNodes()
 {
+    /*
+     * get the active nodes of the phase (WARNING: relative nodes, the are NOT the absolute nodes in the horizon)
+     */
     return _active_nodes;
 }
 
-std::vector<int> PhaseToken::getNodes()
+const int PhaseToken::getPosition()
 {
-    return _nodes;
+    return _initial_node;
+}
+
+const int PhaseToken::getNNodes()
+{
+    return _abstract_phase->getNNodes();
 }
 
 PhaseToken::PhaseToken(Phase::Ptr phase):
@@ -67,11 +75,6 @@ PhaseToken::PhaseToken(Phase::Ptr phase):
 {
 //    _active_nodes = std::make_shared<std::vector<int>>();
     //    _n_nodes = _abstract_phase.getNNodes();
-}
-
-int PhaseToken::_get_n_nodes()
-{
-    return _abstract_phase->getNNodes();
 }
 
 std::vector<int>& PhaseToken::_get_active_nodes()
@@ -249,12 +252,22 @@ bool PhaseToken::_update_parameters(int initial_node)
 
 std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes(std::vector<int> nodes, int initial_node)
 {
-    ///
-    /// \brief _active_nodes: active nodes of the phase
-    /// \brief nodes: nodes of the item
-    /// \brief initial_node: where the item is positioned in the horizon, in terms of nodes
-    /// \brief active_item_nodes: nodes of item in phase that are active
-    /// \brief horizon_nodes: active nodes of item in horizon
+    /*
+     * input:
+     * item nodes inside the phase (relative nodes)
+     * initial node of the phase (position of phase in horizon)
+     * output:
+     * active nodes of item relative to the phase
+     * absolute nodes in horizon
+
+     * _active_nodes: active nodes of the phase (relative nodes)
+     * nodes: nodes of the item (relative nodes)
+     * initial_node: where the phase is positioned in the horizon, in terms of nodes
+     * active_item_nodes: item nodes in phase that are active (intersection between active node of the phase and nodes of the item in the phase)
+     * horizon_nodes: active nodes of item in horizon
+
+    */
+
     std::vector<int> active_item_nodes;
 
     // check which node of the item (constraint, cost, var...) is active inside the phase, given the active nodes of the phase
@@ -266,8 +279,8 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
     // active phase nodes             : [2 3 4 5]
     // active nodes of item in phase  : [3 4]
     // phase position in horizon      : 7
-    // item node position in horizon  : 7 + 3 (node 0 of 'active nodes') - 2 (first node of 'active_phase_nodes') = 8
-    // item node position in horizon  : 7 + 4 (node 1 of 'active nodes') - 2 (first node of 'active_phase_nodes') = 9
+    // item node position in horizon  : 7 + 3 (node 0 of 'active nodes') - 2 (first node of '_active_nodes') = 8
+    // item node position in horizon  : 7 + 4 (node 1 of 'active nodes') - 2 (first node of '_active_nodes') = 9
     for (int node_i = 0; node_i < horizon_nodes.size(); node_i++)
     {
         horizon_nodes[node_i] = initial_node + active_item_nodes[node_i] - _active_nodes[0];
@@ -277,15 +290,27 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
 
 }
 
+//bool PhaseToken::_set_position(int initial_node)
+//{
+//    _initial_node = initial_node;
+//}
 
 bool PhaseToken::_update(int initial_node)
 {
+    /*
+     * update items contained in phase in horizon based on the position of the phase
+     */
+    _initial_node = initial_node;
 
-    _update_items(initial_node);
-    _update_item_reference(initial_node);
-    _update_constraints(initial_node);
-    _update_variables(initial_node);
-    _update_costs(initial_node);
-    _update_parameters(initial_node);
+    if (!_active_nodes.empty())
+    {
+        _update_items(initial_node);
+        _update_item_reference(initial_node);
+        _update_constraints(initial_node);
+        _update_variables(initial_node);
+        _update_costs(initial_node);
+        _update_parameters(initial_node);
+    }
     return true;
+
 }

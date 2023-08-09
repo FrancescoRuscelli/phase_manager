@@ -195,8 +195,9 @@ public:
 
     typedef std::shared_ptr<PhaseToken> Ptr;
     std::string getName();
-    std::vector<int> getActiveNodes();
-    std::vector<int> getNodes(); // todo: get the absolute position of nodes (even if they are not active)
+    const std::vector<int>& getActiveNodes();
+    const int getPosition();
+    const int getNNodes();
     // get name, get nodes...
 
 protected:
@@ -208,6 +209,7 @@ private:
     Phase::Ptr _abstract_phase;
     std::vector<int> _active_nodes;
     std::vector<int> _nodes;
+    int _initial_node;
 
     // all these updates gets called by the SinglePhaseManager
     bool _update_items(int initial_node);
@@ -219,9 +221,9 @@ private:
 
     std::pair<std::vector<int>, std::vector<int>> _compute_horizon_nodes(std::vector<int> nodes, int initial_node);
 
+    bool _set_position(int initial_node);
     bool _update(int initial_node);
 
-    int _get_n_nodes();
     std::vector<int>& _get_active_nodes();
     Phase::Ptr get_phase();
 

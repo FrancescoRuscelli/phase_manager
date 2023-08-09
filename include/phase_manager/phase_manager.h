@@ -41,6 +41,7 @@ private:
     std::string _name;
     std::vector<Phase::Ptr> _registered_phases; // container of all the registered phases
     int _n_nodes;
+    int _last_node;
 
     // todo: find a way of exposing this in python (should give back "images" of the Phase class, which cannot be used)
     std::vector<PhaseToken::Ptr> _phases_to_add; // temporary vector of phases that are added to timeline

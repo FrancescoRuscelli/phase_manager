@@ -16,6 +16,7 @@ PYBIND11_MODULE(pymanager, m) {
             .def("getRegisteredPhases", &SinglePhaseManager::getRegisteredPhases)
             .def("getEmptyNodes", &SinglePhaseManager::getEmptyNodes)
             .def("getActivePhases", &SinglePhaseManager::getActivePhases)
+            .def("getPhases", &SinglePhaseManager::getPhases)
             .def("shift_phases", &SinglePhaseManager::_shift_phases)
             ;
 
