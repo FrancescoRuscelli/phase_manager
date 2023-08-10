@@ -11,10 +11,21 @@ prb.setDt(dt)
 
 a = prb.createStateVariable('a', 1)
 
+cnsrt_1 = prb.createConstraint('cnsrt_1', a / 2)
+
 pm = pymanager.PhaseManager(ns)
 timeline_1 = pm.addTimeline('timeline_1')
 phase_1 = pyphase.Phase(4, 'phase_1')
 
+phase_1.addConstraint(cnsrt_1, nodes=[0, 4])
+
+print(phase_1.getConstraints())
+
+phase_1.setDuration(15)
+
+print(phase_1.getConstraints())
+
+exit()
 
 
 phase_1.addVariableBounds(a, np.array([[0, 0, 0, 0, 0]]), np.array([[0, 0, 0, 0, 0]]))

@@ -4,6 +4,14 @@ Phase::Phase(int n_nodes, std::string name):
     _n_nodes(n_nodes),
     _name(name)
 {
+
+//    setMap("items", &_items_base);
+//    _elem_map["items_ref"] = _items_ref;
+//    _elem_map["constraints"] = _constraints;
+//    _elem_map["costs"] = _costs;
+//    _elem_map["variables"] = _variables;
+//    _elem_map["parameters"] = _parameters;
+
 }
 
 std::string Phase::getName()
@@ -14,6 +22,52 @@ std::string Phase::getName()
 int Phase::getNNodes()
 {
     return _n_nodes;
+}
+
+bool Phase::setDuration(int new_n_nodes)
+{
+    double stretch_factor = static_cast<double>(new_n_nodes)/_n_nodes;
+
+    _n_nodes = new_n_nodes;
+
+    for (auto& elem : _items_base)
+    {
+        _stretch(elem.second, stretch_factor);
+    }
+
+    for (auto& elem : _constraints)
+    {
+        _stretch(elem.second, stretch_factor);
+
+    }
+
+    // todo: add all the other containers
+
+//    _items_base; OK
+//    _items_ref; X
+//    _constraints; OK
+//    _costs; X
+//    _variables; X
+//    _parameters; X
+
+    return true;
+}
+
+void Phase::_stretch(std::vector<int>& nodes, double stretch_factor)
+{
+
+
+    int new_initial_node = static_cast<int>(std::round(nodes[0] * stretch_factor));
+    int new_duration = static_cast<int>(std::round(nodes.size() * stretch_factor));
+
+    nodes.clear();
+
+    for (auto it = new_initial_node; it < new_duration + new_initial_node; it++)
+    {
+        if (it <= (_n_nodes - 1))
+            nodes.push_back(it);
+    }
+
 }
 
 std::unordered_map<ItemBase::Ptr, std::vector<int>> Phase::getItems()

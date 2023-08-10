@@ -9,6 +9,9 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+//#include <any>
+//#include <variant>
+//#include <functional>
 
 
 class Phase
@@ -46,6 +49,7 @@ public:
     Phase(int n_nodes, std::string name);
     std::string getName();
     int getNNodes();
+    bool setDuration(int new_n_nodes);
 
 
 
@@ -165,8 +169,17 @@ public:
 
 private:
 
+    void _stretch(std::vector<int>& nodes, double stretch_factor);
+
     std::string _name;
     int _n_nodes;
+
+//    std::unordered_map<std::string, std::any> _elem_map;
+//    std::unordered_map<std::string, std::variant<std::unordered_map<ItemBase::Ptr, std::vector<int>>,
+//                                                 std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer>,
+//                                                 std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>>,
+//                                                 std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer>>> _elem_map;
+
 
     // generic item that must have a method setNodes()
     std::unordered_map<ItemBase::Ptr, std::vector<int>> _items_base;
@@ -176,6 +189,10 @@ private:
     std::unordered_map<ItemBase::Ptr, std::vector<int>> _costs;
     std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer> _variables;
     std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> _parameters;
+
+
+    std::unordered_map<std::string, std::function<void*()>> _elem_map;
+
 
 
 };
