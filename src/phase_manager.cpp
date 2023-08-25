@@ -10,7 +10,7 @@ SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name):
 }
 
 template <typename T, typename U>
-bool _register_items_from_phase(std::vector<T>& container, std::unordered_map<T, U> items)
+bool _register_items_from_phase(std::vector<T>& container, std::vector<U> items)
 {
     bool flag_repetition = false;
     // registering the items inside the phase, if not already registered
@@ -18,7 +18,7 @@ bool _register_items_from_phase(std::vector<T>& container, std::unordered_map<T,
     {
         for (auto it : container)
         {
-            if (item.first->getName() == it->getName())
+            if (item->getName() == it->getName())
             {
                 flag_repetition = true;
                 break;
@@ -31,7 +31,7 @@ bool _register_items_from_phase(std::vector<T>& container, std::unordered_map<T,
             continue;
         }
 
-        container.push_back(item.first);
+        container.push_back(item);
     }
     return true;
 }
@@ -197,11 +197,11 @@ bool SinglePhaseManager::_add_phases(int pos)
 //
         }
 
-        std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
+//        std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
 //        important bit: this is where i update the phase
         phase_token_i->_update(_last_node);
         _last_node += phase_token_i->getNNodes();
-        std::cout << "pos_in_horizon: " << _last_node << std::endl;
+//        std::cout << "pos_in_horizon: " << _last_node << std::endl;
 
     }
 

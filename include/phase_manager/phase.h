@@ -9,6 +9,7 @@
 #include <iostream>
 #include <memory>
 #include <stdexcept>
+#include <unordered_set>
 //#include <any>
 //#include <variant>
 //#include <functional>
@@ -25,24 +26,41 @@ public:
 
     typedef std::shared_ptr<Phase> Ptr;
 
-    struct BoundsContainer
+    class InfoContainer
     {
+
+    public:
+
+        typedef std::shared_ptr<InfoContainer> Ptr;
+        InfoContainer() {}
+
+        std::vector<int> nodes;
+    };
+
+    class BoundsContainer : public InfoContainer
+    {
+
+    public:
+
+        typedef std::shared_ptr<BoundsContainer> Ptr;
         BoundsContainer() {}
 
         // must be of same dimension
         // TODO: what happen if not same dimension?
-        std::vector<int> nodes;
         Eigen::MatrixXd lower_bounds;
         Eigen::MatrixXd upper_bounds;
     };
 
-    struct ValuesContainer
+    class ValuesContainer : public InfoContainer
     {
+
+    public:
+
+        typedef std::shared_ptr<ValuesContainer> Ptr;
         ValuesContainer() {}
 
         // must be of same dimension
         // TODO: what happen if not same dimension?
-        std::vector<int> nodes;
         Eigen::MatrixXd values;
     };
 
@@ -50,25 +68,40 @@ public:
     std::string getName();
     int getNNodes();
     bool setDuration(int new_n_nodes);
+    bool setElemNodes(std::string elem_name, std::vector<int> new_nodes);
 
 
 
     std::vector<int> _check_active_nodes(std::vector<int> nodes)
     {
-        // if nodes inserted is empty, get all the nodes in horizon
-        std::vector<int> range_nodes(_n_nodes);
-        std::iota(std::begin(range_nodes), std::end(range_nodes), 0); //0 is the starting number
 
-        std::vector<int> active_nodes = (nodes.empty()) ? range_nodes : nodes;
+        for (int num : nodes) {
+            if (_set_nodes.find(num) == _set_nodes.end()) {
+                throw std::invalid_argument("Node inserted ("
+                                      + std::to_string(num)
+                                      + ") is outside of phase nodes.");
+            }
+        }
 
-        return active_nodes;
+//        std::vector<int> active_nodes = (nodes.empty()) ? _range_nodes : nodes;
+
+        return nodes;
     }
 
     bool addItem(ItemBase::Ptr item, std::vector<int> nodes = {})
     {
         auto active_nodes = _check_active_nodes(nodes);
 //        std::cout << "adding item:" << item->getName() << " to phase. " << std::endl;
-        _items_base[item] = active_nodes;
+
+        InfoContainer::Ptr nodes_container = std::make_unique<InfoContainer>();
+        nodes_container->nodes = active_nodes;
+
+        // add to vector the element pointer
+        // add to map name-element
+        // add to map element-info
+        _items_base.push_back(item);
+        _info_items_base[item] = nodes_container;
+        _elem_map[item->getName()] = item;
 
         return true;
 
@@ -80,7 +113,7 @@ public:
     {
         auto active_nodes = _check_active_nodes(nodes);
 
-        ValuesContainer val_container;
+        ValuesContainer::Ptr val_container = std::make_unique<ValuesContainer>();;;
 
         if (values.cols() != active_nodes.size())
         {
@@ -90,10 +123,15 @@ public:
                                   + std::to_string(active_nodes.size()) + ")");
         }
 
-        val_container.nodes = active_nodes;
-        val_container.values = values;
+        val_container->nodes = active_nodes;
+        val_container->values = values;
 
-        _items_ref[item_with_ref] = val_container;
+        // add to vector the element pointer
+        // add to map name-element
+        // add to map element-info
+        _items_ref.push_back(item_with_ref);
+        _info_items_ref[item_with_ref] = val_container;
+        _elem_map[item_with_ref->getName()] = item_with_ref;
 
         return true;
 
@@ -103,7 +141,18 @@ public:
     {
 
         auto active_nodes = _check_active_nodes(nodes);
-        _constraints[constraint] = active_nodes;
+
+        InfoContainer::Ptr nodes_container = std::make_unique<InfoContainer>();
+        nodes_container->nodes = active_nodes;
+
+
+        // add to vector the element pointer
+        // add to map name-element
+        // add to map element-info
+        _constraints.push_back(constraint);
+        _info_constraints[constraint] = nodes_container;
+        _elem_map[constraint->getName()] = constraint;
+
 
         return true;
     }
@@ -112,7 +161,17 @@ public:
     {
         // check if added item is actually a cost?
         auto active_nodes = _check_active_nodes(nodes);
-        _costs[cost] = active_nodes;
+
+        InfoContainer::Ptr nodes_container = std::make_unique<InfoContainer>();
+        nodes_container->nodes = active_nodes;
+
+        // add to vector the element pointer
+        // add to map name-element
+        // add to map element-info
+        _costs.push_back(cost);
+        _info_costs[cost] = nodes_container;
+        _elem_map[cost->getName()] = cost;
+
 
         return true;
     }
@@ -126,13 +185,37 @@ public:
 
         auto active_nodes = _check_active_nodes(nodes);
 
-        BoundsContainer val_container;
+        // check if lower and upper bounds have the right size
+        if (lower_bounds.cols() != active_nodes.size())
+        {
+            throw std::invalid_argument("Dimension of lower bounds inserted ("
+                                  + std::to_string(lower_bounds.cols())
+                                  + ") does not match number of nodes specified ("
+                                  + std::to_string(active_nodes.size()) + ")");
+        }
 
-        val_container.nodes = active_nodes;
-        val_container.lower_bounds = lower_bounds;
-        val_container.upper_bounds = upper_bounds;
+        if (upper_bounds.cols() != active_nodes.size())
+        {
+            throw std::invalid_argument("Dimension of upper bounds inserted ("
+                                  + std::to_string(upper_bounds.cols())
+                                  + ") does not match number of nodes specified ("
+                                  + std::to_string(active_nodes.size()) + ")");
+        }
 
-        _variables[variable] = val_container;
+
+        BoundsContainer::Ptr val_container = std::make_unique<BoundsContainer>();;
+
+        val_container->nodes = active_nodes;
+        val_container->lower_bounds = lower_bounds;
+        val_container->upper_bounds = upper_bounds;
+
+        // add to vector the element pointer
+        // add to map name-element
+        // add to map element-info
+        _variables.push_back(variable);
+        _info_variables[variable] = val_container;
+        _elem_map[variable->getName()] = variable;
+
 
         return true;
     }
@@ -147,25 +230,33 @@ public:
          */
         auto active_nodes = _check_active_nodes(nodes);
 
-        ValuesContainer val_container;
+        ValuesContainer::Ptr val_container = std::make_unique<ValuesContainer>();;;
 
-        val_container.nodes = active_nodes;
-        val_container.values = values;
+        val_container->nodes = active_nodes;
+        val_container->values = values;
 
-        _parameters[parameter] = val_container;
+        _parameters.push_back(parameter);
+        _info_parameters[parameter] = val_container;
+        _elem_map[parameter->getName()] = parameter;
 
         return true;
     }
 
 
-    std::unordered_map<ItemBase::Ptr, std::vector<int>> getItems();
-    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> getItemsReference();
+    std::vector<ItemBase::Ptr> getItems();
+    std::vector<ItemWithValuesBase::Ptr> getItemsReference();
 
-    std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> getConstraints();
-    std::unordered_map<ItemBase::Ptr, std::vector<int>> getCosts();
-    std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer> getVariables();
-    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> getParameters();
+    std::vector<ItemWithBoundsBase::Ptr> getConstraints();
+    std::vector<ItemBase::Ptr> getCosts();
+    std::vector<ItemWithBoundsBase::Ptr> getVariables();
+    std::vector<ItemWithValuesBase::Ptr> getParameters();
 
+    std::unordered_map<ItemBase::Ptr, InfoContainer::Ptr> getItemsInfo();
+    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> getItemsReferenceInfo();
+    std::unordered_map<ItemWithBoundsBase::Ptr, InfoContainer::Ptr> getConstraintsInfo();
+    std::unordered_map<ItemBase::Ptr, InfoContainer::Ptr> getCostsInfo();
+    std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer::Ptr> getVariablesInfo();
+    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> getParametersInfo();
 
 private:
 
@@ -173,6 +264,7 @@ private:
 
     std::string _name;
     int _n_nodes;
+    std::unordered_set<int> _set_nodes;
 
 //    std::unordered_map<std::string, std::any> _elem_map;
 //    std::unordered_map<std::string, std::variant<std::unordered_map<ItemBase::Ptr, std::vector<int>>,
@@ -180,18 +272,46 @@ private:
 //                                                 std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>>,
 //                                                 std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer>>> _elem_map;
 
+    std::vector<ItemBase::Ptr> _items_base;
+    std::vector<ItemWithValuesBase::Ptr> _items_ref;
+
+    std::vector<ItemWithBoundsBase::Ptr> _constraints;
+    std::vector<ItemBase::Ptr> _costs;
+    std::vector<ItemWithBoundsBase::Ptr> _variables;
+    std::vector<ItemWithValuesBase::Ptr> _parameters;
+
 
     // generic item that must have a method setNodes()
-    std::unordered_map<ItemBase::Ptr, std::vector<int>> _items_base;
-    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> _items_ref;
+    std::unordered_map<ItemBase::Ptr, InfoContainer::Ptr> _info_items_base;
+    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> _info_items_ref;
 
-    std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> _constraints;
-    std::unordered_map<ItemBase::Ptr, std::vector<int>> _costs;
-    std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer> _variables;
-    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> _parameters;
+    std::unordered_map<ItemWithBoundsBase::Ptr, InfoContainer::Ptr> _info_constraints;
+    std::unordered_map<ItemBase::Ptr, InfoContainer::Ptr> _info_costs;
+    std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer::Ptr> _info_variables;
+    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> _info_parameters;
 
 
-    std::unordered_map<std::string, std::function<void*()>> _elem_map;
+    std::unordered_map<std::string, ItemBase::Ptr> _elem_map;
+    std::unordered_map<ItemBase::Ptr, InfoContainer::Ptr> _info_elements;
+
+//    std::unordered_map<ItemBase::Ptr, std::vector<int>> _items_base;
+//    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> _items_ref;
+
+//    std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> _constraints;
+//    std::unordered_map<ItemBase::Ptr, std::vector<int>> _costs;
+//    std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer> _variables;
+//    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> _parameters;
+
+
+//    std::unordered_map<std::string, std::pair<ItemBase::Ptr, std::vector<int>>> _items_base;
+//    std::unordered_map<std::string, std::pair<ItemWithValuesBase::Ptr, ValuesContainer>> _items_ref;
+
+//    std::unordered_map<std::string, std::pair<ItemWithBoundsBase::Ptr, std::vector<int>>> _constraints;
+//    std::unordered_map<std::string, std::pair<ItemBase::Ptr, std::vector<int>>> _costs;
+//    std::unordered_map<std::string, std::pair<ItemWithBoundsBase::Ptr, BoundsContainer>> _variables;
+//    std::unordered_map<std::string, std::pair<ItemWithValuesBase::Ptr, ValuesContainer>> _parameters;
+
+
 
 
 

@@ -3,7 +3,12 @@
 Phase::Phase(int n_nodes, std::string name):
     _n_nodes(n_nodes),
     _name(name)
+
 {
+    // create unordered set for phase nodes
+    for (int i = 0; i < _n_nodes; i++) {
+        _set_nodes.insert(i);
+    }
 
 //    setMap("items", &_items_base);
 //    _elem_map["items_ref"] = _items_ref;
@@ -30,14 +35,14 @@ bool Phase::setDuration(int new_n_nodes)
 
     _n_nodes = new_n_nodes;
 
-    for (auto& elem : _items_base)
+    for (auto& elem : _info_items_base)
     {
-        _stretch(elem.second, stretch_factor);
+        _stretch(elem.second->nodes, stretch_factor);
     }
 
-    for (auto& elem : _constraints)
+    for (auto& elem : _info_constraints)
     {
-        _stretch(elem.second, stretch_factor);
+        _stretch(elem.second->nodes, stretch_factor);
 
     }
 
@@ -52,6 +57,14 @@ bool Phase::setDuration(int new_n_nodes)
 
     return true;
 }
+
+//bool Phase::setElemNodes(std::string elem_name, std::vector<int> new_nodes)
+//{
+//    for (auto elem : _items_base)
+//    {
+
+//    }
+//}
 
 void Phase::_stretch(std::vector<int>& nodes, double stretch_factor)
 {
@@ -70,35 +83,98 @@ void Phase::_stretch(std::vector<int>& nodes, double stretch_factor)
 
 }
 
-std::unordered_map<ItemBase::Ptr, std::vector<int>> Phase::getItems()
+std::vector<ItemBase::Ptr> Phase::getItems()
 {
     return _items_base;
 }
 
-std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer> Phase::getItemsReference()
+std::vector<ItemWithValuesBase::Ptr> Phase::getItemsReference()
 {
     return _items_ref;
 }
 
-std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> Phase::getConstraints()
+std::vector<ItemWithBoundsBase::Ptr> Phase::getConstraints()
 {
     return _constraints;
 }
 
-std::unordered_map<ItemBase::Ptr, std::vector<int>> Phase::getCosts()
+std::vector<ItemBase::Ptr> Phase::getCosts()
 {
     return _costs;
 }
 
-std::unordered_map<ItemWithBoundsBase::Ptr, Phase::BoundsContainer> Phase::getVariables()
+std::vector<ItemWithBoundsBase::Ptr> Phase::getVariables()
 {
     return _variables;
 }
 
-std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer> Phase::getParameters()
+std::vector<ItemWithValuesBase::Ptr> Phase::getParameters()
 {
     return _parameters;
 }
+
+std::unordered_map<ItemBase::Ptr, Phase::InfoContainer::Ptr> Phase::getItemsInfo()
+{
+    return _info_items_base;
+}
+
+std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer::Ptr> Phase::getItemsReferenceInfo()
+{
+    return _info_items_ref;
+}
+
+std::unordered_map<ItemWithBoundsBase::Ptr, Phase::InfoContainer::Ptr> Phase::getConstraintsInfo()
+{
+    return _info_constraints;
+}
+
+std::unordered_map<ItemBase::Ptr, Phase::InfoContainer::Ptr> Phase::getCostsInfo()
+{
+    return _info_costs;
+}
+
+std::unordered_map<ItemWithBoundsBase::Ptr, Phase::BoundsContainer::Ptr> Phase::getVariablesInfo()
+{
+    return _info_variables;
+}
+
+std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer::Ptr> Phase::getParametersInfo()
+{
+    return _info_parameters;
+}
+
+
+//std::unordered_map<ItemBase::Ptr, std::vector<int>> Phase::getItems()
+//{
+//    return _items_base;
+//}
+
+//std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer> Phase::getItemsReference()
+//{
+//    return _items_ref;
+//}
+
+//std::unordered_map<ItemWithBoundsBase::Ptr, std::vector<int>> Phase::getConstraints()
+//{
+//    return _constraints;
+//}
+
+//std::unordered_map<ItemBase::Ptr, std::vector<int>> Phase::getCosts()
+//{
+//    return _costs;
+//}
+
+//std::unordered_map<ItemWithBoundsBase::Ptr, Phase::BoundsContainer> Phase::getVariables()
+//{
+//    return _variables;
+//}
+
+//std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer> Phase::getParameters()
+//{
+//    return _parameters;
+//}
+
+
 
 std::string PhaseToken::getName()
 {
@@ -141,11 +217,75 @@ Phase::Ptr PhaseToken::get_phase()
     return _abstract_phase;
 }
 
+//bool PhaseToken::_update_elements(int initial_node)
+//{
+//    for (auto item_map : _abstract_phase->_info_elements())
+//    {
+////        std::cout << "updating item: '" << item_map.first->getName() << "'. Nodes: ";
+////        for (int node : pair_nodes.second)
+////        {
+////            std::cout << node << " ";
+////        }
+////        std::cout << std::endl;
+//        // adding nodes/resetting nodes is a duty of horizon
+//        if (ItemBase::Ptr item_base = dynamic_cast<ItemBase::Ptr>(element))
+//        {
+//            auto pair_nodes = _compute_horizon_nodes(item_base.second, initial_node);
+//            item_base.first->setNodes(pair_nodes.second, false);
+//        }
+//        else if (ItemWithValuesBase::Ptr item_ref = dynamic_cast<ItemBase::Ptr>(element))
+//        {
+//            auto pair_nodes = _compute_horizon_nodes(item_ref.second.nodes, initial_node);
+
+//            Eigen::MatrixXd bring_me_to_eigen_3_4_val;
+//            bring_me_to_eigen_3_4_val.resize(item_ref_map.second.values.rows(), pair_nodes.first.size());
+
+
+//            for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
+//            {
+//                bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second.values.col(pair_nodes.first.at(col_i));
+//            }
+
+//            item_ref.first->setNodes(pair_nodes.second, false);
+//            item_ref.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
+//        }
+//        else if (ItemWithValuesBase::Ptr item_bounds = dynamic_cast<ItemBase::Ptr>(element))
+//        {
+//            auto pair_nodes = _compute_horizon_nodes(item_bounds.second.nodes, initial_node);
+
+//            Eigen::MatrixXd bring_me_to_eigen_3_4_lb;
+//            bring_me_to_eigen_3_4_lb.resize(var_map.second.lower_bounds.rows(), pair_nodes.first.size());
+
+//            for (int col_i = 0; col_i < bring_me_to_eigen_3_4_lb.cols(); col_i++)
+//            {
+//                bring_me_to_eigen_3_4_lb.col(col_i) = var_map.second.lower_bounds.col(pair_nodes.first.at(col_i));
+//            }
+
+
+//            Eigen::MatrixXd bring_me_to_eigen_3_4_ub;
+//            bring_me_to_eigen_3_4_ub.resize(var_map.second.upper_bounds.rows(), pair_nodes.first.size());
+
+//            for (int col_i = 0; col_i < bring_me_to_eigen_3_4_ub.cols(); col_i++)
+//            {
+//                bring_me_to_eigen_3_4_ub.col(col_i) = var_map.second.upper_bounds.col(pair_nodes.first.at(col_i));
+//            }
+
+//    //            return std::make_pair(active_fun_nodes, horizon_nodes);
+
+//            item_bounds.first->setBounds(bring_me_to_eigen_3_4_lb,
+//                                     bring_me_to_eigen_3_4_ub,
+//                                     pair_nodes.second);
+//        }
+//    }
+
+//    return true;
+//}
+
 bool PhaseToken::_update_items(int initial_node)
 {
-    for (auto item_map : _abstract_phase->getItems())
+    for (auto item_map : _abstract_phase->getItemsInfo())
     {
-        auto pair_nodes = _compute_horizon_nodes(item_map.second, initial_node);
+        auto pair_nodes = _compute_horizon_nodes(item_map.second->nodes, initial_node);
 //        std::cout << "updating item: '" << item_map.first->getName() << "'. Nodes: ";
 //        for (int node : pair_nodes.second)
 //        {
@@ -161,19 +301,19 @@ bool PhaseToken::_update_items(int initial_node)
 
 bool PhaseToken::_update_item_reference(int initial_node)
 {
-    for (auto item_ref_map : _abstract_phase->getItemsReference())
+    for (auto item_ref_map : _abstract_phase->getItemsReferenceInfo())
     {
-        auto pair_nodes = _compute_horizon_nodes(item_ref_map.second.nodes, initial_node);
+        auto pair_nodes = _compute_horizon_nodes(item_ref_map.second->nodes, initial_node);
 
 //        std::cout << "value assigned by user:" << item_ref_map.second.values << std::endl;
 
         Eigen::MatrixXd bring_me_to_eigen_3_4_val;
-        bring_me_to_eigen_3_4_val.resize(item_ref_map.second.values.rows(), pair_nodes.first.size());
+        bring_me_to_eigen_3_4_val.resize(item_ref_map.second->values.rows(), pair_nodes.first.size());
 
 
         for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
         {
-            bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second.values.col(pair_nodes.first.at(col_i));
+            bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second->values.col(pair_nodes.first.at(col_i));
         }
 
 //        std::cout << "assigning values:" << bring_me_to_eigen_3_4_val << "to nodes:" << std::endl;
@@ -194,9 +334,9 @@ bool PhaseToken::_update_item_reference(int initial_node)
 
 bool PhaseToken::_update_constraints(int initial_node)
 {
-    for (auto cnstr_map : _abstract_phase->getConstraints())
+    for (auto cnstr_map : _abstract_phase->getConstraintsInfo())
     {
-        auto pair_nodes = _compute_horizon_nodes(cnstr_map.second, initial_node);
+        auto pair_nodes = _compute_horizon_nodes(cnstr_map.second->nodes, initial_node);
         cnstr_map.first->setNodes(pair_nodes.second, false);
 //        cnstr_map.first->addNodes(pair_nodes.second);
     }
@@ -209,27 +349,24 @@ bool PhaseToken::_update_variables(int initial_node)
     // should this also take care of setNodes()?
     // right now only bounds
 
-    for (auto var_map : _abstract_phase->getVariables())
+    for (auto var_map : _abstract_phase->getVariablesInfo())
     {
-        auto pair_nodes = _compute_horizon_nodes(var_map.second.nodes, initial_node);
+        auto pair_nodes = _compute_horizon_nodes(var_map.second->nodes, initial_node);
 
         Eigen::MatrixXd bring_me_to_eigen_3_4_lb;
-        bring_me_to_eigen_3_4_lb.resize(var_map.second.lower_bounds.rows(), pair_nodes.first.size());
+        bring_me_to_eigen_3_4_lb.resize(var_map.second->lower_bounds.rows(), pair_nodes.first.size());
 
         for (int col_i = 0; col_i < bring_me_to_eigen_3_4_lb.cols(); col_i++)
         {
-            bring_me_to_eigen_3_4_lb.col(col_i) = var_map.second.lower_bounds.col(pair_nodes.first.at(col_i));
+            bring_me_to_eigen_3_4_lb.col(col_i) = var_map.second->lower_bounds.col(pair_nodes.first.at(col_i));
         }
-
 
         Eigen::MatrixXd bring_me_to_eigen_3_4_ub;
-        bring_me_to_eigen_3_4_ub.resize(var_map.second.upper_bounds.rows(), pair_nodes.first.size());
-
+        bring_me_to_eigen_3_4_ub.resize(var_map.second->upper_bounds.rows(), pair_nodes.first.size());
         for (int col_i = 0; col_i < bring_me_to_eigen_3_4_ub.cols(); col_i++)
         {
-            bring_me_to_eigen_3_4_ub.col(col_i) = var_map.second.upper_bounds.col(pair_nodes.first.at(col_i));
+            bring_me_to_eigen_3_4_ub.col(col_i) = var_map.second->upper_bounds.col(pair_nodes.first.at(col_i));
         }
-
 //            return std::make_pair(active_fun_nodes, horizon_nodes);
 
         var_map.first->setBounds(bring_me_to_eigen_3_4_lb,
@@ -254,9 +391,9 @@ bool PhaseToken::_update_variables(int initial_node)
 
 bool PhaseToken::_update_costs(int initial_node)
 {
-    for (auto cost_map : _abstract_phase->getCosts())
+    for (auto cost_map : _abstract_phase->getCostsInfo())
     {
-        auto pair_nodes = _compute_horizon_nodes(cost_map.second, initial_node);
+        auto pair_nodes = _compute_horizon_nodes(cost_map.second->nodes, initial_node);
 
         // add nodes without erasing the old ones
         cost_map.first->setNodes(pair_nodes.second, false);
@@ -275,16 +412,16 @@ bool PhaseToken::_update_costs(int initial_node)
 
 bool PhaseToken::_update_parameters(int initial_node)
 {
-    for (auto par_map : _abstract_phase->getParameters())
+    for (auto par_map : _abstract_phase->getParametersInfo())
     {
-        auto pair_nodes = _compute_horizon_nodes(par_map.second.nodes, initial_node);
+        auto pair_nodes = _compute_horizon_nodes(par_map.second->nodes, initial_node);
 
         Eigen::MatrixXd bring_me_to_eigen_3_4_val;
-        bring_me_to_eigen_3_4_val.resize(par_map.second.values.rows(), pair_nodes.first.size());
+        bring_me_to_eigen_3_4_val.resize(par_map.second->values.rows(), pair_nodes.first.size());
 
         for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
         {
-            bring_me_to_eigen_3_4_val.col(col_i) = par_map.second.values.col(pair_nodes.first.at(col_i));
+            bring_me_to_eigen_3_4_val.col(col_i) = par_map.second->values.col(pair_nodes.first.at(col_i));
         }
 
 //        std::cout << "assigning values:" << bring_me_to_eigen_3_4_val << "to nodes:" << std::endl;

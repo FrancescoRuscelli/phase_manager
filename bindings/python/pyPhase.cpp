@@ -195,9 +195,85 @@ bool add_parameter_pyobject(Phase& self, py::object item,
     return true;
 }
 
-auto get_constraint(Phase& phase)
+
+auto _get_constraints_list(Phase& phase)
 {
-    auto constraints = phase.getConstraints();
+    auto elems = phase.getConstraints();
+
+    std::vector<py::object> py_elem_list;
+
+    for (auto it : elems)
+    {
+        py_elem_list.push_back(std::dynamic_pointer_cast<PyObjWrapperWithBounds>(it)->getPyObject());
+    }
+
+    return py_elem_list;
+
+}
+
+auto _get_items_list(Phase& phase)
+{
+    auto elems = phase.getItems();
+
+    std::vector<py::object> py_elem_list;
+
+    for (auto it : elems)
+    {
+        py_elem_list.push_back(std::dynamic_pointer_cast<PyObjWrapper>(it)->getPyObject());
+    }
+
+    return py_elem_list;
+
+}
+
+auto _get_parameters_list(Phase& phase)
+{
+    auto elems = phase.getParameters();
+
+    std::vector<py::object> py_elem_list;
+
+    for (auto it : elems)
+    {
+        py_elem_list.push_back(std::dynamic_pointer_cast<PyObjWrapperWithValues>(it)->getPyObject());
+    }
+
+    return py_elem_list;
+
+}
+
+auto _get_variables_list(Phase& phase)
+{
+    auto elems = phase.getVariables();
+
+    std::vector<py::object> py_elem_list;
+
+    for (auto it : elems)
+    {
+        py_elem_list.push_back(std::dynamic_pointer_cast<PyObjWrapperWithBounds>(it)->getPyObject());
+    }
+
+    return py_elem_list;
+
+}
+
+auto _get_costs_list(Phase& phase)
+{
+    auto elems = phase.getCosts();
+
+    std::vector<py::object> py_elem_list;
+
+    for (auto it : elems)
+    {
+        py_elem_list.push_back(std::dynamic_pointer_cast<PyObjWrapper>(it)->getPyObject());
+    }
+
+    return py_elem_list;
+
+}
+
+auto _get_constraints_map(Phase& phase)
+{
+    auto constraints = phase.getConstraintsInfo();
 
     std::map<py::object, std::vector<int>> elem_python;
 
@@ -211,15 +287,15 @@ auto get_constraint(Phase& phase)
             continue;
         }
 
-        elem_python.insert({elem_converted->getPyObject(), elem.second});
+        elem_python.insert({elem_converted->getPyObject(), elem.second->nodes});
     }
 
     return elem_python;
 }
 
-auto get_items(Phase& phase)
+auto _get_items_map(Phase& phase)
 {
-    auto items = phase.getItems();
+    auto items = phase.getItemsInfo();
 
     std::map<py::object, std::vector<int>> elem_python;
 
@@ -233,15 +309,15 @@ auto get_items(Phase& phase)
             continue;
         }
 
-        elem_python.insert({elem_converted->getPyObject(), elem.second});
+        elem_python.insert({elem_converted->getPyObject(), elem.second->nodes});
     }
 
     return elem_python;
 }
 
-auto _get_variables(Phase& phase)
+auto _get_variables_map(Phase& phase)
 {
-    auto variables = phase.getVariables();
+    auto variables = phase.getVariablesInfo();
 
     std::map<py::object, std::vector<int>> elem_python;
 
@@ -255,15 +331,15 @@ auto _get_variables(Phase& phase)
             continue;
         }
 
-        elem_python.insert({elem_converted->getPyObject(), elem.second.nodes});
+        elem_python.insert({elem_converted->getPyObject(), elem.second->nodes});
     }
 
     return elem_python;
 }
 
-auto _get_costs(Phase& phase)
+auto _get_costs_map(Phase& phase)
 {
-    auto costs = phase.getCosts();
+    auto costs = phase.getCostsInfo();
 
     std::map<py::object, std::vector<int>> elem_python;
 
@@ -277,15 +353,15 @@ auto _get_costs(Phase& phase)
             continue;
         }
 
-        elem_python.insert({elem_converted->getPyObject(), elem.second});
+        elem_python.insert({elem_converted->getPyObject(), elem.second->nodes});
     }
 
     return elem_python;
 }
 
-auto _get_parameters(Phase& phase)
+auto _get_parameters_map(Phase& phase)
 {
-    auto parameters = phase.getParameters();
+    auto parameters = phase.getParametersInfo();
 
     std::map<py::object, std::vector<int>> elem_python;
 
@@ -299,7 +375,7 @@ auto _get_parameters(Phase& phase)
             continue;
         }
 
-        elem_python.insert({elem_converted->getPyObject(), elem.second.nodes});
+        elem_python.insert({elem_converted->getPyObject(), elem.second->nodes});
     }
 
     return elem_python;
@@ -318,8 +394,17 @@ PYBIND11_MODULE(pyphase, m) {
             .def("addConstraint", add_constraint_pyobject, py::arg("item"), py::arg("nodes") = std::vector<int>())
             .def("addVariableBounds", add_variable_pyobject, py::arg("item"), py::arg("lower_bounds"), py::arg("upper_bounds"), py::arg("nodes") = std::vector<int>())
             .def("addParameterValues", add_parameter_pyobject, py::arg("item"), py::arg("values"), py::arg("nodes") = std::vector<int>())
-            .def("getConstraints", get_constraint) // py::return_value_policy::reference_internal
-            .def("getItems", get_items)
+            .def("getConstraintsInfo", _get_constraints_map) // py::return_value_policy::reference_internal
+            .def("getItemsInfo", _get_items_map)
+            .def("getParametersInfo", _get_parameters_map)
+            .def("getCostsInfo", _get_costs_map)
+            .def("getVariablesInfo", _get_variables_map)
+            .def("getItems", _get_items_list)
+            .def("getParameters", _get_parameters_list)
+            .def("getCosts", _get_costs_list)
+            .def("getVariables", _get_variables_list)
+            .def("getConstraints", _get_constraints_list)
+
             ;
 
     py::class_<PhaseToken, PhaseToken::Ptr>(m, "PhaseToken")
