@@ -58,13 +58,34 @@ bool Phase::setDuration(int new_n_nodes)
     return true;
 }
 
-//bool Phase::setElemNodes(std::string elem_name, std::vector<int> new_nodes)
-//{
-//    for (auto elem : _items_base)
-//    {
+bool Phase::setElemNodes(std::string elem_name, std::vector<int> new_nodes)
+{
+    auto it = _elem_map.find(elem_name);
+    if (it == _elem_map.end())
+    {
+        std::cout << "Element '" << elem_name << "' does not exist in phase." << std::endl;
+        return false;
+    }
 
-//    }
-//}
+    auto elem = it->second;
+
+    auto itt = _info_elements.find(elem);
+
+    if (itt == _info_elements.end())
+    {
+        std::cout << "There is a problem here, element exist in map but there are no info about it? " << std::endl;
+    }
+
+    auto nodes = itt->second;
+
+    for (int n : nodes->nodes)
+    {
+        std::cout << n << " ";
+    }
+
+    return true;
+
+}
 
 void Phase::_stretch(std::vector<int>& nodes, double stretch_factor)
 {

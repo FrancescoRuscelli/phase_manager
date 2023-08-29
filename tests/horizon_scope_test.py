@@ -34,6 +34,9 @@ print('constraints and active nodes:')
 for elem in phase_1.getConstraints():
     print(f"{elem.getName()}: {elem.getNodes()}")
 
+
+phase_1.setElementNodes("cnsrt_1", [10])
+exit()
 # print(phase_1.getCosts())
 # print(phase_1.getParameters())
 # print(phase_1.getVariables())

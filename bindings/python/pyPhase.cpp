@@ -404,6 +404,7 @@ PYBIND11_MODULE(pyphase, m) {
             .def("getCosts", _get_costs_list)
             .def("getVariables", _get_variables_list)
             .def("getConstraints", _get_constraints_list)
+            .def("setElementNodes", &Phase::setElemNodes)
 
             ;
 

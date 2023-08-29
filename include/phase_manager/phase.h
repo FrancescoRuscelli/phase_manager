@@ -152,6 +152,7 @@ public:
         _constraints.push_back(constraint);
         _info_constraints[constraint] = nodes_container;
         _elem_map[constraint->getName()] = constraint;
+        _info_elements[constraint] = nodes_container;
 
 
         return true;
