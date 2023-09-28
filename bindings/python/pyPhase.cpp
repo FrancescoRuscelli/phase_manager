@@ -40,16 +40,19 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
     PyObjWrapperWithBounds(py::object pyobj):
         _pyobj(pyobj)
     {
-        // what if empty?
 //        _lower_bounds = - std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
 //        _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
 
         //TODO: why inf? better like this
+        // initial bounds are required when clearing the phase: the current value is restored to the initial one.
         _lower_bounds = std::get<0>(getBounds());
         _upper_bounds = std::get<1>(getBounds());
 
         _initial_lower_bounds =  _lower_bounds;
         _initial_upper_bounds =  _upper_bounds;
+        std::cout << _initial_lower_bounds << std::endl;
+        std::cout << _initial_upper_bounds << std::endl;
+
     }
     std::string getName(){return _pyobj.attr("getName")().cast<std::string>();}
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
@@ -404,7 +407,7 @@ PYBIND11_MODULE(pyphase, m) {
             .def("getCosts", _get_costs_list)
             .def("getVariables", _get_variables_list)
             .def("getConstraints", _get_constraints_list)
-            .def("setElementNodes", &Phase::setElemNodes)
+            .def("setElementNodes", &Phase::setElemNodes, py::arg("elem_name"), py::arg("nodes"), py::arg("value_1") = Eigen::MatrixXd(), py::arg("value_2") = Eigen::MatrixXd())
 
             ;
 

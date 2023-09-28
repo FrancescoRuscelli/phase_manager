@@ -33,11 +33,13 @@ public:
 
         typedef std::shared_ptr<InfoContainer> Ptr;
         InfoContainer() {}
+        virtual ~InfoContainer() = default;
+        virtual std::string getType() {return "base";}
 
         std::vector<int> nodes;
     };
 
-    class BoundsContainer : public InfoContainer
+    class BoundsContainer : virtual public InfoContainer
     {
 
     public:
@@ -46,12 +48,13 @@ public:
         BoundsContainer() {}
 
         // must be of same dimension
+        std::string getType() {return "bounds";}
         // TODO: what happen if not same dimension?
         Eigen::MatrixXd lower_bounds;
         Eigen::MatrixXd upper_bounds;
     };
 
-    class ValuesContainer : public InfoContainer
+    class ValuesContainer : virtual public InfoContainer
     {
 
     public:
@@ -60,6 +63,7 @@ public:
         ValuesContainer() {}
 
         // must be of same dimension
+        std::string getType() {return "values";}
         // TODO: what happen if not same dimension?
         Eigen::MatrixXd values;
     };
@@ -68,25 +72,9 @@ public:
     std::string getName();
     int getNNodes();
     bool setDuration(int new_n_nodes);
-    bool setElemNodes(std::string elem_name, std::vector<int> new_nodes);
-
-
-
-    std::vector<int> _check_active_nodes(std::vector<int> nodes)
-    {
-
-        for (int num : nodes) {
-            if (_set_nodes.find(num) == _set_nodes.end()) {
-                throw std::invalid_argument("Node inserted ("
-                                      + std::to_string(num)
-                                      + ") is outside of phase nodes.");
-            }
-        }
-
-//        std::vector<int> active_nodes = (nodes.empty()) ? _range_nodes : nodes;
-
-        return nodes;
-    }
+    bool setElemNodes(std::string elem_name, std::vector<int> nodes,
+                      const Eigen::MatrixXd& value_1 = Eigen::MatrixXd(),
+                      const Eigen::MatrixXd& value_2 = Eigen::MatrixXd());
 
     bool addItem(ItemBase::Ptr item, std::vector<int> nodes = {})
     {
@@ -113,7 +101,15 @@ public:
     {
         auto active_nodes = _check_active_nodes(nodes);
 
-        ValuesContainer::Ptr val_container = std::make_unique<ValuesContainer>();;;
+        ValuesContainer::Ptr val_container = std::make_unique<ValuesContainer>();
+
+        std::cout << "nodes: ";
+
+        for (auto elem : nodes)
+        {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
 
         if (values.cols() != active_nodes.size())
         {
@@ -206,7 +202,22 @@ public:
 
         BoundsContainer::Ptr val_container = std::make_unique<BoundsContainer>();;
 
+        // update nodes and bounds
+        // bounds are updated only on the active nodes
         val_container->nodes = active_nodes;
+
+//        val_container->lower_bounds = std::get<0>(variable->getBounds());
+//        val_container->upper_bounds = std::get<1>(variable->getBounds());
+
+//        for (int col_i = 0; col_i < active_nodes.size(); col_i++)
+//        {
+//            val_container->lower_bounds.col(active_nodes.at(col_i)) = lower_bounds.col(col_i);
+//        }
+
+//        for (int col_i = 0; col_i < active_nodes.size(); col_i++)
+//        {
+//            val_container->upper_bounds.col(active_nodes.at(col_i)) = upper_bounds.col(col_i);
+//        }
         val_container->lower_bounds = lower_bounds;
         val_container->upper_bounds = upper_bounds;
 
@@ -216,6 +227,7 @@ public:
         _variables.push_back(variable);
         _info_variables[variable] = val_container;
         _elem_map[variable->getName()] = variable;
+        _info_elements[variable] = val_container;
 
 
         return true;
@@ -261,11 +273,32 @@ public:
 
 private:
 
+
+    Phase::InfoContainer::Ptr _get_info_element(std::string elem_name);
     void _stretch(std::vector<int>& nodes, double stretch_factor);
+
+    std::vector<int> _check_active_nodes(std::vector<int> nodes)
+    {
+    // check if added nodes are correct w.r.t. the nodes of the phase
+    // if nodes is empty, assume all the nodes are active
+
+        for (int num : nodes) {
+            if (_set_nodes.find(num) == _set_nodes.end()) {
+                throw std::invalid_argument("Node inserted ("
+                                      + std::to_string(num)
+                                      + ") is outside of phase nodes.");
+            }
+        }
+
+        std::vector<int> active_nodes = (nodes.empty()) ? _vec_nodes : nodes;
+
+        return active_nodes;
+    }
 
     std::string _name;
     int _n_nodes;
     std::unordered_set<int> _set_nodes;
+    std::vector<int> _vec_nodes;
 
 //    std::unordered_map<std::string, std::any> _elem_map;
 //    std::unordered_map<std::string, std::variant<std::unordered_map<ItemBase::Ptr, std::vector<int>>,

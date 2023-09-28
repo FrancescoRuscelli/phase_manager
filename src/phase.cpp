@@ -10,6 +10,12 @@ Phase::Phase(int n_nodes, std::string name):
         _set_nodes.insert(i);
     }
 
+
+    for (int i = 0; i < _n_nodes; i++) {
+        _vec_nodes.push_back(i);
+    }
+
+
 //    setMap("items", &_items_base);
 //    _elem_map["items_ref"] = _items_ref;
 //    _elem_map["constraints"] = _constraints;
@@ -46,6 +52,18 @@ bool Phase::setDuration(int new_n_nodes)
 
     }
 
+//    for (auto& elem : _info_items_ref)
+//    {
+//        _stretch(elem.second->nodes, stretch_factor);
+//        std::cout << elem.second->values << std::endl;
+//    }
+
+    for (auto& elem : _info_variables)
+    {
+        _stretch(elem.second->nodes, stretch_factor);
+        std::cout << "penis" << std::endl;
+        std::cout << elem.second->lower_bounds << std::endl;
+    }
     // todo: add all the other containers
 
 //    _items_base; OK
@@ -58,13 +76,13 @@ bool Phase::setDuration(int new_n_nodes)
     return true;
 }
 
-bool Phase::setElemNodes(std::string elem_name, std::vector<int> new_nodes)
+Phase::InfoContainer::Ptr Phase::_get_info_element(std::string elem_name)
 {
     auto it = _elem_map.find(elem_name);
     if (it == _elem_map.end())
     {
         std::cout << "Element '" << elem_name << "' does not exist in phase." << std::endl;
-        return false;
+        return nullptr;
     }
 
     auto elem = it->second;
@@ -73,19 +91,100 @@ bool Phase::setElemNodes(std::string elem_name, std::vector<int> new_nodes)
 
     if (itt == _info_elements.end())
     {
-        std::cout << "There is a problem here, element exist in map but there are no info about it? " << std::endl;
+        throw("There is a problem here! Contact the mantainer. Element exists in map but there are no info about it? ");
     }
 
-    auto nodes = itt->second;
+    return itt->second;
+}
 
-    for (int n : nodes->nodes)
+
+bool Phase::setElemNodes(std::string elem_name, std::vector<int> nodes, const Eigen::MatrixXd& value_1, const Eigen::MatrixXd& value_2)
+{
+    ///
+    /// \brief set new nodes, values or bounds of element.
+    /// if element only has nodes, value_1 and value_2 are ignored
+    /// if element has bounds, value_1 is lower bounds and value_2 is upper bounds (if no value_2 is specified, lower bounds == upper bounds)
+    /// if element has values, value_1 is value
+
+    auto info = _get_info_element(elem_name);
+    auto active_nodes = _check_active_nodes(nodes);
+    info->nodes = active_nodes;
+
+    if (std::dynamic_pointer_cast<BoundsContainer>(info))
     {
-        std::cout << n << " ";
+        auto bounds_info = std::dynamic_pointer_cast<BoundsContainer>(info);
+
+        if (value_1.rows() == 0 && value_1.cols() == 0)
+        {
+            throw std::runtime_error(std::string("No value provided for derived element."));
+        }
+
+        if ((value_1.cols() != nodes.size()) || (value_1.rows() != bounds_info->upper_bounds.rows()))
+        {
+            throw std::runtime_error(std::string("Wrong dimension of lower bounds inserted."));
+        }
+
+        // modifying only the bounds at the specified nodes
+            for (int col_i = 0; col_i < nodes.size(); col_i++)
+            {
+                bounds_info->lower_bounds.col(nodes.at(col_i)) = value_1.col(col_i);
+            }
+
+        std::cout << bounds_info->lower_bounds << std::endl;
+
+        if (value_2.rows() == 0 && value_2.cols() == 0)
+        {
+            bounds_info->upper_bounds = value_1;
+        }
+        else
+        {
+            if ((value_2.cols() != bounds_info->upper_bounds.cols()) || (value_2.rows() != bounds_info->upper_bounds.rows()))
+            {
+                throw std::runtime_error(std::string("Wrong dimension of upper bounds inserted."));
+            }
+
+            bounds_info->upper_bounds = value_2;
+        }
+
+    }
+    else
+    {
+        std::cout << "it's a base container. Changing nodes only" << std::endl;
     }
 
     return true;
 
 }
+
+//bool Phase::setElemNodes(std::string elem_name, std::vector<int> new_nodes, Eigen::MatrixXd upper_bounds)
+//{
+//    if (info->getType() == "bounds")
+//    {
+//        std::cout << "it's a bound container. Should do something with bounds" << std::endl;
+//        auto bounds_info = std::dynamic_pointer_cast<BoundsContainer>(info);
+//        std::cout << bounds_info->upper_bounds << std::endl;
+
+//        if (values != nullptr)
+//        {
+//            bounds_info->upper_bounds = new_values;
+//        }
+//        else
+//        {
+//            throw std::cout << "diocane" << std::endl;
+//        }
+
+//    }
+
+//    if (info->getType() == "values")
+//    {
+//        std::cout << "it's a values container. Should do something with values" << std::endl;
+////        std::cout << info->values << std::endl;
+//    }
+
+//    // what if there are bounds or values?
+
+//    return true;
+//}
 
 void Phase::_stretch(std::vector<int>& nodes, double stretch_factor)
 {
@@ -369,18 +468,27 @@ bool PhaseToken::_update_variables(int initial_node)
 {
     // should this also take care of setNodes()?
     // right now only bounds
-
     for (auto var_map : _abstract_phase->getVariablesInfo())
     {
         auto pair_nodes = _compute_horizon_nodes(var_map.second->nodes, initial_node);
 
+          // WARNING: this code assumes that the bound matrix is defined over all the nodes of the phase
+
+          // bounds are set at construction with the bounds values of the horizon variable
+          // take only the active nodes from the bounds matrix and set it to bring_me_to_eigen_3_4_lb
+
+        std::cout << "lower bounds" << std::endl;
+        std::cout << var_map.second->lower_bounds << std::endl;
+
         Eigen::MatrixXd bring_me_to_eigen_3_4_lb;
         bring_me_to_eigen_3_4_lb.resize(var_map.second->lower_bounds.rows(), pair_nodes.first.size());
-
         for (int col_i = 0; col_i < bring_me_to_eigen_3_4_lb.cols(); col_i++)
         {
             bring_me_to_eigen_3_4_lb.col(col_i) = var_map.second->lower_bounds.col(pair_nodes.first.at(col_i));
         }
+
+        std::cout << "setting bounds:" << std::endl;
+        std::cout << bring_me_to_eigen_3_4_lb << std::endl;
 
         Eigen::MatrixXd bring_me_to_eigen_3_4_ub;
         bring_me_to_eigen_3_4_ub.resize(var_map.second->upper_bounds.rows(), pair_nodes.first.size());
@@ -388,11 +496,14 @@ bool PhaseToken::_update_variables(int initial_node)
         {
             bring_me_to_eigen_3_4_ub.col(col_i) = var_map.second->upper_bounds.col(pair_nodes.first.at(col_i));
         }
-//            return std::make_pair(active_fun_nodes, horizon_nodes);
 
         var_map.first->setBounds(bring_me_to_eigen_3_4_lb,
                                  bring_me_to_eigen_3_4_ub,
                                  pair_nodes.second);
+
+//        var_map.first->setBounds(var_map.second->lower_bounds,
+//                                 var_map.second->upper_bounds,
+//                                 pair_nodes.second);
 
 //        var_map.first->setNodes(pair_nodes.second, true);
 
@@ -475,6 +586,7 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
      * _active_nodes: active nodes of the phase (relative nodes)
      * nodes: nodes of the item (relative nodes)
      * initial_node: where the phase is positioned in the horizon, in terms of nodes
+     * output:
      * active_item_nodes: item nodes in phase that are active (intersection between active node of the phase and nodes of the item in the phase)
      * horizon_nodes: active nodes of item in horizon
 
