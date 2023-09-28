@@ -10,23 +10,23 @@ prb = Problem(ns, receding=True)
 prb.setDt(dt)
 
 a = prb.createStateVariable('a', 1)
-
 cnsrt_1 = prb.createConstraint('cnsrt_1', a / 2, nodes=[])
-
+par = prb.createParameter('par', 1)
+print(par.getValues())
 pm = pymanager.PhaseManager(ns)
 timeline_1 = pm.addTimeline('timeline_1')
 
 phase_1 = pyphase.Phase(4, 'phase_1')
 # phase_1.addConstraint(cnsrt_1, nodes=[0, 3])
 # phase_1.addVariableBounds(a, np.array([[-1, -1]]), np.array([[1, 1]]), [2, 3])
-phase_1.addVariableBounds(a, np.array([[-1, -1, -1, -1]]), np.array([[1, 1, 1, 1]]))
-
+# phase_1.addVariableBounds(a, np.array([[-1, -1, -1, -1]]), np.array([[1, 1, 1, 1]]))
+phase_1.addParameterValues(par, np.array([[1., 2., 3., 4.]]))
 timeline_1.addPhase(phase_1)
-pm._shift_phases()
-pm._shift_phases()
+# timeline_1.shift_phases()
+timeline_1.shift_phases()
 # timeline_1.shift_phases()
 # timeline_1.shift_phases()
-# timeline_1.shift_phases()
+print(par.getValues())
 
 # print(phase_1.getConstraintsInfo())
 # phase_1.setDuration(15)
