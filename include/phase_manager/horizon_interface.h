@@ -16,6 +16,7 @@ class ItemBase
 public:
 
     typedef std::shared_ptr<ItemBase> Ptr;
+    ItemBase(): _is_changed(false) {}
 
     virtual bool setNodesInternal(std::vector<int> nodes, bool erasing) = 0;
     virtual std::string getName() = 0;
@@ -47,7 +48,7 @@ public:
 
     typedef std::shared_ptr<ItemWithBoundsBase> Ptr;
 
-    virtual bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes) = 0;
+    virtual bool setBoundsInternal(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes) = 0;
 
     bool clearBounds()
     {
@@ -55,6 +56,12 @@ public:
         return true;
     }
 
+    bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes)
+    {
+        _is_changed = true;
+        setBoundsInternal(lower_bounds, upper_bounds, nodes);
+        return true;
+    }
 
 protected:
     // do I need to initialize these?
@@ -70,12 +77,26 @@ class ItemWithValuesBase : public ItemBase
 public:
 
     typedef std::shared_ptr<ItemWithValuesBase> Ptr;
-    virtual bool assign(Eigen::MatrixXd values, std::vector<int> nodes) = 0;
-    virtual bool assign(Eigen::MatrixXd values) = 0;
+    virtual bool assignInternal(Eigen::MatrixXd values, std::vector<int> nodes) = 0;
+    virtual bool assignInternal(Eigen::MatrixXd values) = 0;
 
     bool clearValues()
     {
-        assign(_initial_values);
+        assignInternal(_initial_values);
+        return true;
+    }
+
+    bool assign(Eigen::MatrixXd values, std::vector<int> nodes)
+    {
+        _is_changed = true;
+        assignInternal(values, nodes);
+        return true;
+    }
+
+    bool assign(Eigen::MatrixXd values)
+    {
+        _is_changed = true;
+        assignInternal(values);
         return true;
     }
 
@@ -124,7 +145,7 @@ public:
         }
 
     bool setNodesInternal(std::vector<int> nodes, bool erasing) { return m_item->setNodes(nodes, erasing); }
-    bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes) { return m_item->setBounds(lower_bounds, upper_bounds, nodes); }
+    bool setBoundsInternal(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes) { return m_item->setBounds(lower_bounds, upper_bounds, nodes); }
     int getDim() { return m_item->getDim(); }
     std::vector<int> getNodes() { return m_item->getNodes(); }
 
@@ -148,7 +169,7 @@ public:
         }
 
     bool setNodesInternal(std::vector<int> nodes) { return m_item->setNodes(nodes); }
-    bool assign(Eigen::MatrixXd values) { return m_item->assign(values); }
+    bool assignInternal(Eigen::MatrixXd values) { return m_item->assign(values); }
     int getDim() { return m_item->getDim(); }
     std::vector<int> getNodes() { return m_item->getNodes(); }
     std::string getName() { return m_item->getName(); }

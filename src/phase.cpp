@@ -556,15 +556,11 @@ bool PhaseToken::_update_parameters(int initial_node)
             bring_me_to_eigen_3_4_val.col(col_i) = par_map.second->values.col(pair_nodes.first.at(col_i));
         }
 
-//        std::cout << "assigning values:" << bring_me_to_eigen_3_4_val << "to nodes:" << std::endl;
-//        for (int node : pair_nodes.second)
-//            {
-//                std::cout << node << " ";
-//            }
-//            std::cout << std::endl;
-
+        // this work when shifting because the phase_manager reset all the nodes before
+        // here it assign nodes only where needed
+        std::cout << "has changed? " << par_map.first->isChanged() << std::endl;
         par_map.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
-
+        std::cout << "has changed? " << par_map.first->isChanged() << std::endl;
 //        par_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
 //        par_map.first->addValues(pair_nodes.second, par_map.second.values(Eigen::indexing::all, pair_nodes.first));
 

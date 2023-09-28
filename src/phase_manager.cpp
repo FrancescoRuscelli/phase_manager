@@ -433,6 +433,7 @@ bool SinglePhaseManager::reset()
         {
 //          variable->clearNodes();
             variable->clearBounds();
+            std::cout << "var changed" << std::endl;
         }
     }
 
@@ -441,6 +442,7 @@ bool SinglePhaseManager::reset()
         if (parameter->isChanged())
         {
             parameter->clearValues();
+            std::cout << "par changed" << std::endl;
         }
     }
     return true;
@@ -551,6 +553,7 @@ SinglePhaseManager::Ptr PhaseManager::getTimelines(std::string name)
     return it;
 }
 
+// TODO: remove registerphase, is very tricky. Find a way to embed it in addPhase
 bool PhaseManager::registerPhase(std::string name, Phase::Ptr phase)
 {
     return _timelines[name]->registerPhase(phase);

@@ -71,7 +71,7 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
         return true;
     }
 
-    bool setBounds(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes)
+    bool setBoundsInternal(Eigen::MatrixXd lower_bounds, Eigen::MatrixXd upper_bounds, std::vector<int> nodes)
     {
 //        std::cout << "(pyphase) setting bounds: " << lower_bounds << std::endl;
         _pyobj.attr("setBounds")(lower_bounds, upper_bounds, nodes);
@@ -119,13 +119,13 @@ struct PyObjWrapperWithValues : ItemWithValuesBase {
         return true;
     }
 
-    bool assign(Eigen::MatrixXd values, std::vector<int> nodes)
+    bool assignInternal(Eigen::MatrixXd values, std::vector<int> nodes)
     {
         _pyobj.attr("assign")(values, nodes);
         return true;
     }
 
-    bool assign(Eigen::MatrixXd values)
+    bool assignInternal(Eigen::MatrixXd values)
     {
         _pyobj.attr("assign")(values);
         return true;
