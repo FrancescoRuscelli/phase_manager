@@ -50,8 +50,6 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
 
         _initial_lower_bounds =  _lower_bounds;
         _initial_upper_bounds =  _upper_bounds;
-        std::cout << _initial_lower_bounds << std::endl;
-        std::cout << _initial_upper_bounds << std::endl;
 
     }
     std::string getName(){return _pyobj.attr("getName")().cast<std::string>();}

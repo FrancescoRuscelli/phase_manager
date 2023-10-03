@@ -433,7 +433,6 @@ bool SinglePhaseManager::reset()
         {
 //          variable->clearNodes();
             variable->clearBounds();
-            std::cout << "var changed" << std::endl;
         }
     }
 
@@ -442,7 +441,6 @@ bool SinglePhaseManager::reset()
         if (parameter->isChanged())
         {
             parameter->clearValues();
-            std::cout << "par changed" << std::endl;
         }
     }
     return true;

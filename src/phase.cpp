@@ -61,7 +61,6 @@ bool Phase::setDuration(int new_n_nodes)
     for (auto& elem : _info_variables)
     {
         _stretch(elem.second->nodes, stretch_factor);
-        std::cout << "penis" << std::endl;
         std::cout << elem.second->lower_bounds << std::endl;
     }
     // todo: add all the other containers
@@ -154,6 +153,11 @@ bool Phase::setElemNodes(std::string elem_name, std::vector<int> nodes, const Ei
 
     return true;
 
+}
+
+std::unordered_set<int> Phase::getSetNodes()
+{
+    return _set_nodes;
 }
 
 //bool Phase::setElemNodes(std::string elem_name, std::vector<int> new_nodes, Eigen::MatrixXd upper_bounds)
@@ -472,45 +476,29 @@ bool PhaseToken::_update_variables(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(var_map.second->nodes, initial_node);
 
-          // WARNING: this code assumes that the bound matrix is defined over all the nodes of the phase
+        for (auto node : pair_nodes.first)
+        {
+            std::cout << node << " ";
+        }
+        std::cout << std::endl;
 
-          // bounds are set at construction with the bounds values of the horizon variable
-          // take only the active nodes from the bounds matrix and set it to bring_me_to_eigen_3_4_lb
-
-        std::cout << "lower bounds" << std::endl;
         std::cout << var_map.second->lower_bounds << std::endl;
-
-        Eigen::MatrixXd bring_me_to_eigen_3_4_lb;
-        bring_me_to_eigen_3_4_lb.resize(var_map.second->lower_bounds.rows(), pair_nodes.first.size());
-        for (int col_i = 0; col_i < bring_me_to_eigen_3_4_lb.cols(); col_i++)
+        // take only the active nodes from the bounds matrix and set it to "lb"
+        Eigen::MatrixXd lb(var_map.second->lower_bounds.rows(), pair_nodes.first.size());
+        for (int col_i = 0; col_i < lb.cols(); col_i++)
         {
-            bring_me_to_eigen_3_4_lb.col(col_i) = var_map.second->lower_bounds.col(pair_nodes.first.at(col_i));
+            lb.col(col_i) = var_map.second->lower_bounds.col(pair_nodes.first.at(col_i));
         }
 
-        std::cout << "setting bounds:" << std::endl;
-        std::cout << bring_me_to_eigen_3_4_lb << std::endl;
-
-        Eigen::MatrixXd bring_me_to_eigen_3_4_ub;
-        bring_me_to_eigen_3_4_ub.resize(var_map.second->upper_bounds.rows(), pair_nodes.first.size());
-        for (int col_i = 0; col_i < bring_me_to_eigen_3_4_ub.cols(); col_i++)
+        Eigen::MatrixXd ub(var_map.second->lower_bounds.rows(), pair_nodes.first.size());
+        for (int col_i = 0; col_i < ub.cols(); col_i++)
         {
-            bring_me_to_eigen_3_4_ub.col(col_i) = var_map.second->upper_bounds.col(pair_nodes.first.at(col_i));
+            ub.col(col_i) = var_map.second->upper_bounds.col(pair_nodes.first.at(col_i));
         }
 
-        var_map.first->setBounds(bring_me_to_eigen_3_4_lb,
-                                 bring_me_to_eigen_3_4_ub,
+        var_map.first->setBounds(lb,
+                                 ub,
                                  pair_nodes.second);
-
-//        var_map.first->setBounds(var_map.second->lower_bounds,
-//                                 var_map.second->upper_bounds,
-//                                 pair_nodes.second);
-
-//        var_map.first->setNodes(pair_nodes.second, true);
-
-
-//        var_map.first->addBounds(pair_nodes.second,
-//                                 bring_me_to_eigen_3_4_lb,
-//                                 bring_me_to_eigen_3_4_ub);
 
 //        var_map.first->addBounds(pair_nodes.second,
 //                                 var_map.second.lower_bounds(Eigen::indexing::all, pair_nodes.first),
@@ -558,9 +546,7 @@ bool PhaseToken::_update_parameters(int initial_node)
 
         // this work when shifting because the phase_manager reset all the nodes before
         // here it assign nodes only where needed
-        std::cout << "has changed? " << par_map.first->isChanged() << std::endl;
         par_map.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
-        std::cout << "has changed? " << par_map.first->isChanged() << std::endl;
 //        par_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
 //        par_map.first->addValues(pair_nodes.second, par_map.second.values(Eigen::indexing::all, pair_nodes.first));
 
@@ -575,25 +561,34 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
      * input:
      * item nodes inside the phase (relative nodes)
      * initial node of the phase (position of phase in horizon)
+
      * output:
      * active nodes of item relative to the phase
      * absolute nodes in horizon
 
      * _active_nodes: active nodes of the phase (relative nodes)
      * nodes: nodes of the item (relative nodes)
-     * initial_node: where the phase is positioned in the horizon, in terms of nodes
-     * output:
+     * initial_node: where the phase is positioned in the horizon, in terms of node
      * active_item_nodes: item nodes in phase that are active (intersection between active node of the phase and nodes of the item in the phase)
      * horizon_nodes: active nodes of item in horizon
 
     */
 
-    std::vector<int> active_item_nodes;
+    std::vector<int> active_item_nodes; // Vector to store positions of elements in 'nodes' that are in '_active_nodes'
 
     // check which node of the item (constraint, cost, var...) is active inside the phase, given the active nodes of the phase
     std::set_intersection(nodes.begin(), nodes.end(),
                           _active_nodes.begin(), _active_nodes.end(),
                           std::back_inserter(active_item_nodes));
+
+
+    for (int i = 0; i < nodes.size(); ++i) {
+        if (get_phase()->getSetNodes().count(nodes[i]) > 0) {
+            // Element found in 'a', store its position in vector 'c'
+            active_item_nodes.push_back(i);
+        }
+    }
+
 
     std::vector<int> horizon_nodes(active_item_nodes.size());
     // active phase nodes             : [2 3 4 5]

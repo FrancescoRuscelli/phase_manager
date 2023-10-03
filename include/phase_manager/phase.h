@@ -103,13 +103,13 @@ public:
 
         ValuesContainer::Ptr val_container = std::make_unique<ValuesContainer>();
 
-        std::cout << "nodes: ";
+//        std::cout << "nodes: ";
 
-        for (auto elem : nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
+//        for (auto elem : nodes)
+//        {
+//            std::cout << elem << " ";
+//        }
+//        std::cout << std::endl;
 
         if (values.cols() != active_nodes.size())
         {
@@ -255,7 +255,7 @@ public:
         return true;
     }
 
-
+    std::unordered_set<int> getSetNodes();
     std::vector<ItemBase::Ptr> getItems();
     std::vector<ItemWithValuesBase::Ptr> getItemsReference();
 
