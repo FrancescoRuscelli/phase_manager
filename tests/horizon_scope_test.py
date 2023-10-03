@@ -18,9 +18,10 @@ timeline_1 = pm.addTimeline('timeline_1')
 phase_1 = pyphase.Phase(4, 'phase_1')
 
 # phase_1.addConstraint(cnsrt_1, nodes=[0, 3])
-phase_1.addVariableBounds(a, np.array([[-1, -1]]), np.array([[1, 1]]), [1, 3])
+# phase_1.addVariableBounds(a, np.array([[-1, -2]]), np.array([[1, 2]]), [1, 3])
 # phase_1.addVariableBounds(a, np.array([[-1, -1, -1, -1]]), np.array([[1, 1, 1, 1]]))
-# phase_1.addParameterValues(par, np.array([[1., 3., 4.]]), [0, 2, 3])
+phase_1.addParameterValues(par, np.array([[1., 3., 4.]]), [0, 2, 3])
+# phase_1.addParameterValues(par, np.array([[1., 3., 4., 5.]]))
 
 timeline_1.registerPhase(phase_1)
 
@@ -32,6 +33,8 @@ timeline_1.addPhase(phase_1)
 
 # print(a.getBounds())
 print(par.getValues())
+
+exit()
 # print(phase_1.getConstraintsInfo())
 # phase_1.setDuration(15)
 # print(phase_1.getConstraintsInfo())
@@ -47,10 +50,10 @@ print(par.getValues())
 # for elem in phase_1.getConstraints():
 #     print(f"{elem.getName()}: {elem.getNodes()}")
 
-print('variables, active nodes and bounds:')
-for elem in phase_1.getVariables():
-    print(f"{elem.getName()}: {elem.getNodes()}, \n{elem.getBounds()}")
-exit()
+# print('variables, active nodes and bounds:')
+# for elem in phase_1.getVariables():
+#     print(f"{elem.getName()}: {elem.getNodes()}, \n{elem.getBounds()}")
+# exit()
 
 # phase_1.setElementNodes("cnsrt_1", [0, 1])
 phase_1.setElementNodes("a", [2, 3], np.array([[2, 4]]))

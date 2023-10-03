@@ -15,6 +15,17 @@ Phase::Phase(int n_nodes, std::string name):
         _vec_nodes.push_back(i);
     }
 
+//    std::cout << "set nodes: " << std::endl;
+//    for (auto node : _set_nodes) {
+//        std::cout << node << " ";
+//    }
+//    std::cout << std::endl;
+
+//    std::cout << "vec nodes: " << std::endl;
+//    for (auto node : _vec_nodes) {
+//        std::cout << node << " ";
+//    }
+//    std::cout << std::endl;
 
 //    setMap("items", &_items_base);
 //    _elem_map["items_ref"] = _items_ref;
@@ -475,25 +486,18 @@ bool PhaseToken::_update_variables(int initial_node)
     for (auto var_map : _abstract_phase->getVariablesInfo())
     {
         auto pair_nodes = _compute_horizon_nodes(var_map.second->nodes, initial_node);
+        // take only the active nodes (columns) from the bounds matrix and set it to "lb"
 
-        for (auto node : pair_nodes.first)
-        {
-            std::cout << node << " ";
-        }
-        std::cout << std::endl;
-
-        std::cout << var_map.second->lower_bounds << std::endl;
-        // take only the active nodes from the bounds matrix and set it to "lb"
         Eigen::MatrixXd lb(var_map.second->lower_bounds.rows(), pair_nodes.first.size());
-        for (int col_i = 0; col_i < lb.cols(); col_i++)
-        {
-            lb.col(col_i) = var_map.second->lower_bounds.col(pair_nodes.first.at(col_i));
-        }
+        Eigen::MatrixXd ub(var_map.second->upper_bounds.rows(), pair_nodes.first.size());
 
-        Eigen::MatrixXd ub(var_map.second->lower_bounds.rows(), pair_nodes.first.size());
-        for (int col_i = 0; col_i < ub.cols(); col_i++)
+        for (int col_i = 0; col_i < pair_nodes.first.size(); col_i++)
         {
-            ub.col(col_i) = var_map.second->upper_bounds.col(pair_nodes.first.at(col_i));
+            // find the column of the values matrix corresponding to the active nodes
+            auto itr = std::find(var_map.second->nodes.begin(), var_map.second->nodes.end(), pair_nodes.first[col_i]);
+            int index = std::distance(var_map.second->nodes.begin(), itr);
+            lb.col(col_i) = var_map.second->lower_bounds.col(index);
+            ub.col(col_i) = var_map.second->upper_bounds.col(index);
         }
 
         var_map.first->setBounds(lb,
@@ -536,17 +540,19 @@ bool PhaseToken::_update_parameters(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(par_map.second->nodes, initial_node);
 
-        Eigen::MatrixXd bring_me_to_eigen_3_4_val;
-        bring_me_to_eigen_3_4_val.resize(par_map.second->values.rows(), pair_nodes.first.size());
+        Eigen::MatrixXd val(par_map.second->values.rows(), pair_nodes.first.size());
 
-        for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
+        for (int col_i = 0; col_i < pair_nodes.first.size(); col_i++)
         {
-            bring_me_to_eigen_3_4_val.col(col_i) = par_map.second->values.col(pair_nodes.first.at(col_i));
+            // find the column of the values matrix corresponding to the active nodes
+            auto itr = std::find(par_map.second->nodes.begin(), par_map.second->nodes.end(), pair_nodes.first[col_i]);
+            int index = std::distance(par_map.second->nodes.begin(), itr);
+            val.col(col_i) = par_map.second->values.col(index);
         }
 
         // this work when shifting because the phase_manager reset all the nodes before
         // here it assign nodes only where needed
-        par_map.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
+        par_map.first->assign(val, pair_nodes.second);
 //        par_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
 //        par_map.first->addValues(pair_nodes.second, par_map.second.values(Eigen::indexing::all, pair_nodes.first));
 
@@ -581,13 +587,12 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
                           _active_nodes.begin(), _active_nodes.end(),
                           std::back_inserter(active_item_nodes));
 
-
-    for (int i = 0; i < nodes.size(); ++i) {
-        if (get_phase()->getSetNodes().count(nodes[i]) > 0) {
-            // Element found in 'a', store its position in vector 'c'
-            active_item_nodes.push_back(i);
-        }
-    }
+//    for (int i = 0; i < nodes.size(); ++i) {
+//        if (get_phase()->getSetNodes().count(nodes[i]) > 0) {
+//            // Element found in 'get_phase()->getSetNodes()', store its position in vector 'active_item_nodes'
+//            active_item_nodes.push_back(i);
+//        }
+//    }
 
 
     std::vector<int> horizon_nodes(active_item_nodes.size());

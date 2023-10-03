@@ -243,7 +243,27 @@ public:
          */
         auto active_nodes = _check_active_nodes(nodes);
 
-        ValuesContainer::Ptr val_container = std::make_unique<ValuesContainer>();;;
+
+        // check if lower and upper bounds have the right size
+        if (values.cols() != active_nodes.size())
+        {
+            throw std::invalid_argument("Dimension of values inserted ("
+                                  + std::to_string(values.cols())
+                                  + ") does not match number of nodes specified ("
+                                  + std::to_string(active_nodes.size()) + ")");
+        }
+
+        ValuesContainer::Ptr val_container = std::make_unique<ValuesContainer>();
+
+//        std::cout <<" nodes: " << std::endl;
+//        for (auto node : active_nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
+
+//        std::cout <<" values: " << std::endl;
+//        std::cout << values << std::endl;
 
         val_container->nodes = active_nodes;
         val_container->values = values;
