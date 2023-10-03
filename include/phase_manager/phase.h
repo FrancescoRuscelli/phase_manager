@@ -200,7 +200,7 @@ public:
         }
 
 
-        BoundsContainer::Ptr val_container = std::make_unique<BoundsContainer>();;
+        BoundsContainer::Ptr val_container = std::make_unique<BoundsContainer>();
 
         // update nodes and bounds
         // bounds are updated only on the active nodes
@@ -244,7 +244,7 @@ public:
         auto active_nodes = _check_active_nodes(nodes);
 
 
-        // check if lower and upper bounds have the right size
+        // check if values have the right size w.r.t. the nodes selected
         if (values.cols() != active_nodes.size())
         {
             throw std::invalid_argument("Dimension of values inserted ("
@@ -271,6 +271,7 @@ public:
         _parameters.push_back(parameter);
         _info_parameters[parameter] = val_container;
         _elem_map[parameter->getName()] = parameter;
+        _info_elements[parameter] = val_container;
 
         return true;
     }

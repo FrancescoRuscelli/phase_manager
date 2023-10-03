@@ -48,6 +48,10 @@ int Phase::getNNodes()
 
 bool Phase::setDuration(int new_n_nodes)
 {
+
+    std::cout << "This feature is still experimental. " << std::endl;
+    // this stretch is a little bit tricky.
+    // maybe useful in nominal condition, but what if nodes inserted are, for instance, [0, 2, 5]?
     double stretch_factor = static_cast<double>(new_n_nodes)/_n_nodes;
 
     _n_nodes = new_n_nodes;
@@ -57,23 +61,44 @@ bool Phase::setDuration(int new_n_nodes)
         _stretch(elem.second->nodes, stretch_factor);
     }
 
+    for (auto& elem : _info_items_ref)
+    {
+        std::cout << " 'item reference' detected in phase. Remember to set the reference for the new nodes, as it is NOT done automatically. " << std::endl;
+        _stretch(elem.second->nodes, stretch_factor);
+
+    }
+
     for (auto& elem : _info_constraints)
     {
         _stretch(elem.second->nodes, stretch_factor);
 
     }
 
-//    for (auto& elem : _info_items_ref)
-//    {
-//        _stretch(elem.second->nodes, stretch_factor);
-//        std::cout << elem.second->values << std::endl;
-//    }
+    for (auto& elem : _info_costs)
+    {
+        _stretch(elem.second->nodes, stretch_factor);
+
+    }
 
     for (auto& elem : _info_variables)
     {
+        std::cout << " 'variable bounds' detected in phase. Remember to set the bounds for the new nodes, as it is NOT done automatically. " << std::endl;
         _stretch(elem.second->nodes, stretch_factor);
-        std::cout << elem.second->lower_bounds << std::endl;
     }
+
+    for (auto& elem : _info_parameters)
+    {
+        std::cout << " 'parameter values' detected in phase. Remember to set the reference for the new nodes, as it is NOT done automatically. " << std::endl;
+        _stretch(elem.second->nodes, stretch_factor);
+
+        for (auto node : elem.second->nodes)
+        {
+            std::cout << node << " ";
+        }
+        std::cout << std::endl;
+
+    }
+
     // todo: add all the other containers
 
 //    _items_base; OK
@@ -91,17 +116,17 @@ Phase::InfoContainer::Ptr Phase::_get_info_element(std::string elem_name)
     auto it = _elem_map.find(elem_name);
     if (it == _elem_map.end())
     {
-        std::cout << "Element '" << elem_name << "' does not exist in phase." << std::endl;
         return nullptr;
     }
 
-    auto elem = it->second;
 
+    auto elem = it->second;
     auto itt = _info_elements.find(elem);
+
 
     if (itt == _info_elements.end())
     {
-        throw("There is a problem here! Contact the mantainer. Element exists in map but there are no info about it? ");
+        throw std::runtime_error(std::string("There is a problem here! Contact the mantainer. Element exists in map but there are no info about it? "));
     }
 
     return itt->second;
@@ -111,13 +136,20 @@ Phase::InfoContainer::Ptr Phase::_get_info_element(std::string elem_name)
 bool Phase::setElemNodes(std::string elem_name, std::vector<int> nodes, const Eigen::MatrixXd& value_1, const Eigen::MatrixXd& value_2)
 {
     ///
-    /// \brief set new nodes, values or bounds of element.
+    /// \brief set new nodes, values or bounds of element, overwriting everyhting.
     /// if element only has nodes, value_1 and value_2 are ignored
     /// if element has bounds, value_1 is lower bounds and value_2 is upper bounds (if no value_2 is specified, lower bounds == upper bounds)
     /// if element has values, value_1 is value
 
     auto info = _get_info_element(elem_name);
+
+    if (!info)
+    {
+        throw std::runtime_error(std::string("Element does not exist in phase."));
+    }
+
     auto active_nodes = _check_active_nodes(nodes);
+
     info->nodes = active_nodes;
 
     if (std::dynamic_pointer_cast<BoundsContainer>(info))
@@ -129,18 +161,12 @@ bool Phase::setElemNodes(std::string elem_name, std::vector<int> nodes, const Ei
             throw std::runtime_error(std::string("No value provided for derived element."));
         }
 
-        if ((value_1.cols() != nodes.size()) || (value_1.rows() != bounds_info->upper_bounds.rows()))
+        if ((value_1.cols() != nodes.size()) || (value_1.rows() != bounds_info->lower_bounds.rows()))
         {
             throw std::runtime_error(std::string("Wrong dimension of lower bounds inserted."));
         }
 
-        // modifying only the bounds at the specified nodes
-            for (int col_i = 0; col_i < nodes.size(); col_i++)
-            {
-                bounds_info->lower_bounds.col(nodes.at(col_i)) = value_1.col(col_i);
-            }
-
-        std::cout << bounds_info->lower_bounds << std::endl;
+        bounds_info->lower_bounds = value_1;
 
         if (value_2.rows() == 0 && value_2.cols() == 0)
         {
@@ -148,13 +174,35 @@ bool Phase::setElemNodes(std::string elem_name, std::vector<int> nodes, const Ei
         }
         else
         {
-            if ((value_2.cols() != bounds_info->upper_bounds.cols()) || (value_2.rows() != bounds_info->upper_bounds.rows()))
+            if ((value_2.cols() != nodes.size()) || (value_2.rows() != bounds_info->upper_bounds.rows()))
             {
                 throw std::runtime_error(std::string("Wrong dimension of upper bounds inserted."));
             }
 
             bounds_info->upper_bounds = value_2;
         }
+    }
+    else if (std::dynamic_pointer_cast<ValuesContainer>(info))
+    {
+
+        auto value_info = std::dynamic_pointer_cast<ValuesContainer>(info);
+
+        if (value_1.rows() == 0 && value_1.cols() == 0)
+        {
+            throw std::runtime_error(std::string("No value provided for derived element."));
+        }
+
+        if (value_2.rows() != 0 && value_2.cols() != 0)
+        {
+            std::cout << "Second value has no meaning for a parameter. Ignoring." << std::endl;
+        }
+
+        if ((value_1.cols() != nodes.size()) || (value_1.rows() != value_info->values.rows()))
+        {
+            throw std::runtime_error(std::string("Wrong dimension of values inserted."));
+        }
+
+        value_info->values = value_1;
 
     }
     else
@@ -540,6 +588,14 @@ bool PhaseToken::_update_parameters(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(par_map.second->nodes, initial_node);
 
+
+        std::cout << " par_map nodes: ";
+        for (auto elem : par_map.second->nodes)
+        {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
+
         Eigen::MatrixXd val(par_map.second->values.rows(), pair_nodes.first.size());
 
         for (int col_i = 0; col_i < pair_nodes.first.size(); col_i++)
@@ -549,6 +605,16 @@ bool PhaseToken::_update_parameters(int initial_node)
             int index = std::distance(par_map.second->nodes.begin(), itr);
             val.col(col_i) = par_map.second->values.col(index);
         }
+
+        std::cout << " adding horizon nodes: ";
+        for (auto elem : pair_nodes.second)
+        {
+            std::cout << elem << " ";
+        }
+        std::cout << std::endl;
+
+        std::cout << "val:" << std::endl;
+        std::cout << val << std::endl;
 
         // this work when shifting because the phase_manager reset all the nodes before
         // here it assign nodes only where needed
