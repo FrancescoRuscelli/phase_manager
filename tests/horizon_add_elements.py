@@ -93,6 +93,6 @@ class PhaseTester:
 if __name__ == '__main__':
 
     pt = PhaseTester()
-    # pt.test_variable()
+    pt.test_variable()
     pt.test_parameter()
-    # pt.test_constraint()
+    pt.test_constraint()

@@ -283,11 +283,8 @@ std::unordered_set<int> Phase::getSetNodes()
 
 std::unordered_map<int, std::vector<int>> Phase::_stretch(std::vector<int> nodes, double stretch_factor)
 {
-    // given a vector of active nodes, stretch it given the stretch_factor and the vector of all nodes.
-
-    std::cout << "stretch_factor: " << stretch_factor << std::endl;
-    int new_duration = static_cast<int>(std::round(nodes.size() * stretch_factor));
-    std::cout << "new duration: " << new_duration << std::endl;
+    // stretches the duration of the phase, assigning to each old node a list of new node
+    // (some of these list will be empty if the stretch_factor < 1)
 
     std::unordered_map<int, std::vector<int>> stretch_map;
 
@@ -305,25 +302,7 @@ std::unordered_map<int, std::vector<int>> Phase::_stretch(std::vector<int> nodes
         stretch_map[element] = stretch_nodes;
     }
 
-    for (auto it : stretch_map)
-    {
-        std::cout << "node: " << it.first << " correspond to: ";
-        for (auto inner_it : it.second)
-        {
-            std::cout << inner_it << " ";
-        }
-        std::cout << std::endl;
-    }
-
     return stretch_map;
-//    nodes.clear();
-
-//    for (auto it = new_initial_node; it < new_duration + new_initial_node; it++)
-//    {
-//        if (it <= (_n_nodes - 1))
-//            nodes.push_back(it);
-//    }
-
 }
 
 std::vector<int> Phase::_extract_stretch_nodes(std::unordered_map<int, std::vector<int>> stretch_map, std::vector<int> nodes)
