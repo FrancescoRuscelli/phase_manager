@@ -15,8 +15,8 @@ par = prb.createParameter('par', 1)
 pm = pymanager.PhaseManager(ns)
 timeline_1 = pm.addTimeline('timeline_1')
 phase_1 = pyphase.Phase(5, 'phase_1')
-# phase_1.addVariableBounds(a, np.array([[1, 2, 3, 4, 5]]), np.array([[-1, -2, -3, -4, -5]]))
-phase_1.addParameterValues(par, np.array([[1., 4.]]), [1, 3])
+phase_1.addVariableBounds(a, np.array([[1, 2, 3, 4, 5]]), np.array([[-1, -2, -3, -4, -5]]))
+# phase_1.addParameterValues(par, np.array([[1., 4.]]), [0, 4])
 timeline_1.registerPhase(phase_1)
 
 # tic = time.time()
@@ -29,7 +29,7 @@ timeline_1.registerPhase(phase_1)
 # print(phase_1.getVariablesInfo())
 # print(a.getUpperBounds())
 
-phase_1.setDuration(10)
+phase_1.setDuration(6)
 # print('new nodes: ', phase_1.getNNodes())
 
 # print('variable after:')
@@ -41,9 +41,9 @@ phase_1.setDuration(10)
 # phase_1.setElementNodes('a', [1, 2], np.array([[-4, -3]]))
 # phase_1.setElementNodes(par.getName(), [1, 2], np.array([[-4, -3]]))
 
-# print(par.getValues())
 timeline_1.addPhase(phase_1)
-print(par.getValues())
+# print(par.getValues())
+print(a.getBounds())
 exit()
 
 

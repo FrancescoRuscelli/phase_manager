@@ -297,6 +297,8 @@ private:
     bool _init_nodes(int n_nodes);
     Phase::InfoContainer::Ptr _get_info_element(std::string elem_name);
     std::unordered_map<int, std::vector<int>> _stretch(std::vector<int> nodes, double stretch_factor);
+    std::vector<int> _extract_stretch_nodes(std::unordered_map<int, std::vector<int>> stretch_map, std::vector<int> nodes);
+
 
     std::vector<int> _check_active_nodes(std::vector<int> nodes)
     {
