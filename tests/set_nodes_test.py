@@ -16,7 +16,7 @@ pm = pymanager.PhaseManager(ns)
 timeline_1 = pm.addTimeline('timeline_1')
 phase_1 = pyphase.Phase(5, 'phase_1')
 # phase_1.addVariableBounds(a, np.array([[1, 2, 3, 4, 5]]), np.array([[-1, -2, -3, -4, -5]]))
-phase_1.addParameterValues(par, np.array([[1., 3., 4.]]), [0, 2, 3])
+phase_1.addParameterValues(par, np.array([[1., 4.]]), [1, 3])
 timeline_1.registerPhase(phase_1)
 
 # tic = time.time()
@@ -43,8 +43,8 @@ phase_1.setDuration(10)
 
 # print(par.getValues())
 timeline_1.addPhase(phase_1)
-exit()
 print(par.getValues())
+exit()
 
 
 # print(a.getLowerBounds())

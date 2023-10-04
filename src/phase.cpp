@@ -5,27 +5,7 @@ Phase::Phase(int n_nodes, std::string name):
     _name(name)
 
 {
-    // create unordered set for phase nodes
-    for (int i = 0; i < _n_nodes; i++) {
-        _set_nodes.insert(i);
-    }
-
-
-    for (int i = 0; i < _n_nodes; i++) {
-        _vec_nodes.push_back(i);
-    }
-
-//    std::cout << "set nodes: " << std::endl;
-//    for (auto node : _set_nodes) {
-//        std::cout << node << " ";
-//    }
-//    std::cout << std::endl;
-
-//    std::cout << "vec nodes: " << std::endl;
-//    for (auto node : _vec_nodes) {
-//        std::cout << node << " ";
-//    }
-//    std::cout << std::endl;
+    _init_nodes(_n_nodes);
 
 //    setMap("items", &_items_base);
 //    _elem_map["items_ref"] = _items_ref;
@@ -53,18 +33,41 @@ bool Phase::setDuration(int new_n_nodes)
     // this stretch is a little bit tricky.
     // maybe useful in nominal condition, but what if nodes inserted are, for instance, [0, 2, 5]?
     double stretch_factor = static_cast<double>(new_n_nodes)/_n_nodes;
-
+    auto stretch_map = _stretch(_vec_nodes, stretch_factor);
     _n_nodes = new_n_nodes;
+    _init_nodes(_n_nodes); // require to recompute vec_nodes and set_nodes;
 
     for (auto& elem : _info_items_base)
     {
         _stretch(elem.second->nodes, stretch_factor);
     }
-
     for (auto& elem : _info_items_ref)
     {
         std::cout << " 'item reference' detected in phase. Remember to set the reference for the new nodes, as it is NOT done automatically. " << std::endl;
+        auto old_nodes = elem.second->nodes;
+        std::vector<int> new_nodes;
+        for (auto node : elem.second->nodes)
+        {
+            for (auto elem : stretch_map[node])
+            {
+                new_nodes.push_back(elem);
+            }
+        }
         _stretch(elem.second->nodes, stretch_factor);
+        // setting the values of the new nodes to zero
+        Eigen::MatrixXd val_temp = Eigen::MatrixXd::Zero(elem.second->values.rows(), elem.second->nodes.size());
+
+
+        for (int col_i =0; col_i < old_nodes.size(); col_i++)
+        {
+            if (old_nodes[col_i] < val_temp.cols())
+            {
+                val_temp.col(old_nodes[col_i]) = elem.second->values.col(col_i);
+            }
+        }
+
+        elem.second->values = val_temp;
+
 
     }
 
@@ -83,19 +86,58 @@ bool Phase::setDuration(int new_n_nodes)
     for (auto& elem : _info_variables)
     {
         std::cout << " 'variable bounds' detected in phase. Remember to set the bounds for the new nodes, as it is NOT done automatically. " << std::endl;
+        auto old_nodes = elem.second->nodes;
         _stretch(elem.second->nodes, stretch_factor);
+
+        // setting the bounds of the new nodes to zero
+        Eigen::MatrixXd lb_temp = Eigen::MatrixXd::Zero(elem.second->lower_bounds.rows(), elem.second->nodes.size());
+        Eigen::MatrixXd ub_temp = Eigen::MatrixXd::Zero(elem.second->lower_bounds.rows(), elem.second->nodes.size());
+        for (int col_i =0; col_i < old_nodes.size(); col_i++)
+        {
+            if (old_nodes[col_i] < lb_temp.cols())
+            {
+                lb_temp.col(old_nodes[col_i]) = elem.second->lower_bounds.col(col_i);
+                ub_temp.col(old_nodes[col_i]) = elem.second->upper_bounds.col(col_i);
+            }
+        }
+
+        elem.second->lower_bounds = lb_temp;
+        elem.second->upper_bounds = ub_temp;
+
+
+
     }
 
     for (auto& elem : _info_parameters)
     {
         std::cout << " 'parameter values' detected in phase. Remember to set the reference for the new nodes, as it is NOT done automatically. " << std::endl;
+        auto old_nodes = elem.second->nodes;
+
         _stretch(elem.second->nodes, stretch_factor);
 
+        // setting the values of the new nodes to zero
+        Eigen::MatrixXd val_temp = Eigen::MatrixXd::Zero(elem.second->values.rows(), elem.second->nodes.size());
+
+        for (int col_i =0; col_i < old_nodes.size(); col_i++)
+        {
+            // if new nodes size is smaller than the old, old values referring to no-more-existing node are ignored
+            if (old_nodes[col_i] < val_temp.cols())
+            {
+                val_temp.col(old_nodes[col_i]) = elem.second->values.col(col_i);
+            }
+        }
+
+        elem.second->values = val_temp;
+
+        std::cout << "nodes: " << std::endl;
         for (auto node : elem.second->nodes)
         {
             std::cout << node << " ";
         }
         std::cout << std::endl;
+
+        std::cout << "values: " << std::endl;
+        std::cout << elem.second->values << std::endl;
 
     }
 
@@ -249,20 +291,49 @@ std::unordered_set<int> Phase::getSetNodes()
 //    return true;
 //}
 
-void Phase::_stretch(std::vector<int>& nodes, double stretch_factor)
+std::unordered_map<int, std::vector<int>> Phase::_stretch(std::vector<int> nodes, double stretch_factor)
 {
+    // given a vector of active nodes, stretch it given the stretch_factor and the vector of all nodes.
 
-
-    int new_initial_node = static_cast<int>(std::round(nodes[0] * stretch_factor));
+    std::cout << "stretch_factor: " << stretch_factor << std::endl;
     int new_duration = static_cast<int>(std::round(nodes.size() * stretch_factor));
+    std::cout << "new duration: " << new_duration << std::endl;
 
-    nodes.clear();
+    std::unordered_map<int, std::vector<int>> stretch_map;
 
-    for (auto it = new_initial_node; it < new_duration + new_initial_node; it++)
+    int initial_node = 0;
+    for (int element : nodes) {
+
+            std::cout << "old node: " << element << std::endl;
+
+            int new_element = static_cast<int>( (element + 1) * stretch_factor);
+            std::vector<int> stretch_nodes;
+            for (int it = initial_node; it < new_element; it++)
+            {
+                stretch_nodes.push_back(it);
+                initial_node = it + 1;
+            }
+            stretch_map[element] = stretch_nodes;
+        }
+
+    for (auto it : stretch_map)
     {
-        if (it <= (_n_nodes - 1))
-            nodes.push_back(it);
+        std::cout << "node: " << it.first << " correspond to: ";
+        for (auto inner_it : it.second)
+        {
+            std::cout << inner_it << " ";
+        }
+        std::cout << std::endl;
     }
+
+    return stretch_map;
+//    nodes.clear();
+
+//    for (auto it = new_initial_node; it < new_duration + new_initial_node; it++)
+//    {
+//        if (it <= (_n_nodes - 1))
+//            nodes.push_back(it);
+//    }
 
 }
 
@@ -324,6 +395,34 @@ std::unordered_map<ItemWithBoundsBase::Ptr, Phase::BoundsContainer::Ptr> Phase::
 std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer::Ptr> Phase::getParametersInfo()
 {
     return _info_parameters;
+}
+
+bool Phase::_init_nodes(int n_nodes)
+{
+    _set_nodes.clear();
+    // create unordered set for phase nodes
+    for (int i = 0; i < n_nodes; i++) {
+        _set_nodes.insert(i);
+    }
+
+    _vec_nodes.clear();
+    for (int i = 0; i < n_nodes; i++) {
+        _vec_nodes.push_back(i);
+    }
+
+    return true;
+    //    std::cout << "set nodes: " << std::endl;
+    //    for (auto node : _set_nodes) {
+    //        std::cout << node << " ";
+    //    }
+    //    std::cout << std::endl;
+
+    //    std::cout << "vec nodes: " << std::endl;
+    //    for (auto node : _vec_nodes) {
+    //        std::cout << node << " ";
+    //    }
+    //    std::cout << std::endl;
+
 }
 
 
@@ -426,7 +525,7 @@ Phase::Ptr PhaseToken::get_phase()
 
 //            for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
 //            {
-//                bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second.values.col(pair_nodes.first.at(col_i));
+//                bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second.values.col(pair_nodes.firstcol_i));
 //            }
 
 //            item_ref.first->setNodes(pair_nodes.second, false);
@@ -496,7 +595,7 @@ bool PhaseToken::_update_item_reference(int initial_node)
 
         for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
         {
-            bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second->values.col(pair_nodes.first.at(col_i));
+            bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second->values.col(pair_nodes.first[col_i]);
         }
 
 //        std::cout << "assigning values:" << bring_me_to_eigen_3_4_val << "to nodes:" << std::endl;
@@ -588,13 +687,12 @@ bool PhaseToken::_update_parameters(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(par_map.second->nodes, initial_node);
 
-
-        std::cout << " par_map nodes: ";
-        for (auto elem : par_map.second->nodes)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
+//        std::cout << " par_map nodes: ";
+//        for (auto elem : par_map.second->nodes)
+//        {
+//            std::cout << elem << " ";
+//        }
+//        std::cout << std::endl;
 
         Eigen::MatrixXd val(par_map.second->values.rows(), pair_nodes.first.size());
 
@@ -606,22 +704,21 @@ bool PhaseToken::_update_parameters(int initial_node)
             val.col(col_i) = par_map.second->values.col(index);
         }
 
-        std::cout << " adding horizon nodes: ";
-        for (auto elem : pair_nodes.second)
-        {
-            std::cout << elem << " ";
-        }
-        std::cout << std::endl;
+//        std::cout << " adding horizon nodes: ";
+//        for (auto elem : pair_nodes.second)
+//        {
+//            std::cout << elem << " ";
+//        }
+//        std::cout << std::endl;
 
-        std::cout << "val:" << std::endl;
-        std::cout << val << std::endl;
+//        std::cout << "val:" << std::endl;
+//        std::cout << val << std::endl;
 
         // this work when shifting because the phase_manager reset all the nodes before
         // here it assign nodes only where needed
         par_map.first->assign(val, pair_nodes.second);
 //        par_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
 //        par_map.first->addValues(pair_nodes.second, par_map.second.values(Eigen::indexing::all, pair_nodes.first));
-
     }
 
     return true;
