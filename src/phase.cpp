@@ -41,29 +41,29 @@ bool Phase::setDuration(int new_n_nodes)
     {
         _stretch(elem.second->nodes, stretch_factor);
     }
+
     for (auto& elem : _info_items_ref)
     {
         std::cout << " 'item reference' detected in phase. Remember to set the reference for the new nodes, as it is NOT done automatically. " << std::endl;
-        auto old_nodes = elem.second->nodes;
         std::vector<int> new_nodes;
-        for (auto node : elem.second->nodes)
+        for (auto old_node : elem.second->nodes)
         {
-            for (auto elem : stretch_map[node])
+            for (auto new_node : stretch_map[old_node])
             {
-                new_nodes.push_back(elem);
+                new_nodes.push_back(new_node);
             }
         }
-        _stretch(elem.second->nodes, stretch_factor);
+
+        elem.second->nodes = new_nodes;
         // setting the values of the new nodes to zero
         Eigen::MatrixXd val_temp = Eigen::MatrixXd::Zero(elem.second->values.rows(), elem.second->nodes.size());
-
-
-        for (int col_i =0; col_i < old_nodes.size(); col_i++)
+        for (auto old_node : elem.second->nodes)
         {
-            if (old_nodes[col_i] < val_temp.cols())
+            for (auto new_node : stretch_map[old_node])
             {
-                val_temp.col(old_nodes[col_i]) = elem.second->values.col(col_i);
+                val_temp.col(new_node) = elem.second->values.col(old_node);
             }
+
         }
 
         elem.second->values = val_temp;
@@ -73,13 +73,29 @@ bool Phase::setDuration(int new_n_nodes)
 
     for (auto& elem : _info_constraints)
     {
-        _stretch(elem.second->nodes, stretch_factor);
+        std::vector<int> new_nodes;
+        for (auto node : elem.second->nodes)
+        {
+            for (auto elem : stretch_map[node])
+            {
+                new_nodes.push_back(elem);
+            }
+        }
+        elem.second->nodes = new_nodes;
 
     }
 
     for (auto& elem : _info_costs)
     {
-        _stretch(elem.second->nodes, stretch_factor);
+        std::vector<int> new_nodes;
+        for (auto node : elem.second->nodes)
+        {
+            for (auto elem : stretch_map[node])
+            {
+                new_nodes.push_back(elem);
+            }
+        }
+        elem.second->nodes = new_nodes;
 
     }
 
@@ -87,7 +103,15 @@ bool Phase::setDuration(int new_n_nodes)
     {
         std::cout << " 'variable bounds' detected in phase. Remember to set the bounds for the new nodes, as it is NOT done automatically. " << std::endl;
         auto old_nodes = elem.second->nodes;
-        _stretch(elem.second->nodes, stretch_factor);
+        std::vector<int> new_nodes;
+        for (auto node : elem.second->nodes)
+        {
+            for (auto elem : stretch_map[node])
+            {
+                new_nodes.push_back(elem);
+            }
+        }
+        elem.second->nodes = new_nodes;
 
         // setting the bounds of the new nodes to zero
         Eigen::MatrixXd lb_temp = Eigen::MatrixXd::Zero(elem.second->lower_bounds.rows(), elem.second->nodes.size());
@@ -113,21 +137,35 @@ bool Phase::setDuration(int new_n_nodes)
         std::cout << " 'parameter values' detected in phase. Remember to set the reference for the new nodes, as it is NOT done automatically. " << std::endl;
         auto old_nodes = elem.second->nodes;
 
-        _stretch(elem.second->nodes, stretch_factor);
+        std::vector<int> new_nodes;
+        for (auto node : elem.second->nodes)
+        {
+            for (auto elem : stretch_map[node])
+            {
+                new_nodes.push_back(elem);
+            }
+        }
+        elem.second->nodes = new_nodes;
 
         // setting the values of the new nodes to zero
         Eigen::MatrixXd val_temp = Eigen::MatrixXd::Zero(elem.second->values.rows(), elem.second->nodes.size());
-
-        for (int col_i =0; col_i < old_nodes.size(); col_i++)
+        for (auto old_node : elem.second->nodes)
         {
-            // if new nodes size is smaller than the old, old values referring to no-more-existing node are ignored
-            if (old_nodes[col_i] < val_temp.cols())
+            for (auto new_node : stretch_map[old_node])
             {
-                val_temp.col(old_nodes[col_i]) = elem.second->values.col(col_i);
+                val_temp.col(new_node) = elem.second->values.col(old_node);
             }
+
         }
 
         elem.second->values = val_temp;
+
+        std::cout << "old nodes: " << std::endl;
+        for (auto node : old_nodes)
+        {
+            std::cout << node << " ";
+        }
+        std::cout << std::endl;
 
         std::cout << "nodes: " << std::endl;
         for (auto node : elem.second->nodes)
@@ -302,19 +340,18 @@ std::unordered_map<int, std::vector<int>> Phase::_stretch(std::vector<int> nodes
     std::unordered_map<int, std::vector<int>> stretch_map;
 
     int initial_node = 0;
-    for (int element : nodes) {
+    for (int element : nodes)
+    {
 
-            std::cout << "old node: " << element << std::endl;
-
-            int new_element = static_cast<int>( (element + 1) * stretch_factor);
-            std::vector<int> stretch_nodes;
-            for (int it = initial_node; it < new_element; it++)
-            {
-                stretch_nodes.push_back(it);
-                initial_node = it + 1;
-            }
-            stretch_map[element] = stretch_nodes;
+        int new_element = static_cast<int>( (element + 1) * stretch_factor);
+        std::vector<int> stretch_nodes;
+        for (int it = initial_node; it < new_element; it++)
+        {
+            stretch_nodes.push_back(it);
+            initial_node = it + 1;
         }
+        stretch_map[element] = stretch_nodes;
+    }
 
     for (auto it : stretch_map)
     {
