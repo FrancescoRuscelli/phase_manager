@@ -144,17 +144,12 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position)
             std::cout << "adding phaseToken " << phase_token_i->getName() << " to active phases" << std::endl;
             _active_phases.push_back(phase_token_i);
 
-//            _trailing_empty_nodes -= active_nodes;
-//            _last_node += active_nodes;
+            std::cout << "active_nodes: " << active_nodes << std::endl;
 
-            // add to active nodes only the active portion of the phase
-//            if (_trailing_empty_nodes <= 0)
-//            if (_last_node + active_nodes >= _n_nodes)
-//            {
-            active_nodes += _n_nodes - _last_node;
-//                _trailing_empty_nodes = 0;
-//            }
-
+            if (_last_node + active_nodes >= _n_nodes)
+            {
+                active_nodes -= _last_node + active_nodes - _n_nodes;
+            }
 
             for (int i = 0; i<active_nodes; i++)
             {
@@ -282,7 +277,7 @@ int SinglePhaseManager::_check_absolute_position(int pos)
 
             if (pos < _phases[phase_pos]->getPosition() + _phases[phase_pos]->getNNodes())
             {
-                throw std::runtime_error("absolute position requested is occupied by phase at position: ");
+                throw std::runtime_error("absolute position requested is occupied by phase at position: " + std::to_string(phase_pos));
             }
         }
     }
