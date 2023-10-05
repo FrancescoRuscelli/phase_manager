@@ -206,11 +206,11 @@ bool SinglePhaseManager::_add_phases(int pos)
 //
         }
 
-        std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
+//        std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
 //        important bit: this is where i update the phase
         phase_token_i->_update(_last_node);
         _last_node += phase_token_i->getNNodes();
-        std::cout << "last node: " << _last_node << std::endl;
+//        std::cout << "last node: " << _last_node << std::endl;
 
     }
 
