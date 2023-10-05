@@ -75,7 +75,7 @@ if __name__ == '__main__':
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
     for i in range(5):
-        timeline_1.shift_phases()
+        timeline_1.shift()
         print("SHIFTING PHASES: ")
 
         printAllPhases(timeline_1)

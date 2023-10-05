@@ -29,7 +29,7 @@ public:
     int getEmptyNodes();
     std::vector<PhaseToken::Ptr> getActivePhases();
     std::vector<PhaseToken::Ptr> getPhases();
-    bool _shift_phases();
+    bool shift();
     bool reset();
     ~SinglePhaseManager();
 
@@ -79,7 +79,7 @@ public:
     bool registerPhase(std::string name, Phase::Ptr phase);
     bool addPhase(std::string name, Phase::Ptr phase);
     int getNodes();
-    bool _shift_phases();
+    bool shift();
 
 private:
 

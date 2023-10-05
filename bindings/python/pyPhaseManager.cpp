@@ -17,7 +17,7 @@ PYBIND11_MODULE(pymanager, m) {
             .def("getEmptyNodes", &SinglePhaseManager::getEmptyNodes)
             .def("getActivePhases", &SinglePhaseManager::getActivePhases)
             .def("getPhases", &SinglePhaseManager::getPhases)
-            .def("shift_phases", &SinglePhaseManager::_shift_phases)
+            .def("shift", &SinglePhaseManager::shift)
             ;
 
 
@@ -28,7 +28,7 @@ PYBIND11_MODULE(pymanager, m) {
             .def("getTimelines", static_cast<std::unordered_map<std::string, SinglePhaseManager::Ptr> (PhaseManager::*)()>(&PhaseManager::getTimelines))
             .def("addPhase", &PhaseManager::addPhase)
             .def("registerPhase", &PhaseManager::registerPhase)
-            .def("_shift_phases", &PhaseManager::_shift_phases)
+            .def("shift", &PhaseManager::shift)
             .def("getNodes", &PhaseManager::getNodes)
             ;
 

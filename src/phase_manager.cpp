@@ -256,7 +256,7 @@ PhaseToken::Ptr SinglePhaseManager::_generate_phase_token(Phase::Ptr phase)
     return std::make_shared<PhaseTokenGate>(phase);
 }
 
-bool SinglePhaseManager::_shift_phases()
+bool SinglePhaseManager::shift()
 {
     // reset all nodes
     reset();
@@ -581,11 +581,11 @@ int PhaseManager::getNodes()
     return _n_nodes;
 }
 
-bool PhaseManager::_shift_phases()
+bool PhaseManager::shift()
 {
     for (auto timeline : _timelines)
     {
-        timeline.second->_shift_phases();
+        timeline.second->shift();
     }
 
     return true;
