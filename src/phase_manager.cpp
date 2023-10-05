@@ -123,39 +123,49 @@ bool SinglePhaseManager::_add_phases(int pos)
     }
     else
     {
-        // insert phase_tokens of temporary container (_phase_to_add) in stack at pos
+        // insert phase_tokens of temporary container (_phase_to_add) in stack at posistion 'pos'
 //        std::cout << "...inserting at pos: " << pos << " (" << _phases.size() << ")";
         _phases.insert(_phases.begin() + pos, _phases_to_add.begin(), _phases_to_add.end());
-//        std::cout << "...done." << " (" << _phases.size() << ")" << std::endl;
+//        std::cout << " ...done." << " (" << _phases.size() << ")" << std::endl;
 
-        // if pos is beyond the horizon (outside of the active_phases), skip useless computation
-        if (0 <= pos && pos <= _active_phases.size())
+
+        if (pos >= 0) //        if (0 <= pos && pos <= _active_phases.size())
         {
-            // remove all the active_phases after the position
-            _active_phases.resize(pos);
-
-            // reset the items (holding all the active nodes)
-            // TODO: should I do it only for the items before pos?
-            reset();
-
-            // recompute empty nodes in horizon until pos
-            _trailing_empty_nodes = _n_nodes;
-            for (int i=0; i<pos; i++)
+            // if 'pos' is beyond the horizon (outside of the active_phases), skip useless computation
+            if (pos <= _active_phases.size())
             {
-                _trailing_empty_nodes -= _phases[i]->_get_active_nodes().size();
+                // remove all the active_phases after the position 'pos'
+                _active_phases.resize(pos);
+
+                // reset the items (holding all the active nodes)
+                // TODO: should I do it only for the items before pos?
+                reset();
+
+                // recompute empty nodes in horizon until position 'pos'
+                _trailing_empty_nodes = _n_nodes;
+                for (int i=0; i<pos; i++)
+                {
+                    _trailing_empty_nodes -= _phases[i]->_get_active_nodes().size();
+
+                }
+                // update again phases before the position 'pos' (before i resetted)
+                int last_active_node = 0;
+
+                for (auto phase_token_i : _active_phases)
+                {
+                    phase_token_i->_update(last_active_node);
+                    last_active_node += phase_token_i->_get_active_nodes().size();
+                }
             }
 
-            // update again phases before the position (before i resetted)
-            int pos_in_horizon = 0;
-
-            for (auto phase_token_i : _active_phases)
+            // reset the last_node at the last element position before the inserted.
+            _last_node = 0;
+            for (int it=0; it < pos; it++)
             {
-                phase_token_i->_update(pos_in_horizon);
-                pos_in_horizon += phase_token_i->_get_active_nodes().size();
-
+                _last_node += _phases[it]->getNNodes();
             }
 
-            // add tail of all the phases after the one inserted (nodes need to be recomputed)
+            // add to _phases_to_add the tail of all the phases after the one inserted (nodes need to be recomputed)
             _phases_to_add.insert(_phases_to_add.end(), _phases.begin() + pos + 1, _phases.end());
 
             // remove active nodes from phases to add, needs to be recomputed (all the phases that were active may not be active anymore after being pushed back)
@@ -170,7 +180,6 @@ bool SinglePhaseManager::_add_phases(int pos)
     // compute active nodes inside the added phases
     for (auto phase_token_i : _phases_to_add)
     {
-
         int active_nodes = phase_token_i->getNNodes();
 
         // set active node for each added phase
@@ -197,11 +206,11 @@ bool SinglePhaseManager::_add_phases(int pos)
 //
         }
 
-//        std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
+        std::cout << "updating phase: " << phase_token_i->get_phase()->getName() << std::endl;
 //        important bit: this is where i update the phase
         phase_token_i->_update(_last_node);
         _last_node += phase_token_i->getNNodes();
-//        std::cout << "pos_in_horizon: " << _last_node << std::endl;
+        std::cout << "last node: " << _last_node << std::endl;
 
     }
 
@@ -384,7 +393,7 @@ bool SinglePhaseManager::_shift_phases()
 bool SinglePhaseManager::reset()
 {
     // todo: could be made faster?
-    // this call at every loop a set nodes, even on the items that were not touched
+    // todo: reset(pos) --> reset from a specific position?
 
     bool erasing = true;
     std::vector<int> empty_nodes;
@@ -395,7 +404,7 @@ bool SinglePhaseManager::reset()
 //        std::cout << item->getName() << " (" << item << "): ";
         if (item->isChanged())
         {
-//            std::cout << "resetting." << std::endl;
+//            std::cout << "resetting item..." << std::endl;
             item->setNodes(empty_nodes, erasing);
         }
     }
@@ -404,6 +413,7 @@ bool SinglePhaseManager::reset()
     {
         if (item_ref->isChanged())
         {
+//            std::cout << "resetting items ref..." << std::endl;
             item_ref->setNodes(empty_nodes, erasing);
             item_ref->clearValues();
         }
@@ -413,6 +423,7 @@ bool SinglePhaseManager::reset()
     {
         if (constraint->isChanged())
         {
+//            std::cout << "resetting constraint..." << std::endl;
             constraint->setNodes(empty_nodes, erasing);
 //        constraint->clearBounds(); // this cleared bounds here
         }
@@ -422,6 +433,7 @@ bool SinglePhaseManager::reset()
     {
         if (cost->isChanged())
         {
+//            std::cout << "resetting cost..." << std::endl;
             cost->setNodes(empty_nodes, erasing);
         }
     }
@@ -431,6 +443,7 @@ bool SinglePhaseManager::reset()
 
         if (variable->isChanged())
         {
+//            std::cout << "resetting variable..." << std::endl;
 //          variable->clearNodes();
             variable->clearBounds();
         }
@@ -440,6 +453,7 @@ bool SinglePhaseManager::reset()
     {
         if (parameter->isChanged())
         {
+//            std::cout << "resetting parameter..." << std::endl;
             parameter->clearValues();
         }
     }
