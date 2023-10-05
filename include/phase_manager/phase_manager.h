@@ -30,11 +30,12 @@ public:
     std::vector<PhaseToken::Ptr> getActivePhases();
     std::vector<PhaseToken::Ptr> getPhases();
     bool shift();
-    bool reset();
+    bool clear();
     ~SinglePhaseManager();
 
 private:
 
+    bool _reset();
     bool _add_phases(int pos=-1); // TODO substitute with pointer
     PhaseToken::Ptr _generate_phase_token(Phase::Ptr phase);
 
@@ -80,6 +81,7 @@ public:
     bool addPhase(std::string name, Phase::Ptr phase);
     int getNodes();
     bool shift();
+    bool clear();
 
 private:
 

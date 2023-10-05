@@ -139,7 +139,7 @@ bool SinglePhaseManager::_add_phases(int pos)
 
                 // reset the items (holding all the active nodes)
                 // TODO: should I do it only for the items before pos?
-                reset();
+                _reset();
 
                 // recompute empty nodes in horizon until position 'pos'
                 _trailing_empty_nodes = _n_nodes;
@@ -259,7 +259,7 @@ PhaseToken::Ptr SinglePhaseManager::_generate_phase_token(Phase::Ptr phase)
 bool SinglePhaseManager::shift()
 {
     // reset all nodes
-    reset();
+    _reset();
 
 //    auto start_time = std::chrono::high_resolution_clock::now();
 //    std::cout << " ============ shifting phases ============ : " << std::endl;
@@ -390,7 +390,18 @@ bool SinglePhaseManager::shift()
     return true;
 }
 
-bool SinglePhaseManager::reset()
+bool SinglePhaseManager::clear()
+{
+    // this shows how the code sucks, there should be a function centralizing the update of all this info, as they are connected together.
+    _reset();
+    _phases.clear();
+    _active_phases.clear();
+    _last_node = 0;
+    _trailing_empty_nodes = _n_nodes;
+    return true;
+}
+
+bool SinglePhaseManager::_reset()
 {
     // todo: could be made faster?
     // todo: reset(pos) --> reset from a specific position?
@@ -589,4 +600,12 @@ bool PhaseManager::shift()
     }
 
     return true;
+}
+
+bool PhaseManager::clear()
+{
+    for (auto timeline : _timelines)
+    {
+        timeline.second->clear();
+    }
 }

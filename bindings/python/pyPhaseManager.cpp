@@ -18,6 +18,7 @@ PYBIND11_MODULE(pymanager, m) {
             .def("getActivePhases", &SinglePhaseManager::getActivePhases)
             .def("getPhases", &SinglePhaseManager::getPhases)
             .def("shift", &SinglePhaseManager::shift)
+            .def("clear", &SinglePhaseManager::clear)
             ;
 
 
@@ -29,6 +30,7 @@ PYBIND11_MODULE(pymanager, m) {
             .def("addPhase", &PhaseManager::addPhase)
             .def("registerPhase", &PhaseManager::registerPhase)
             .def("shift", &PhaseManager::shift)
+            .def("clear", &PhaseManager::clear)
             .def("getNodes", &PhaseManager::getNodes)
             ;
 
