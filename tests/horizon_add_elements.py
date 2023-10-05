@@ -46,7 +46,7 @@ class PhaseTester:
             # for elem in phase_1.getConstraints():
             #     print(f"{elem.getName()}: {elem.getNodes()}")
 
-            self.pm._shift_phases()
+            self.pm.shift()
 
 
     def test_parameter(self):
@@ -63,7 +63,7 @@ class PhaseTester:
         for num_it in range(5):
             print(par.getValues())
 
-            self.pm._shift_phases()
+            self.pm.shift()
 
 
     def test_variable(self):
@@ -85,7 +85,7 @@ class PhaseTester:
         #     print(f"{elem.getName()}: {elem.getNodes()}, \n{elem.getBounds()}")
         # exit()
 
-            self.pm._shift_phases()
+            self.pm.shift()
 
 
 
