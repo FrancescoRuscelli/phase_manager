@@ -112,11 +112,13 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position)
 //    std::cout << "> = = = = = at node: ";
 //    std::cout << _last_node;
 //    std::cout << " = = = = = = = = =" << std::endl;
+
     if (absolute_position)
     {
         pos = _check_absolute_position(pos);
     }
 
+    std::cout << "adding phase at pos: " << pos << std::endl;
     // fill _phases_to_add, a vector of phases to add to the horizon
     if (pos == -1 || pos > _phases.size())
     {
@@ -134,14 +136,14 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position)
     // compute active nodes inside the added phases
     for (auto phase_token_i : _phases_to_add)
     {
+//        int intial_node = phase_token_i->getPosition();
         int active_nodes = phase_token_i->getNNodes();
 
         // set active node for each added phase
-//        if (_trailing_empty_nodes > 0)
         if (_last_node < _n_nodes)
         {
             // if _trailing_empty_nodes is bigger than zero, the phase is active (even if its tail falls outside the horizon)
-            std::cout << "adding phaseToken " << phase_token_i->getName() << " to active phases" << std::endl;
+            std::cout << "adding phase token " << phase_token_i->getName() << " to active phases" << std::endl;
             _active_phases.push_back(phase_token_i);
 
             std::cout << "active_nodes: " << active_nodes << std::endl;
@@ -155,15 +157,14 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position)
             {
                 phase_token_i->_get_active_nodes().push_back(i);
             }
-//
         }
 
+        // update the phase tokens
         std::cout << "updating phase: '" << phase_token_i->get_phase()->getName() << "' at node: " << _last_node << std::endl;
-//        important bit: this is where i update the phase
         phase_token_i->_update(_last_node);
         _last_node += phase_token_i->getNNodes();
         std::cout << "last node: " << _last_node << std::endl;
-
+        std::cout << "============================" << std::endl;
     }
 
 
@@ -214,13 +215,6 @@ bool SinglePhaseManager::_insert_phases(int pos)
             // TODO: should I do it only for the items before pos?
             _reset();
 
-            // recompute empty nodes in horizon until position 'pos'
-//            _trailing_empty_nodes = _n_nodes;
-//            for (int i=0; i<pos; i++)
-//            {
-//                _trailing_empty_nodes -= _phases[i]->_get_active_nodes().size();
-
-//            }
             // update again phases before the position 'pos' (before i resetted)
             int last_active_node = 0;
 
@@ -232,11 +226,20 @@ bool SinglePhaseManager::_insert_phases(int pos)
         }
 
         // reset the last_node at the last element position before the inserted.
-        _last_node = 0;
-        for (int it=0; it < pos; it++)
+        if (position > 0)
         {
-            _last_node += _phases[it]->getNNodes();
+            _last_node = _phases[pos - 1]->getPosition() + _phases[pos - 1]->getNNodes();
         }
+        else
+        {
+            _last_node = 0;
+        }
+
+//        _last_node = 0;
+//        for (int it=0; it < pos; it++)
+//        {
+//            _last_node += _phases[it]->getNNodes();
+//        }
 
         // add to _phases_to_add the tail of all the phases after the one inserted (nodes need to be recomputed)
         _phases_to_add.insert(_phases_to_add.end(), _phases.begin() + pos + 1, _phases.end());
@@ -253,55 +256,44 @@ bool SinglePhaseManager::_insert_phases(int pos)
 
 int SinglePhaseManager::_check_absolute_position(int pos)
 {
+
+    std::cout << "inserting phase at absolute position: " << pos << std::endl;
     // search for the position 'pos', which is to be intended as the absolute position in horizon
     if (pos > _last_node)
     {
         // 'pos' is after the last phase
         _last_node = pos;
 //        _trailing_empty_nodes = _n_nodes - _last_node;
-        std::cout << "adding phase to pos: " << _last_node << std::endl;
         pos = -1;
         return pos;
     }
 
-    std::cout << "inserting phase at absolute position: " << pos << std::endl;
 
     int phase_num = 0;
     // search it in the vector '_phases'
-    for (int phase_pos=0; phase_pos < _phases.size(); phase_pos++)
+    for (int phase_num = 0; phase_num < _phases.size(); phase_num++)
     {
-        if (pos >= _phases[phase_pos]->getPosition() && pos < _phases[phase_pos+1]->getPosition())
+        if ((pos > _phases[phase_num]->getPosition()) && (pos < _phases[phase_num]->getPosition() + _phases[phase_num]->getNNodes()))
         {
-            std::cout << "absolute position requested is between phase at positions: " << phase_pos << " and " << phase_pos+1 << std::endl;
-            phase_num = phase_pos;
-
-            if (pos < _phases[phase_pos]->getPosition() + _phases[phase_pos]->getNNodes())
-            {
-                throw std::runtime_error("absolute position requested is occupied by phase at position: " + std::to_string(phase_pos));
-            }
+            throw std::runtime_error("absolute position requested is occupied by phase at position: " + std::to_string(phase_num));
         }
-    }
 
-    int total_duration = 0;
-    for (auto phase : _phases_to_add)
-    {
-        total_duration += phase->getNNodes();
-    }
+        int total_duration = 0;
+        for (auto phase : _phases_to_add)
+        {
+            total_duration += phase->getNNodes();
+        }
 
-    if ((pos + total_duration) < _phases[phase_num + 1]->getPosition())
-    {
-        std::cout << "You can insert it." << std::endl;
-        _last_node = pos;
-//        _trailing_empty_nodes = _n_nodes - _last_node;
-        return pos;
+//        std::cout << "Checking if there is enough space to insert a phase of dimension: " << total_duration << std::endl;
+        if (pos + total_duration > _phases[phase_num + 1]->getPosition())
+        {
+            throw std::runtime_error("There is no space left to insert phase. Another phase is starting at node: " + std::to_string(_phases[phase_num + 1]->getPosition()));
+        }
+        break;
 
     }
-    else
-    {
-        throw std::runtime_error("There is no space left to insert phase.");
-    }
-        //(pos +  && pos < it->getPosition() + it->getNNodes())
-    phase_num++;
+//    _last_node = pos;
+    return phase_num + 1;
 
 
 }
