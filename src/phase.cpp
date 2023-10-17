@@ -756,26 +756,32 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
 
 }
 
+bool PhaseToken::_set_position(int initial_node)
+{
+    _initial_node = initial_node;
+    return true;
+}
+
 //bool PhaseToken::_set_position(int initial_node)
 //{
 //    _initial_node = initial_node;
 //}
 
-bool PhaseToken::_update(int initial_node)
+bool PhaseToken::_update()
 {
     /*
      * update items contained in phase in horizon based on the position of the phase
      */
-    _initial_node = initial_node;
 
+//    std::cout << "updating phase: '" << getName() << "' at node: " << _initial_node << std::endl;
     if (!_active_nodes.empty())
     {
-        _update_items(initial_node);
-        _update_item_reference(initial_node);
-        _update_constraints(initial_node);
-        _update_variables(initial_node);
-        _update_costs(initial_node);
-        _update_parameters(initial_node);
+        _update_items(_initial_node);
+        _update_item_reference(_initial_node);
+        _update_constraints(_initial_node);
+        _update_variables(_initial_node);
+        _update_costs(_initial_node);
+        _update_parameters(_initial_node);
     }
     return true;
 

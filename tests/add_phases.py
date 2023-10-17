@@ -35,35 +35,19 @@ phase_2.addItem(cnsrt4)
 timeline_1.registerPhase(phase_2)
 
 timeline_1.addPhase(phase_2)
+print("empty nodes: ", timeline_1.getEmptyNodes())
 timeline_1.addPhase(phase_2)
-timeline_1.addPhase(phase_2)
+print("empty nodes: ", timeline_1.getEmptyNodes())
+timeline_1.addPhase(phase_1, 3)
+print("empty nodes: ", timeline_1.getEmptyNodes())
+# timeline_1.addPhase(phase_2)
+# timeline_1.addPhase(phase_2, 0)
+# timeline_1.addPhase(phase_2)
 # timeline_1.addPhase(phase_2)
 # timeline_1.addPhase(phase_1)
-# timeline_1.addPhase(phase_2)
-# timeline_1.addPhase(phase_2)
-# timeline_1.addPhase(phase_1)
 
-print(" initial condition: ")
+pos_phase = 0
+for phase in timeline_1.getPhases():
+    print(f"{pos_phase}. {phase.getName()}: {phase.getActiveNodes()}")
+    pos_phase += 1
 
-print("cnsrt1: ", cnsrt1.getNodes())
-print("cnsrt2: ", cnsrt2.getNodes())
-print("cnsrt3: ", cnsrt3.getNodes())
-print("cnsrt4: ", cnsrt4.getNodes())
-
-num_shift = 100
-for i in range(num_shift):
-    print(f" SHIFTING PHASES: iteration {i}")
-
-    pm.shift()
-    print("phases: ")
-    for phase in timeline_1.getPhases():
-        print(f"{phase.getName()}: {phase.getActiveNodes()}")
-
-    print("horizon elements: ")
-    print("cnsrt1: ", cnsrt1.getNodes())
-    print("cnsrt2: ", cnsrt2.getNodes())
-    print("cnsrt3: ", cnsrt3.getNodes())
-    print("cnsrt4: ", cnsrt4.getNodes())
-    input()
-
-exit()

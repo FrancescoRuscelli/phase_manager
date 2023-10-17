@@ -416,7 +416,7 @@ private:
     std::pair<std::vector<int>, std::vector<int>> _compute_horizon_nodes(std::vector<int> nodes, int initial_node);
 
     bool _set_position(int initial_node);
-    bool _update(int initial_node);
+    bool _update();
 
     std::vector<int>& _get_active_nodes();
     Phase::Ptr get_phase();

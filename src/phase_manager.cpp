@@ -118,52 +118,65 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position)
         pos = _check_absolute_position(pos);
     }
 
-    std::cout << "adding phase at pos: " << pos << std::endl;
     // fill _phases_to_add, a vector of phases to add to the horizon
     if (pos == -1 || pos > _phases.size())
     {
         // add phase_tokens in temporary container (_phase_to_add) to stack
-        std::cout << "...adding at tail: " << "(" << _phases.size() << ")";
+        int last_current_node = 0;
+
+        if (!_phases.empty())
+        {
+            last_current_node = _phases.back()->getPosition() + _phases.back()->getNNodes();
+        }
+
+        std::cout << "Adding '" << _phases_to_add.size() << "' phase/s at tail: " << "(pos: " << _phases.size() << ")";
         _phases.insert(_phases.end(), _phases_to_add.begin(), _phases_to_add.end());
-        std::cout << " ...done." << " (" << _phases.size() << ")" << std::endl;
+        std::cout << " ...done." << " (total n. of phases: " << _phases.size() << ")" << std::endl;
+
+
+        // set absolute position of phase
+        // is last_node necessary? right now is the sum of nodes in _phases
+        for (auto phase_token_i : _phases_to_add)
+        {
+            phase_token_i->_set_position(last_current_node);
+            last_current_node += phase_token_i->getNNodes();
+        }
     }
     else
     {   
         _insert_phases(pos);
     }
 
-
     // compute active nodes inside the added phases
     for (auto phase_token_i : _phases_to_add)
     {
-//        int intial_node = phase_token_i->getPosition();
-        int active_nodes = phase_token_i->getNNodes();
+        int initial_node = phase_token_i->getPosition();
+        int phase_nodes = phase_token_i->getNNodes();
 
         // set active node for each added phase
-        if (_last_node < _n_nodes)
+        if (initial_node <= _n_nodes)
         {
+            int active_nodes = phase_nodes;
             // if _trailing_empty_nodes is bigger than zero, the phase is active (even if its tail falls outside the horizon)
-            std::cout << "adding phase token " << phase_token_i->getName() << " to active phases" << std::endl;
+            std::cout << "   --> Adding phase token '" << phase_token_i->getName() << "' to active phases" << std::endl;;
             _active_phases.push_back(phase_token_i);
 
-            std::cout << "active_nodes: " << active_nodes << std::endl;
-
-            if (_last_node + active_nodes >= _n_nodes)
+            if (initial_node + active_nodes >= _n_nodes)
             {
-                active_nodes -= _last_node + active_nodes - _n_nodes;
+                active_nodes -= initial_node + phase_nodes - _n_nodes;
             }
 
             for (int i = 0; i<active_nodes; i++)
             {
                 phase_token_i->_get_active_nodes().push_back(i);
             }
+
+            std::cout << "        starting position: " << phase_token_i->getPosition() << std::endl;
+            std::cout << "        active_nodes: " << active_nodes << "/" << phase_token_i->getNNodes() << std::endl;
         }
 
         // update the phase tokens
-        std::cout << "updating phase: '" << phase_token_i->get_phase()->getName() << "' at node: " << _last_node << std::endl;
-        phase_token_i->_update(_last_node);
-        _last_node += phase_token_i->getNNodes();
-        std::cout << "last node: " << _last_node << std::endl;
+        phase_token_i->_update();
         std::cout << "============================" << std::endl;
     }
 
@@ -198,58 +211,40 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position)
 bool SinglePhaseManager::_insert_phases(int pos)
 {
     // insert phase_tokens of temporary container (_phase_to_add) in stack at posistion 'pos'
-//        std::cout << "...inserting at pos: " << pos << " (" << _phases.size() << ")";
+    std::cout << "Inserting at pos: " << pos << " (total n. of phases: " << _phases.size() << ")";
     _phases.insert(_phases.begin() + pos, _phases_to_add.begin(), _phases_to_add.end());
-//        std::cout << " ...done." << " (" << _phases.size() << ")" << std::endl;
+    std::cout << " ...done." << std::endl;
 
+    // add to _phases_to_add the tail of all the phases after the one inserted (nodes need to be recomputed)
+    _phases_to_add.insert(_phases_to_add.end(), _phases.begin() + pos + 1, _phases.end());
 
-    if (pos >= 0) //        if (0 <= pos && pos <= _active_phases.size())
+    int last_current_node = 0;
+    // if 'pos' is beyond the horizon (outside of the active_phases), skip useless computation
+
+    // remove all the active_phases after the position 'pos'
+    _active_phases.resize(pos);
+
+    // reset the items (holding all the active nodes)
+    // TODO: should I do it only for the items before pos?
+    _reset();
+
+    // update position of phases before the position 'pos' (before i resetted)
+    if (!_active_phases.empty())
     {
-        // if 'pos' is beyond the horizon (outside of the active_phases), skip useless computation
-        if (pos <= _active_phases.size())
-        {
-            // remove all the active_phases after the position 'pos'
-            _active_phases.resize(pos);
-
-            // reset the items (holding all the active nodes)
-            // TODO: should I do it only for the items before pos?
-            _reset();
-
-            // update again phases before the position 'pos' (before i resetted)
-            int last_active_node = 0;
-
-            for (auto phase_token_i : _active_phases)
-            {
-                phase_token_i->_update(last_active_node);
-                last_active_node += phase_token_i->_get_active_nodes().size();
-            }
-        }
-
-        // reset the last_node at the last element position before the inserted.
-        if (position > 0)
-        {
-            _last_node = _phases[pos - 1]->getPosition() + _phases[pos - 1]->getNNodes();
-        }
-        else
-        {
-            _last_node = 0;
-        }
-
-//        _last_node = 0;
-//        for (int it=0; it < pos; it++)
-//        {
-//            _last_node += _phases[it]->getNNodes();
-//        }
-
-        // add to _phases_to_add the tail of all the phases after the one inserted (nodes need to be recomputed)
-        _phases_to_add.insert(_phases_to_add.end(), _phases.begin() + pos + 1, _phases.end());
-
-        // remove active nodes from phases to add, needs to be recomputed (all the phases that were active may not be active anymore after being pushed back)
-        for (auto phase_to_add : _phases_to_add)
-        {
-            phase_to_add->_get_active_nodes().clear();
-        }
+        last_current_node = _active_phases.back()->getPosition() + _active_phases.back()->getNNodes();
     }
+
+    // remove active nodes from phases to add, needs to be recomputed (all the phases that were active may not be active anymore after being pushed back)
+    // set new position of phase
+    // update position of phases after the position 'pos' (before i resetted)
+    for (auto phase_token_i : _phases_to_add)
+    {
+        phase_token_i->_set_position(last_current_node);
+        last_current_node += phase_token_i->getNNodes();
+
+        phase_token_i->_get_active_nodes().clear();
+    }
+
 
     return true;
 }
@@ -263,7 +258,6 @@ int SinglePhaseManager::_check_absolute_position(int pos)
     {
         // 'pos' is after the last phase
         _last_node = pos;
-//        _trailing_empty_nodes = _n_nodes - _last_node;
         pos = -1;
         return pos;
     }
@@ -292,7 +286,6 @@ int SinglePhaseManager::_check_absolute_position(int pos)
         break;
 
     }
-//    _last_node = pos;
     return phase_num + 1;
 
 
@@ -411,13 +404,15 @@ bool SinglePhaseManager::shift()
         if (!_phases.empty())
         {
             // update the first phase given its position 0 (next phase will be at a node n depending on the active node of the first phase)
-            _phases[0]->_update(i);
+            _phases[0]->_set_position(i);
+            _phases[0]->_update();
             i += _phases[0]->getActiveNodes().size();
 
             // update all the other phases
             for (int it = 1; it < _phases.size(); it++)
             {
-                _phases[it]->_update(i);
+                _phases[it]->_set_position(i);
+                _phases[it]->_update();
                 i += _phases[it]->getNNodes();
             }
         }
@@ -588,8 +583,7 @@ std::vector<Phase::Ptr> SinglePhaseManager::getRegisteredPhases()
 
 int SinglePhaseManager::getEmptyNodes()
 {
-    return _n_nodes - _last_node;
-//    return _trailing_empty_nodes;
+    return _n_nodes - _phases.back()->getPosition() - _phases.back()->getNNodes();
 }
 
 std::vector<PhaseToken::Ptr> SinglePhaseManager::getActivePhases()
