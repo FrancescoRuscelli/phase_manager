@@ -440,6 +440,15 @@ bool Phase::_init_nodes(int n_nodes)
 //}
 
 
+PhaseToken::PhaseToken(Phase::Ptr phase):
+    _abstract_phase(phase),
+    _initial_node(0)
+
+{
+//    _active_nodes = std::make_shared<std::vector<int>>();
+    //    _n_nodes = _abstract_phase.getNNodes();
+}
+
 
 std::string PhaseToken::getName()
 {
@@ -462,14 +471,6 @@ const int PhaseToken::getPosition()
 const int PhaseToken::getNNodes()
 {
     return _abstract_phase->getNNodes();
-}
-
-PhaseToken::PhaseToken(Phase::Ptr phase):
-    _abstract_phase(phase)
-
-{
-//    _active_nodes = std::make_shared<std::vector<int>>();
-    //    _n_nodes = _abstract_phase.getNNodes();
 }
 
 std::vector<int>& PhaseToken::_get_active_nodes()

@@ -22,8 +22,8 @@ public:
     SinglePhaseManager(int n_nodes, std::string name="");
 
     bool registerPhase(Phase::Ptr phase);
-    bool addPhase(std::vector<Phase::Ptr> phases, int pos=-1, bool absolute_position=false);
-    bool addPhase(Phase::Ptr phase, int pos=-1, bool absolute_position=false);
+    bool addPhase(std::vector<Phase::Ptr> phases, int pos=-1, bool absolute_position_flag=false);
+    bool addPhase(Phase::Ptr phase, int pos=-1, bool absolute_position_flag=false);
 
     Phase::Ptr getRegisteredPhase(std::string name);
     std::vector<Phase::Ptr> getRegisteredPhases();
@@ -37,9 +37,10 @@ public:
 private:
 
     bool _reset();
-    bool _add_phases(int pos=-1, bool absolute_position=false);
+    bool _add_phases(int pos=-1, bool absolute_position_flag=false);
     bool _insert_phases(int pos);
-    int _check_absolute_position(int pos);
+    int _update_phases_to_add(int pos);
+    std::pair<int, int> _check_absolute_position(int pos);
     PhaseToken::Ptr _generate_phase_token(Phase::Ptr phase);
 
     std::string _name;
