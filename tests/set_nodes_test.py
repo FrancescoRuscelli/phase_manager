@@ -42,6 +42,7 @@ phase_1.setDuration(10)
 phase_1.setElementNodes(par.getName(), [1, 2], np.array([[-4, -3]]))
 
 timeline_1.addPhase(phase_1)
+
 print(par.getValues())
 print(a.getBounds())
 exit()

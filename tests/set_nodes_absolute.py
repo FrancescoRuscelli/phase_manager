@@ -59,25 +59,24 @@ if __name__ == '__main__':
     timeline_1.registerPhase(phase_2)
     timeline_1.registerPhase(phase_inserted)
 
-    timeline_1.addPhase(phase_1)
-    timeline_1.addPhase(phase_2)
+    # timeline_1.addPhase(phase_1)
+    # timeline_1.addPhase(phase_2)
     # timeline_1.addPhase(phase_1)
     # timeline_1.addPhase(phase_1)
     # timeline_1.addPhase(phase_1)
+    timeline_1.addPhase(phase_1, 0, absolute_position=True)
+    timeline_1.addPhase(phase_1, 4, absolute_position=True)
     timeline_1.addPhase(phase_1, 9, absolute_position=True)
+    timeline_1.addPhase(phase_1, 13, absolute_position=True)
     # timeline_1.addPhase(phase_inserted, 4, absolute_position=True)
     # timeline_1.addPhase(phase_1)
     # timeline_1.addPhase(phase_inserted, 4, absolute_position=True)
 
     # timeline_1.clear()
-    pos_phase = 0
-    for phase in timeline_1.getPhases():
-        print(f"{pos_phase}. {phase.getName()}: {phase.getActiveNodes()}")
-        pos_phase += 1
-    # printAllPhases(timeline_1, add_element_info=True)
+
+    printAllPhases(timeline_1, add_element_info=True)
     # printActivePhases(timeline_1, add_element_info=True)
     exit()
-
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
@@ -86,7 +85,7 @@ if __name__ == '__main__':
         timeline_1.shift()
         print("SHIFTING PHASES: ")
 
-        printAllPhases(timeline_1)
+        printAllPhases(timeline_1, add_element_info=True)
 
 
 
