@@ -3,9 +3,7 @@
 
 SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name):
     _name(name),
-    _n_nodes(n_nodes),
-    _trailing_empty_nodes(_n_nodes),
-    _last_node(0)
+    _n_nodes(n_nodes)
 {
 }
 
@@ -110,7 +108,6 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position_flag)
 //        std::cout << phase->get_phase()->getName() << " ";
 //    }
 //    std::cout << "> = = = = = at node: ";
-//    std::cout << _last_node;
 //    std::cout << " = = = = = = = = =" << std::endl;
 
     // compute absolute position of phase
@@ -155,7 +152,7 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position_flag)
         if (initial_node <= _n_nodes)
         {
             int active_nodes = phase_nodes;
-            // if _trailing_empty_nodes is bigger than zero, the phase is active (even if its tail falls outside the horizon)
+            // phase is active (even if its tail falls outside the horizon)
 //            std::cout << "   --> Adding phase token (" << phase_token_i << ") '" << phase_token_i->getName() << "' to active phases" << std::endl;;
             _active_phases.push_back(phase_token_i);
 
@@ -177,9 +174,6 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position_flag)
         phase_token_i->_update();
 //        std::cout << "============================" << std::endl;
     }
-
-
-//    std::cout << "number of free nodes: " << _trailing_empty_nodes << std::endl;
 
 //    for (auto phase : _phases)
 //    {
@@ -333,53 +327,95 @@ bool SinglePhaseManager::shift()
 //    std::cout << " ============ shifting phases ============ : " << std::endl;
 
     //  if phases vector is empty, skip everything
+
     if (_phases.size() > 0)
     {
         // update active_phases with all the phases that have active nodes
-        _active_phases.clear();
 
-        for (int i=0; i<_phases.size(); i++)
+        bool erase_node_flag = false;
+//        _active_phases.clear();
+
+//        for (int i=0; i<_phases.size(); i++)
+//        {
+//            if (_phases[i]->_get_active_nodes().size() > 0)
+//            {
+//                _active_phases.push_back(_phases[i]);
+//            }
+//        }
+        // roll down all phases by 1
+        for (auto phase : _phases)
         {
-            if (_phases[i]->_get_active_nodes().size() > 0)
+            int phase_pos = phase->getPosition();
+
+            if (phase_pos > 0)
             {
-                _active_phases.push_back(_phases[i]);
+                phase->_set_position(phase_pos - 1);
+            }
+            else
+            {
+                // if phase is in position 0, erase node or full phase
+                erase_node_flag = true;
             }
         }
 
-        auto last_active_phase = _active_phases.back();
-//      if 'last active node' of 'last active phase' is the last of the phase, add new phase, otherwise continue to fill the phase
-        int n_nodes_last_active_phase = last_active_phase->getNNodes() - 1;
-        bool flag_found = false;
+        auto n_active_phases = _active_phases.size();
 
-        for (int i=0; i < last_active_phase->_get_active_nodes().size(); i++)
+        if (n_active_phases > 0)
         {
-            if (n_nodes_last_active_phase == last_active_phase->_get_active_nodes()[i])
+            auto last_active_phase = _active_phases.back();
+            auto pos_last_node = last_active_phase->getPosition() + last_active_phase->getNNodes();
+
+            // if there is a phase entering the horizon window, activate its nodes
+            if (pos_last_node >= _n_nodes)
             {
-                flag_found = true;
-                break;
+                int elem = (last_active_phase->_get_active_nodes().size() > 0) ? last_active_phase->_get_active_nodes().back() + 1 : 0;
+                last_active_phase->_get_active_nodes().push_back(elem);
             }
         }
 
-        if (flag_found == true)
+        // as long as there are non-active phases, check if the next non active phase can become active
+        if (n_active_phases < _phases.size())
         {
-
-            int n_active_phases = _active_phases.size();
-            // add new active phase from list of added phases
-            if (n_active_phases < _phases.size())
+            // add new phase in active phase if its position is inside horizon nodes (less than _n_nodes)
+            if (_phases[n_active_phases]->getPosition() < _n_nodes)
             {
-                int elem = (_phases[n_active_phases]->_get_active_nodes().size() > 0) ? _phases[n_active_phases]->_get_active_nodes().back() + 1 : 0;
+                int elem = 0;
                 _phases[n_active_phases]->_get_active_nodes().push_back(elem);
                 _active_phases.push_back(_phases[n_active_phases]);
             }
         }
-            else
-            {
-                // add new node to last active phase
-                int elem = (last_active_phase->_get_active_nodes().size() > 0) ? last_active_phase->_get_active_nodes().back() + 1 : 0;
-                last_active_phase->_get_active_nodes().push_back(elem);
-            }
+//        int n_nodes_last_active_phase = last_active_phase->getNNodes() - 1;
+//        bool flag_found = false;
 
+//        std::cout << "n_nodes_last_active_phase: "  << n_nodes_last_active_phase << std::endl;
 
+//        for (int i=0; i < last_active_phase->_get_active_nodes().size(); i++)
+//        {
+//            if (n_nodes_last_active_phase == last_active_phase->_get_active_nodes()[i])
+//            {
+//                flag_found = true;
+//                break;
+//            }
+//        }
+        // if 'last active node' of 'last active phase' is the last of the phase, add new phase, otherwise continue to fill the phase
+//        if (flag_found == true)
+//        {
+
+//            int n_active_phases = _active_phases.size();
+//            // add new active phase from list of added phases
+//            if (n_active_phases < _phases.size())
+//            {
+//                int elem = (_phases[n_active_phases]->_get_active_nodes().size() > 0) ? _phases[n_active_phases]->_get_active_nodes().back() + 1 : 0;
+//                _phases[n_active_phases]->_get_active_nodes().push_back(elem);
+//                _active_phases.push_back(_phases[n_active_phases]);
+//            }
+//        }
+//            else
+//            {
+//                // add new node to last active phase
+//                int elem = (last_active_phase->_get_active_nodes().size() > 0) ? last_active_phase->_get_active_nodes().back() + 1 : 0;
+//                last_active_phase->_get_active_nodes().push_back(elem);
+//            }
 //        std::cout << "active nodes in active phases:" << std::endl;
 //        for (auto phase : _active_phases)
 //        {
@@ -390,19 +426,25 @@ bool SinglePhaseManager::shift()
 //            }
 //            std::cout << std::endl;
 //        }
+
         // remove first element in phases
-         _active_phases[0]->_get_active_nodes().erase(_active_phases[0]->_get_active_nodes().begin());
-         // remove phase from active_phases if active nodes is empty
-         if (_active_phases[0]->_get_active_nodes().empty())
-         {
-             _active_phases.erase(_active_phases.begin());
-         }
+        if (erase_node_flag)
+        {
+            _active_phases[0]->_get_active_nodes().erase(_active_phases[0]->_get_active_nodes().begin());
+
+            if (_active_phases[0]->_get_active_nodes().empty())
+            {
+                _active_phases.erase(_active_phases.begin());
+            }
+
+            if (_phases[0]->_get_active_nodes().empty())
+            {
+                _phases.erase(_phases.begin());
+            }
+        }
+
 
         // burn depleted phases
-        if (_phases[0]->_get_active_nodes().empty())
-        {
-            _phases.erase(_phases.begin());
-        }
 
 
 //        for (int i=0; i<_phases.size(); i++)
@@ -417,35 +459,37 @@ bool SinglePhaseManager::shift()
 //        }
 
         // update every phase
-        // there must be a more elegant way than this mess
-        int i = 0;
-        if (!_phases.empty())
+        for (auto phase : _phases)
         {
-            // update the first phase given its position 0 (next phase will be at a node n depending on the active node of the first phase)
-            _phases[0]->_set_position(i);
-            _phases[0]->_update();
-            i += _phases[0]->getActiveNodes().size();
-
-            // update all the other phases
-            for (int it = 1; it < _phases.size(); it++)
-            {
-                _phases[it]->_set_position(i);
-                _phases[it]->_update();
-                i += _phases[it]->getNNodes();
-            }
+            phase->_update();
         }
-
     }
 
-    int num_nodes = 0;
-    for (int i=0; i<_active_phases.size(); i++)
-    {
-        num_nodes += _active_phases[i]->_get_active_nodes().size();
-    }
+//        int i = 0;
+//        if (!_phases.empty())
+//        {
+//            // update the first phase given its position 0 (next phase will be at a node n depending on the active node of the first phase)
+//            _phases[0]->_set_position(i);
+//            _phases[0]->_update();
+//            i += _phases[0]->getActiveNodes().size();
 
-//    _trailing_empty_nodes = _n_nodes - num_nodes;
+//            // update all the other phases
+//            for (int it = 1; it < _phases.size(); it++)
+//            {
+//                _phases[it]->_set_position(i);
+//                _phases[it]->_update();
+//                i += _phases[it]->getNNodes();
+//            }
+//        }
 
-    _last_node -= 1;
+//    }
+
+//    int num_nodes = 0;
+//    for (int i=0; i<_active_phases.size(); i++)
+//    {
+//        num_nodes += _active_phases[i]->_get_active_nodes().size();
+//    }
+
 
 //    std::cout << "active nodes: << ";
 //    for (int i=0; i<_active_phases.size(); i++)
@@ -453,7 +497,6 @@ bool SinglePhaseManager::shift()
 //        std::cout << _active_phases[i]->get_phase()->getName() <<" ";
 //    }
 //    std::cout << " >>" << std::endl;
-//    std::cout << "current number of free nodes: " << _trailing_empty_nodes << std::endl;
 
 //    std::chrono::duration<double> elapsed_time = std::chrono::system_clock::now() - start_time;
 //    std::cout << "elapsed time: " << elapsed_time.count() << std::endl;
@@ -466,8 +509,6 @@ bool SinglePhaseManager::clear()
     _reset();
     _phases.clear();
     _active_phases.clear();
-    _last_node = 0;
-//    _trailing_empty_nodes = _n_nodes;
     return true;
 }
 

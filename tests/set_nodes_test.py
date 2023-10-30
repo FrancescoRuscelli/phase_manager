@@ -45,13 +45,12 @@ timeline_1.addPhase(phase_1)
 
 print(par.getValues())
 print(a.getBounds())
-exit()
-
-
 # print(a.getLowerBounds())
 # print(a.getUpperBounds())
-
 exit()
+
+
+
 
 
 # for phase in timeline_1.getPhases():
