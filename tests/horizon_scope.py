@@ -69,7 +69,6 @@ if __name__ == '__main__':
 
     # timeline_1.clear()
 
-    exit()
     printAllPhases(timeline_1, add_element_info=True)
     # printActivePhases(timeline_1, add_element_info=True)
 

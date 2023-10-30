@@ -31,60 +31,60 @@ def printActivePhases(timeline: phase_manager.pymanager.SinglePhaseManager, add_
             printElemInfo(elem)
         elem_num += 1
 
-def test_1():
+def a_test_1():
     timeline_1.addPhase(phase_1)
 
-def test_2():
+def a_test_2():
     timeline_1.addPhase(phase_1)
     timeline_1.addPhase(phase_2)
     timeline_1.addPhase(phase_1)
 
-def test_3():
+def a_test_3():
     timeline_1.addPhase(phase_1)
     timeline_1.addPhase(phase_2)
     timeline_1.addPhase(phase_1)
     timeline_1.addPhase(phase_2)
     timeline_1.addPhase(phase_1)
 
-def test_4():
+def a_test_4():
     timeline_1.addPhase(phase_1)
     timeline_1.addPhase(phase_1)
     timeline_1.addPhase(phase_1)
     timeline_1.addPhase(phase_1)
 
-def test_5():
+def a_test_5():
     # should be the same as test 1
     timeline_1.addPhase(phase_1, 0, absolute_position=True)
 
-def test_6():
+def a_test_6():
     # should be the same as test 4
     timeline_1.addPhase(phase_1, 0, absolute_position=True)
     timeline_1.addPhase(phase_1, 4, absolute_position=True)
     timeline_1.addPhase(phase_1, 8, absolute_position=True)
     timeline_1.addPhase(phase_1, 12, absolute_position=True)
 
-def test_7():
+def a_test_7():
     timeline_1.addPhase(phase_1, 4, absolute_position=True)
 
-def test_8():
+def a_test_8():
     timeline_1.addPhase(phase_1, 4, absolute_position=True)
     timeline_1.addPhase(phase_1, 9, absolute_position=True)
     timeline_1.addPhase(phase_1, 13, absolute_position=True)
 
-def test_9():
+def a_test_9():
     timeline_1.addPhase(phase_1, 10, absolute_position=True)
 
-def test_10():
+def a_test_10():
     timeline_1.addPhase(phase_1, 11, absolute_position=True)
-def test_11():
+def a_test_11():
     timeline_1.addPhase(phase_1, 2, absolute_position=True)
     timeline_1.addPhase(phase_1, 10, absolute_position=True)
 
-def test_12():
+def a_test_12():
     timeline_1.addPhase(phase_1, 12, absolute_position=True)
     timeline_1.addPhase(phase_1, 16, absolute_position=True)
 
-def test_13():
+def a_test_13():
     timeline_1.addPhase(phase_1, 4, absolute_position=True)
     timeline_1.addPhase(phase_1, 12, absolute_position=True)
     # timeline_1.addPhase(phase_1, 12, absolute_position=True)
@@ -128,18 +128,24 @@ if __name__ == '__main__':
 
     # timeline_1.clear()
 
-    test_12()
-    printAllPhases(timeline_1, add_element_info=True)
+    a_test_12()
+    # printAllPhases(timeline_1, add_element_info=True)
     # printActivePhases(timeline_1, add_element_info=True)
-    # exit()
+
+
+    printAllPhases(timeline_1)
+    printActivePhases(timeline_1)
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
     print("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~")
 
-    for i in range(15):
+    for i in range(20):
         print(f"{colorama.Style.BRIGHT}{colorama.Fore.YELLOW}SHIFTING PHASES:{colorama.Style.RESET_ALL}")
         timeline_1.shift()
-        printAllPhases(timeline_1, add_element_info=True)
+        # printAllPhases(timeline_1, add_element_info=True)
+        # printActivePhases(timeline_1, add_element_info=True)
+        printAllPhases(timeline_1)
+        printActivePhases(timeline_1)
 
 
 
