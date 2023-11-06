@@ -4,7 +4,7 @@ import phase_manager.pyphase as pyphase
 
 import numpy as np
 
-ns = 12
+ns = 30
 dt = 0.01
 prb = Problem(ns, receding=True)
 prb.setDt(dt)
@@ -35,11 +35,13 @@ phase_2.addItem(cnsrt4)
 timeline_1.registerPhase(phase_2)
 
 timeline_1.addPhase(phase_2)
-print("empty nodes: ", timeline_1.getEmptyNodes())
 timeline_1.addPhase(phase_2)
-print("empty nodes: ", timeline_1.getEmptyNodes())
-timeline_1.addPhase(phase_1, 1)
-print("empty nodes: ", timeline_1.getEmptyNodes())
+timeline_1.addPhase(phase_2)
+timeline_1.addPhase(phase_2)
+timeline_1.addPhase(phase_2)
+timeline_1.addPhase(phase_2)
+timeline_1.addPhase(phase_1, 3)
+# print("empty nodes: ", timeline_1.getEmptyNodes())
 # timeline_1.addPhase(phase_2)
 # timeline_1.addPhase(phase_2, 0)
 # timeline_1.addPhase(phase_2)
@@ -51,3 +53,6 @@ for phase in timeline_1.getPhases():
     print(f"{pos_phase}. {phase.getName()}: {phase.getActiveNodes()}")
     pos_phase += 1
 
+print("=======================================")
+for name_c, c in prb.getConstraints().items():
+    print(name_c, ":  ", c.getNodes())

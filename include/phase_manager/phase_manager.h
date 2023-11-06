@@ -38,7 +38,7 @@ private:
 
     bool _reset();
     bool _add_phases(int pos=-1, bool absolute_position_flag=false);
-    bool _insert_phases(int pos);
+    int _insert_phases(int pos);
     int _update_phases_to_add(int pos);
     bool _update_active_phases();
     std::pair<int, int> _check_absolute_position(int pos);
