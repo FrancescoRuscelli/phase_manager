@@ -227,17 +227,12 @@ int SinglePhaseManager::_insert_phases(int pos)
 
         // reset the items (holding all the active nodes)
         // TODO: should I do it only for the items before pos?
-        _reset();
-
-//        for (auto active_phase : _active_phases)
-//        {
-
-//            if (_phases[i]->_get_active_nodes().size() > 0)
-//            {
-//                _active_phases.push_back(_phases[i]);
-//            }
-//        }
-
+        _reset(); // there is way, resetting phase by phase not the whole thing
+        // otherwise I have to update like this
+        for (auto phase_i : _active_phases)
+        {
+            phase_i->_update();
+        }
     }
     // update position of phases before the position 'pos' (before i resetted)
     if (!_active_phases.empty())
