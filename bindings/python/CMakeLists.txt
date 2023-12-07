@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 find_package(pybind11 QUIET)
 add_compile_options(-std=c++14)
 
-
 message(STATUS "check for pybind11")
+
 if(${pybind11_FOUND})
 
     message(STATUS "compiling python bindings")
@@ -19,17 +19,27 @@ if(${pybind11_FOUND})
     pybind11_add_module(pyphase pyPhase.cpp)
     target_link_libraries(pyphase PUBLIC phase_manager)
 
-    install(TARGETS pyphase
-            DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
-
-#    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
     pybind11_add_module(pymanager pyPhaseManager.cpp)
     target_link_libraries(pymanager PUBLIC phase_manager)
 
-    install(TARGETS pymanager
-            DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
+    if(DEFINED ENV{CONDA_PREFIX})
 
-    install(FILES __init__.py DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
+      set(PYBIND_INSTALL_DIR $ENV{CONDA_PREFIX}/${PYTHON_SITE}/${PROJECT_NAME} CACHE PATH "bindings install prefix" FORCE)
+    
+    else()
+
+      set(PYBIND_INSTALL_DIR ${CMAKE_INSTALL_PREFIX}/${PYTHON_SITE}/${PROJECT_NAME} CACHE PATH "bindings install prefix" FORCE)
+
+    endif()
+    
+    install(TARGETS pymanager
+            DESTINATION ${PYBIND_INSTALL_DIR})
+
+    install(TARGETS pyphase
+            DESTINATION ${PYBIND_INSTALL_DIR})
+
+    install(FILES __init__.py DESTINATION ${PYBIND_INSTALL_DIR})
+    
 #    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 #    pybind11_add_module(pyphase_manager pyPhaseManager.cpp)
 #    target_link_libraries(pyci PRIVATE phase_manager)
