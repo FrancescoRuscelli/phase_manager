@@ -6,26 +6,55 @@ set(CMAKE_CXX_STANDARD 17)
 
 find_package(Eigen3 3.3 REQUIRED)
 
-#list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+find_package(catkin REQUIRED COMPONENTS
+             message_generation
+             roscpp)
 
 include_directories(
     include/
     src/
     ${EIGEN3_INCLUDE_DIR}
+    ${catkin_INCLUDE_DIRS}
 )
+
+add_message_files(
+    FILES
+    Timeline.msg
+    )
+
+
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+)
+
+catkin_package()
 
 set(LIBRARY_TARGET_NAME phase_manager) # set library name
 
+set(phase_manager_SRC
+    src/phase_manager.cpp
+    src/phase.cpp
+    )
+
+set(phase_manager_ros_SRC
+    src/ros_server_class.cpp
+    )
+
 add_library(${LIBRARY_TARGET_NAME} SHARED
-  src/phase_manager.cpp
-  src/phase.cpp
+  ${phase_manager_SRC}
+  ${phase_manager_ros_SRC}
 )
+
+target_link_libraries(${LIBRARY_TARGET_NAME}
+    PUBLIC
+    ${catkin_LIBRARIES}
+    )
 
 target_include_directories(${LIBRARY_TARGET_NAME}
     INTERFACE
     ${EIGEN3_INCLUDE_DIR})
 
-include(GNUInstallDirs)
 install(TARGETS  ${LIBRARY_TARGET_NAME}
         EXPORT   ${LIBRARY_TARGET_NAME}
         LIBRARY  DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT shlib

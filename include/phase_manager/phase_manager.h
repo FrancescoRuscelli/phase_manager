@@ -73,6 +73,8 @@ class PhaseManager
 
 public:
 
+    typedef std::shared_ptr<PhaseManager> Ptr;
+
     PhaseManager(int n_nodes);
 
     SinglePhaseManager::Ptr addTimeline(std::string name);
