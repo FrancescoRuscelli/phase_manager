@@ -10,6 +10,7 @@ namespace HorizonPhases {
     {
         public:
 
+            typedef std::shared_ptr<RosServerClass> Ptr;
             RosServerClass(PhaseManager::Ptr pm);
             void run();
 
@@ -18,7 +19,7 @@ namespace HorizonPhases {
 
             void init_publishers();
 
-            ros::NodeHandle _nh;
+            std::unique_ptr<ros::NodeHandle> _nh;
             PhaseManager::Ptr _pm;
 
             std::unordered_map<std::string, SinglePhaseManager::Ptr> _timelines;

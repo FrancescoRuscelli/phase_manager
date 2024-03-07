@@ -11,6 +11,17 @@ RosServerClass::RosServerClass(PhaseManager::Ptr pm):
 {
     _timelines = _pm->getTimelines();
 
+
+    if (!ros::isInitialized())
+    {
+        std::cout << "Ros not initialized. Initializing." << std::endl;
+        int argc = 0;
+        char ** argv = nullptr;
+        ros::init(argc, argv, "phase_manager_ros_server_class");
+    }
+
+    _nh = std::make_unique<ros::NodeHandle>("");
+
     init_publishers();
 }
 
@@ -21,7 +32,8 @@ void RosServerClass::init_publishers()
     // open publisher
     for (auto pair : _timelines)
     {
-        _timelines_pub[pair.first] = _nh.advertise<phase_manager::Timeline>("phasemanager/" + pair.first, 10);
+        std::cout << "opening topic for timeline: " << pair.first << std::endl;
+        _timelines_pub[pair.first] = _nh->advertise<phase_manager::Timeline>("phasemanager/" + pair.first, 10);
     }
 }
 

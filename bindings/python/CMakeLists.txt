@@ -18,15 +18,17 @@ if(${pybind11_FOUND})
     include_directories(${CMAKE_CURRENT_SOURCE_DIR})
     pybind11_add_module(pyphase pyPhase.cpp)
     target_link_libraries(pyphase PUBLIC phase_manager)
-
     install(TARGETS pyphase
             DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
 
-#    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
     pybind11_add_module(pymanager pyPhaseManager.cpp)
     target_link_libraries(pymanager PUBLIC phase_manager)
-
     install(TARGETS pymanager
+            DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
+
+    pybind11_add_module(pyrosserver pyRosServer.cpp)
+    target_link_libraries(pyrosserver PUBLIC phase_manager)
+    install(TARGETS pyrosserver
             DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
 
     install(FILES __init__.py DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})

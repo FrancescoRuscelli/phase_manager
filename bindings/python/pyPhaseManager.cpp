@@ -22,7 +22,7 @@ PYBIND11_MODULE(pymanager, m) {
             ;
 
 
-    py::class_<PhaseManager>(m, "PhaseManager")
+    py::class_<PhaseManager, PhaseManager::Ptr>(m, "PhaseManager")
             .def(py::init<int>())
             .def("addTimeline", &PhaseManager::addTimeline)
             .def("getTimelines", static_cast<SinglePhaseManager::Ptr (PhaseManager::*)(std::string)>(&PhaseManager::getTimelines))
