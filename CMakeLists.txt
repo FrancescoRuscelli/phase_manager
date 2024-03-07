@@ -21,7 +21,7 @@ include_directories(
 add_message_files(
     FILES
     Timeline.msg
-    Timelines.msg
+    TimelineArray.msg
     )
 
 
