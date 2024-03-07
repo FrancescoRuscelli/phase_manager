@@ -24,7 +24,7 @@ namespace HorizonPhases {
 
             std::unordered_map<std::string, SinglePhaseManager::Ptr> _timelines;
 
-            std::unordered_map<std::string, ros::Publisher> _timelines_pub;
+            ros::Publisher _timelines_pub;
 
     };
 

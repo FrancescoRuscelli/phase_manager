@@ -392,7 +392,6 @@ public:
     const std::vector<int>& getActiveNodes();
     const int getPosition();
     const int getNNodes();
-    // get name, get nodes...
 
 protected:
 

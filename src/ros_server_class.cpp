@@ -1,6 +1,6 @@
 #include <phase_manager/ros_server_class.h>
 #include <phase_manager/Timeline.h>
-
+#include <phase_manager/Timelines.h>
 
 using namespace HorizonPhases;
 
@@ -30,22 +30,21 @@ void RosServerClass::init_publishers()
 {
 
     // open publisher
-    for (auto pair : _timelines)
-    {
-        std::cout << "opening topic for timeline: " << pair.first << std::endl;
-        _timelines_pub[pair.first] = _nh->advertise<phase_manager::Timeline>("phasemanager/" + pair.first, 10);
-    }
+    std::cout << "Opening topic for phase manager." << std::endl;
+    _timelines_pub = _nh->advertise<phase_manager::Timelines>("phasemanager/timelines", 10);
 }
 
 void RosServerClass::run()
 {
+
+    phase_manager::Timelines timelines_msg;
 
     for (auto pair : _timelines)
     {
         phase_manager::Timeline timeline_msg;
 
         timeline_msg.name = pair.first;
-        auto phases = pair.second->getActivePhases();
+        auto phases = pair.second->getPhases();
 
         std::vector<std::string> phase_names;
         std::vector<int> phase_initial_nodes;
@@ -62,8 +61,9 @@ void RosServerClass::run()
         timeline_msg.initial_nodes = phase_initial_nodes;
         timeline_msg.durations = phase_durations;
 
-        _timelines_pub[pair.first].publish(timeline_msg);
-
+        timelines_msg.timelines.push_back(timeline_msg);
     }
+
+    _timelines_pub.publish(timelines_msg);
 
 }
