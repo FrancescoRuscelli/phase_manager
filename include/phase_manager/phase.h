@@ -15,6 +15,53 @@
 //#include <functional>
 
 
+class InfoContainer
+{
+
+public:
+
+    typedef std::shared_ptr<InfoContainer> Ptr;
+    InfoContainer() {}
+    virtual ~InfoContainer() = default;
+    virtual std::string getType() {return "base";}
+
+    std::vector<int> nodes;
+};
+
+class BoundsContainer : virtual public InfoContainer
+{
+
+public:
+
+    typedef std::shared_ptr<BoundsContainer> Ptr;
+    BoundsContainer() {}
+
+    // must be of same dimension
+    std::string getType() {return "bounds";}
+    // TODO: what happen if not same dimension?
+    Eigen::MatrixXd lower_bounds;
+    Eigen::MatrixXd upper_bounds;
+};
+
+class ValuesContainer : virtual public InfoContainer
+{
+
+public:
+
+    typedef std::shared_ptr<ValuesContainer> Ptr;
+    ValuesContainer() {}
+
+//    // copy constructor
+//    ValuesContainer(const ValuesContainer& other) :
+//        values(other.values) {}
+
+    // must be of same dimension
+    std::string getType() {return "values";}
+    // TODO: what happen if not same dimension?
+    Eigen::MatrixXd values;
+};
+
+
 class Phase
 {
     /*
@@ -26,47 +73,6 @@ public:
 
     typedef std::shared_ptr<Phase> Ptr;
 
-    class InfoContainer
-    {
-
-    public:
-
-        typedef std::shared_ptr<InfoContainer> Ptr;
-        InfoContainer() {}
-        virtual ~InfoContainer() = default;
-        virtual std::string getType() {return "base";}
-
-        std::vector<int> nodes;
-    };
-
-    class BoundsContainer : virtual public InfoContainer
-    {
-
-    public:
-
-        typedef std::shared_ptr<BoundsContainer> Ptr;
-        BoundsContainer() {}
-
-        // must be of same dimension
-        std::string getType() {return "bounds";}
-        // TODO: what happen if not same dimension?
-        Eigen::MatrixXd lower_bounds;
-        Eigen::MatrixXd upper_bounds;
-    };
-
-    class ValuesContainer : virtual public InfoContainer
-    {
-
-    public:
-
-        typedef std::shared_ptr<ValuesContainer> Ptr;
-        ValuesContainer() {}
-
-        // must be of same dimension
-        std::string getType() {return "values";}
-        // TODO: what happen if not same dimension?
-        Eigen::MatrixXd values;
-    };
 
     Phase(int n_nodes, std::string name);
     std::string getName();
@@ -81,6 +87,7 @@ public:
         auto active_nodes = _check_active_nodes(nodes);
 //        std::cout << "adding item:" << item->getName() << " to phase. " << std::endl;
 
+        // create a container with all the relevant information about the item added
         InfoContainer::Ptr nodes_container = std::make_unique<InfoContainer>();
         nodes_container->nodes = active_nodes;
 
@@ -101,6 +108,7 @@ public:
     {
         auto active_nodes = _check_active_nodes(nodes);
 
+        // create a container with all the relevant information about the item reference added
         ValuesContainer::Ptr val_container = std::make_unique<ValuesContainer>();
 
 //        std::cout << "nodes: ";
@@ -295,7 +303,7 @@ public:
 private:
 
     bool _init_nodes(int n_nodes);
-    Phase::InfoContainer::Ptr _get_info_element(std::string elem_name);
+    InfoContainer::Ptr _get_info_element(std::string elem_name);
     std::unordered_map<int, std::vector<int>> _stretch(std::vector<int> nodes, double stretch_factor);
     std::vector<int> _extract_stretch_nodes(std::unordered_map<int, std::vector<int>> stretch_map, std::vector<int> nodes);
 
@@ -393,6 +401,9 @@ public:
     const int getPosition();
     const int getNNodes();
 
+    bool setItemReference(ItemWithValuesBase::Ptr item_with_ref,
+                          Eigen::MatrixXd values);
+
 protected:
 
     PhaseToken(Phase::Ptr phase);
@@ -403,6 +414,9 @@ private:
     std::vector<int> _active_nodes;
     std::vector<int> _nodes;
     int _initial_node;
+
+    // change ref of single phasetoken
+    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> _info_items_ref_token;
 
     // all these updates gets called by the SinglePhaseManager
     bool _update_items(int initial_node);

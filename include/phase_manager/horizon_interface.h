@@ -168,8 +168,10 @@ public:
             _initial_values = _values;
         }
 
-    bool setNodesInternal(std::vector<int> nodes) { return m_item->setNodes(nodes); }
+    bool setNodesInternal(std::vector<int> nodes, bool erasing) { return m_item->setNodes(nodes, erasing); }
+
     bool assignInternal(Eigen::MatrixXd values) { return m_item->assign(values); }
+    bool assignInternal(Eigen::MatrixXd values, std::vector<int> nodes) { return m_item->assign(values, nodes); }
     int getDim() { return m_item->getDim(); }
     std::vector<int> getNodes() { return m_item->getNodes(); }
     std::string getName() { return m_item->getName(); }

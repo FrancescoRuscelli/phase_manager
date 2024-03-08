@@ -143,7 +143,7 @@ bool Phase::setDuration(int new_n_nodes)
     return true;
 }
 
-Phase::InfoContainer::Ptr Phase::_get_info_element(std::string elem_name)
+InfoContainer::Ptr Phase::_get_info_element(std::string elem_name)
 {
     auto it = _elem_map.find(elem_name);
     if (it == _elem_map.end())
@@ -350,32 +350,32 @@ std::vector<ItemWithValuesBase::Ptr> Phase::getParameters()
     return _parameters;
 }
 
-std::unordered_map<ItemBase::Ptr, Phase::InfoContainer::Ptr> Phase::getItemsInfo()
+std::unordered_map<ItemBase::Ptr, InfoContainer::Ptr> Phase::getItemsInfo()
 {
     return _info_items_base;
 }
 
-std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer::Ptr> Phase::getItemsReferenceInfo()
+std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> Phase::getItemsReferenceInfo()
 {
     return _info_items_ref;
 }
 
-std::unordered_map<ItemWithBoundsBase::Ptr, Phase::InfoContainer::Ptr> Phase::getConstraintsInfo()
+std::unordered_map<ItemWithBoundsBase::Ptr, InfoContainer::Ptr> Phase::getConstraintsInfo()
 {
     return _info_constraints;
 }
 
-std::unordered_map<ItemBase::Ptr, Phase::InfoContainer::Ptr> Phase::getCostsInfo()
+std::unordered_map<ItemBase::Ptr, InfoContainer::Ptr> Phase::getCostsInfo()
 {
     return _info_costs;
 }
 
-std::unordered_map<ItemWithBoundsBase::Ptr, Phase::BoundsContainer::Ptr> Phase::getVariablesInfo()
+std::unordered_map<ItemWithBoundsBase::Ptr, BoundsContainer::Ptr> Phase::getVariablesInfo()
 {
     return _info_variables;
 }
 
-std::unordered_map<ItemWithValuesBase::Ptr, Phase::ValuesContainer::Ptr> Phase::getParametersInfo()
+std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> Phase::getParametersInfo()
 {
     return _info_parameters;
 }
@@ -445,6 +445,14 @@ PhaseToken::PhaseToken(Phase::Ptr phase):
     _initial_node(0)
 
 {
+    // copy construct a personal info container
+    for (auto pair : _abstract_phase->getItemsReferenceInfo())
+    {
+        ValuesContainer::Ptr values_copy(pair.second);
+        _info_items_ref_token[pair.first] = values_copy;
+    }
+
+//    _info_items_ref_token(_abstract_phase->getItemsReferenceInfo());
 //    _active_nodes = std::make_shared<std::vector<int>>();
     //    _n_nodes = _abstract_phase.getNNodes();
 }
@@ -471,6 +479,21 @@ const int PhaseToken::getPosition()
 const int PhaseToken::getNNodes()
 {
     return _abstract_phase->getNNodes();
+}
+
+bool PhaseToken::setItemReference(ItemWithValuesBase::Ptr item_with_ref, Eigen::MatrixXd values)
+{
+
+    _info_items_ref_token[item_with_ref]->values = values;
+//        std::cout << "nodes: ";
+
+//        for (auto elem : nodes)
+//        {
+//            std::cout << elem << " ";
+//        }
+//        std::cout << std::endl;
+
+    return true;
 }
 
 std::vector<int>& PhaseToken::_get_active_nodes()
@@ -567,7 +590,7 @@ bool PhaseToken::_update_items(int initial_node)
 
 bool PhaseToken::_update_item_reference(int initial_node)
 {
-    for (auto item_ref_map : _abstract_phase->getItemsReferenceInfo())
+    for (auto item_ref_map : _info_items_ref_token)
     {
         auto pair_nodes = _compute_horizon_nodes(item_ref_map.second->nodes, initial_node);
 
