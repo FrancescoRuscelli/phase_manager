@@ -449,6 +449,7 @@ PhaseToken::PhaseToken(Phase::Ptr phase):
     for (auto pair : _abstract_phase->getItemsReferenceInfo())
     {
         ValuesContainer::Ptr item_ref_copy = std::make_unique<ValuesContainer>(pair.second);
+
 //        values_copy(pair.second);
 //        values_copy->values = pair.second->values;
 //        values_copy->nodes = pair.second->nodes;
@@ -458,11 +459,16 @@ PhaseToken::PhaseToken(Phase::Ptr phase):
     for (auto pair: _abstract_phase->getParametersInfo())
     {
         ValuesContainer::Ptr par_ref_copy = std::make_unique<ValuesContainer>(pair.second);
-        _info_items_ref_token[pair.first] = par_ref_copy;
+        _info_parameters_token[pair.first] = par_ref_copy;
     }
 
     //    _active_nodes = std::make_shared<std::vector<int>>();
     //    _n_nodes = _abstract_phase.getNNodes();
+
+//    for (auto element : _info_items_ref_token)
+//    {
+//        std::cout << element.first->getName() << std::endl;
+//    }
 }
 
 
@@ -489,19 +495,20 @@ const int PhaseToken::getNNodes()
     return _abstract_phase->getNNodes();
 }
 
-bool PhaseToken::setItemReference(ItemWithValuesBase::Ptr item_with_ref, Eigen::MatrixXd values)
+bool PhaseToken::setItemReference(std::string item_name, Eigen::MatrixXd values)
 {
 
-    _info_items_ref_token[item_with_ref]->values = values;
-//        std::cout << "nodes: ";
-
-//        for (auto elem : nodes)
-//        {
-//            std::cout << elem << " ";
-//        }
-//        std::cout << std::endl;
-
-    return true;
+    // set item reference for independent phase token
+    bool bool_found = false;
+    for (auto item : _info_items_ref_token)
+    {
+        if (item.first->getName() == item_name)
+        {
+            _info_items_ref_token[item.first]->values = values;
+            bool_found = true;
+        }
+    }
+    return bool_found;
 }
 
 std::vector<int>& PhaseToken::_get_active_nodes()
@@ -535,6 +542,7 @@ bool PhaseToken::_update_items(int initial_node)
 
 bool PhaseToken::_update_item_reference(int initial_node)
 {
+    // update item with references that are independent to the abstract phase, but copied (and changeable) inside the phase token.
     for (auto item_ref_map : _info_items_ref_token)
 //    for (auto item_ref_map : _abstract_phase->getItemsReferenceInfo())
     {

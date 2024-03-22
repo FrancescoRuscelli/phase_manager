@@ -149,7 +149,8 @@ bool add_item_pyobject(Phase& self,
     return true;
 }
 
-bool add_item_reference_pyobject(Phase& self, py::object item,
+bool add_item_reference_pyobject(Phase& self,
+                                 py::object item,
                                  Eigen::MatrixXd values,
                                  std::vector<int> nodes)
 {
@@ -382,6 +383,18 @@ auto _get_parameters_map(Phase& phase)
     return elem_python;
 }
 
+//auto _set_item_reference_pyobject(PhaseToken& self,
+//                                  py::object item,
+//                                  Eigen::MatrixXd values)
+//{
+//    self.get_phase()->getItemsReference()
+//    ItemWithValuesBase::Ptr item_converted = std::make_shared<PyObjWrapperWithValues>(item);
+//    self.setItemReference(item_converted, values);
+
+//    return true;
+//}
+
+
 PYBIND11_MODULE(pyphase, m) {
 
     py::class_<Phase, Phase::Ptr>(m, "Phase")
@@ -414,6 +427,6 @@ PYBIND11_MODULE(pyphase, m) {
             .def("getActiveNodes", &PhaseToken::getActiveNodes)
             .def("getPosition", &PhaseToken::getPosition)
             .def("getNNodes", &PhaseToken::getNNodes)
-
+            .def("setItemReference", &PhaseToken::setItemReference)
             ;
 }

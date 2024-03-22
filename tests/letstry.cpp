@@ -507,10 +507,10 @@ int main()
     new_values_3 << 6, 6, 6, 6, 6;
 
 
-    timeline_1->getPhases()[0]->setItemReference(flight_p_1, new_values);
-    timeline_1->getPhases()[1]->setItemReference(flight_p_1, new_values_1);
-    timeline_1->getPhases()[4]->setItemReference(flight_p_1, new_values_2);
-    timeline_1->getPhases()[7]->setItemReference(flight_p_1, new_values_3);
+    timeline_1->getPhases()[0]->setItemReference(flight_p_1->getName(), new_values);
+    timeline_1->getPhases()[1]->setItemReference(flight_p_1->getName(), new_values_1);
+    timeline_1->getPhases()[4]->setItemReference(flight_p_1->getName(), new_values_2);
+    timeline_1->getPhases()[7]->setItemReference(flight_p_1->getName(), new_values_3);
 //    timeline_1->getPhases()[10]->setItemReference(flight_p_1, new_values);
 
 

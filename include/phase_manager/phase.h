@@ -408,7 +408,7 @@ public:
     const int getPosition();
     const int getNNodes();
 
-    bool setItemReference(ItemWithValuesBase::Ptr item_with_ref,
+    bool setItemReference(std::string item_name,
                           Eigen::MatrixXd values);
 
 protected:
@@ -424,6 +424,7 @@ private:
 
     // change ref of single phasetoken
     std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> _info_items_ref_token;
+    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> _info_parameters_token;
 
     // all these updates gets called by the SinglePhaseManager
     bool _update_items(int initial_node);
