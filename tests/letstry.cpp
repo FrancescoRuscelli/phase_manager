@@ -441,64 +441,87 @@ int main()
 //    timeline_1->registerPhase(flight);
 
 ////    auto start_time = std::chrono::high_resolution_clock::now();
-    timeline_1->addPhase(stance);
-    timeline_1->addPhase(stance);
-//    std::cout << "ADD PHASE: " << std::endl;
-//    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
-//    std::cout << std::endl;
-    std::cout << "fake_item_1 current nodes: ";
-    for (auto node : fake_item_1->getNodes())
+    for (int phase_num = 0; phase_num < 10; phase_num++)
     {
-         std::cout << node << " ";
+        timeline_1->addPhase(stance);
     }
-    std::cout << std::endl;
-
-    std::cout << "fake_item_1 current values: " << fake_item_1->getValues() << std::endl;
-//    timeline_1->addPhase(stance);
-
 //    std::cout << "ADD PHASE: " << std::endl;
 //    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
 //    std::cout << std::endl;
 
-    for (auto phase_i : timeline_1->getPhases())
-    {
-        std::cout <<" active nodes of phase '" << phase_i->getName() << "': ";
-        for (auto node_i : phase_i->getActiveNodes())
-        {
-            std::cout << node_i << " ";
-        }
-        std::cout << std::endl;
-    }
+
+    //    this creates phasetokens
+//    auto start_time = std::chrono::high_resolution_clock::now();
+//    for (int i =0; i < 1000; i++)
+//    {
+//        timeline_1->addPhase(stance);
+//    }
+
+//    std::chrono::duration<double> elapsed_time = std::chrono::system_clock::now() - start_time;
+
+//    std::cout << elapsed_time.count() << std::endl; //0.00026454 // 0.002 // 0.0008
+
+    //    std::cout << "fake_item_1 current nodes: ";
+
+//    for (auto node : fake_item_1->getNodes())
+//    {
+//         std::cout << node << " ";
+//    }
+//    std::cout << std::endl;
+
+//    std::cout << "fake_item_1 current values: " << fake_item_1->getValues() << std::endl;
+////    timeline_1->addPhase(stance);
+
+////    std::cout << "ADD PHASE: " << std::endl;
+////    std::cout << std::get<0>(fake_var_1->getBounds()) << std::endl;
+////    std::cout << std::endl;
+
+//    for (auto phase_i : timeline_1->getPhases())
+//    {
+//        std::cout <<" active nodes of phase '" << phase_i->getName() << "': ";
+//        for (auto node_i : phase_i->getActiveNodes())
+//        {
+//            std::cout << node_i << " ";
+//        }
+//        std::cout << std::endl;
+//    }
 
 
-    for (auto pair : stance->getItemsReferenceInfo())
-    {
-        std::cout << pair.first << ": " << pair.second << std::endl;
-    }
+//    for (auto pair : stance->getItemsReferenceInfo())
+//    {
+//        std::cout << pair.first << ": " << pair.second << std::endl;
+//    }
 
 
 
     Eigen::MatrixXd new_values(1, stance_duration);
     new_values << 7, 7, 7, 7, 7;
 
-    timeline_1->getPhases()[1]->setItemReference(flight_p_1, new_values);
+    Eigen::MatrixXd new_values_1(1, stance_duration);
+    new_values_1 << 4, 4, 4, 4, 4;
 
+    Eigen::MatrixXd new_values_2(1, stance_duration);
+    new_values_2 << 5, 5, 5, 5, 5;
+
+    Eigen::MatrixXd new_values_3(1, stance_duration);
+    new_values_3 << 6, 6, 6, 6, 6;
+
+
+    timeline_1->getPhases()[0]->setItemReference(flight_p_1, new_values);
+    timeline_1->getPhases()[1]->setItemReference(flight_p_1, new_values_1);
+    timeline_1->getPhases()[4]->setItemReference(flight_p_1, new_values_2);
+    timeline_1->getPhases()[7]->setItemReference(flight_p_1, new_values_3);
+//    timeline_1->getPhases()[10]->setItemReference(flight_p_1, new_values);
+
+
+//    std::cout << "fake_item_1 current values: " << fake_item_1->getValues() << std::endl;
+    for (int i =0; i < 6; i++)
+    {
+        timeline_1->shift();
+    }
     std::cout << "fake_item_1 current values: " << fake_item_1->getValues() << std::endl;
 
-    timeline_1->shift();
 
-    std::cout << "fake_item_1 current values: " << fake_item_1->getValues() << std::endl;
-
-//    timeline_1->addPhase(stance);
-//    timeline_1->addPhase(stance);
-//    timeline_1->addPhase(stance);
-//    timeline_1->addPhase(stance);
-//    timeline_1->addPhase(stance);
-//    timeline_1->addPhase(stance);
-//    timeline_1->addPhase(stance);
-//    timeline_1->addPhase(stance);
-//    timeline_1->addPhase(stance);
-//    timeline_1->addPhase(stance);
 //    timeline_1->addPhase(stance);
 //    timeline_1->addPhase(flight, 10);
 

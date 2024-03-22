@@ -448,12 +448,20 @@ PhaseToken::PhaseToken(Phase::Ptr phase):
     // copy construct a personal info container
     for (auto pair : _abstract_phase->getItemsReferenceInfo())
     {
-        ValuesContainer::Ptr values_copy(pair.second);
-        _info_items_ref_token[pair.first] = values_copy;
+        ValuesContainer::Ptr item_ref_copy = std::make_unique<ValuesContainer>(pair.second);
+//        values_copy(pair.second);
+//        values_copy->values = pair.second->values;
+//        values_copy->nodes = pair.second->nodes;
+        _info_items_ref_token[pair.first] = item_ref_copy;
     }
 
-//    _info_items_ref_token(_abstract_phase->getItemsReferenceInfo());
-//    _active_nodes = std::make_shared<std::vector<int>>();
+    for (auto pair: _abstract_phase->getParametersInfo())
+    {
+        ValuesContainer::Ptr par_ref_copy = std::make_unique<ValuesContainer>(pair.second);
+        _info_items_ref_token[pair.first] = par_ref_copy;
+    }
+
+    //    _active_nodes = std::make_shared<std::vector<int>>();
     //    _n_nodes = _abstract_phase.getNNodes();
 }
 
@@ -506,69 +514,6 @@ Phase::Ptr PhaseToken::get_phase()
     return _abstract_phase;
 }
 
-//bool PhaseToken::_update_elements(int initial_node)
-//{
-//    for (auto item_map : _abstract_phase->_info_elements())
-//    {
-////        std::cout << "updating item: '" << item_map.first->getName() << "'. Nodes: ";
-////        for (int node : pair_nodes.second)
-////        {
-////            std::cout << node << " ";
-////        }
-////        std::cout << std::endl;
-//        // adding nodes/resetting nodes is a duty of horizon
-//        if (ItemBase::Ptr item_base = dynamic_cast<ItemBase::Ptr>(element))
-//        {
-//            auto pair_nodes = _compute_horizon_nodes(item_base.second, initial_node);
-//            item_base.first->setNodes(pair_nodes.second, false);
-//        }
-//        else if (ItemWithValuesBase::Ptr item_ref = dynamic_cast<ItemBase::Ptr>(element))
-//        {
-//            auto pair_nodes = _compute_horizon_nodes(item_ref.second.nodes, initial_node);
-
-//            Eigen::MatrixXd bring_me_to_eigen_3_4_val;
-//            bring_me_to_eigen_3_4_val.resize(item_ref_map.second.values.rows(), pair_nodes.first.size());
-
-
-//            for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
-//            {
-//                bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second.values.col(pair_nodes.firstcol_i));
-//            }
-
-//            item_ref.first->setNodes(pair_nodes.second, false);
-//            item_ref.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
-//        }
-//        else if (ItemWithValuesBase::Ptr item_bounds = dynamic_cast<ItemBase::Ptr>(element))
-//        {
-//            auto pair_nodes = _compute_horizon_nodes(item_bounds.second.nodes, initial_node);
-
-//            Eigen::MatrixXd bring_me_to_eigen_3_4_lb;
-//            bring_me_to_eigen_3_4_lb.resize(var_map.second.lower_bounds.rows(), pair_nodes.first.size());
-
-//            for (int col_i = 0; col_i < bring_me_to_eigen_3_4_lb.cols(); col_i++)
-//            {
-//                bring_me_to_eigen_3_4_lb.col(col_i) = var_map.second.lower_bounds.col(pair_nodes.first.at(col_i));
-//            }
-
-
-//            Eigen::MatrixXd bring_me_to_eigen_3_4_ub;
-//            bring_me_to_eigen_3_4_ub.resize(var_map.second.upper_bounds.rows(), pair_nodes.first.size());
-
-//            for (int col_i = 0; col_i < bring_me_to_eigen_3_4_ub.cols(); col_i++)
-//            {
-//                bring_me_to_eigen_3_4_ub.col(col_i) = var_map.second.upper_bounds.col(pair_nodes.first.at(col_i));
-//            }
-
-//    //            return std::make_pair(active_fun_nodes, horizon_nodes);
-
-//            item_bounds.first->setBounds(bring_me_to_eigen_3_4_lb,
-//                                     bring_me_to_eigen_3_4_ub,
-//                                     pair_nodes.second);
-//        }
-//    }
-
-//    return true;
-//}
 
 bool PhaseToken::_update_items(int initial_node)
 {
@@ -591,10 +536,18 @@ bool PhaseToken::_update_items(int initial_node)
 bool PhaseToken::_update_item_reference(int initial_node)
 {
     for (auto item_ref_map : _info_items_ref_token)
+//    for (auto item_ref_map : _abstract_phase->getItemsReferenceInfo())
     {
         auto pair_nodes = _compute_horizon_nodes(item_ref_map.second->nodes, initial_node);
 
-//        std::cout << "value assigned by user:" << item_ref_map.second.values << std::endl;
+//        std::cout << "item to which values are assigned: " << item_ref_map.first << std::endl;
+//        std::cout << "value assigned by user:" << item_ref_map.second->values << std::endl;
+//        std::cout << "item ref map nodes: ";
+//        for (auto node : item_ref_map.second->nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
 
         Eigen::MatrixXd bring_me_to_eigen_3_4_val;
         bring_me_to_eigen_3_4_val.resize(item_ref_map.second->values.rows(), pair_nodes.first.size());
@@ -611,7 +564,7 @@ bool PhaseToken::_update_item_reference(int initial_node)
 //                    std::cout << node << " ";
 //                }
 //                std::cout << std::endl;
-
+//        std::cout << "matrix assigned: " << bring_me_to_eigen_3_4_val << std::endl;
         item_ref_map.first->setNodes(pair_nodes.second, false);
         item_ref_map.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
 //        item_ref_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);

@@ -22,6 +22,10 @@ public:
 
     typedef std::shared_ptr<InfoContainer> Ptr;
     InfoContainer() {}
+
+//    InfoContainer(const InfoContainer::Ptr other) :
+//        nodes(other->nodes) {}
+
     virtual ~InfoContainer() = default;
     virtual std::string getType() {return "base";}
 
@@ -51,9 +55,12 @@ public:
     typedef std::shared_ptr<ValuesContainer> Ptr;
     ValuesContainer() {}
 
-//    // copy constructor
-//    ValuesContainer(const ValuesContainer& other) :
-//        values(other.values) {}
+//  copy constructor
+    ValuesContainer(const ValuesContainer::Ptr other) :
+        values(other->values)
+        {
+            nodes = other->nodes;
+        }
 
     // must be of same dimension
     std::string getType() {return "values";}
