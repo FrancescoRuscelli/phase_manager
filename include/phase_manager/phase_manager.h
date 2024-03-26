@@ -21,6 +21,8 @@ public:
 
     SinglePhaseManager(int n_nodes, std::string name="");
 
+    std::string getName();
+
     bool registerPhase(Phase::Ptr phase);
     bool addPhase(std::vector<Phase::Ptr> phases, int pos=-1, bool absolute_position_flag=false);
     bool addPhase(Phase::Ptr phase, int pos=-1, bool absolute_position_flag=false);

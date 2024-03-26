@@ -9,6 +9,7 @@ PYBIND11_MODULE(pymanager, m) {
 
     py::class_<SinglePhaseManager, SinglePhaseManager::Ptr>(m, "SinglePhaseManager")
             .def(py::init<int, std::string>())
+            .def("getName", &SinglePhaseManager::getName)
             .def("registerPhase", &SinglePhaseManager::registerPhase)
             .def("addPhase", static_cast<bool (SinglePhaseManager::*)(std::vector<Phase::Ptr>, int, bool)>(&SinglePhaseManager::addPhase), py::arg("phases"), py::arg("pos") = -1, py::arg("absolute_position") = false)
             .def("addPhase", static_cast<bool (SinglePhaseManager::*)(Phase::Ptr, int, bool)>(&SinglePhaseManager::addPhase), py::arg("phase"), py::arg("pos") = -1, py::arg("absolute_position") = false)

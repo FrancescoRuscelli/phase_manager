@@ -7,6 +7,11 @@ SinglePhaseManager::SinglePhaseManager(int n_nodes, std::string name):
 {
 }
 
+std::string SinglePhaseManager::getName()
+{
+    return _name;
+}
+
 template <typename T, typename U>
 bool _register_items_from_phase(std::vector<T>& container, std::vector<U> items)
 {
