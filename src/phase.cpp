@@ -551,7 +551,7 @@ bool PhaseToken::_update_item_reference(int initial_node)
         auto pair_nodes = _compute_horizon_nodes(item_ref_map.second->nodes, initial_node);
 
 //        std::cout << "item to which values are assigned: " << item_ref_map.first << std::endl;
-//        std::cout << "value assigned by user:" << item_ref_map.second->values << std::endl;
+//        std::cout << "value assigned by user: " << item_ref_map.second->values << std::endl;
 //        std::cout << "item ref map nodes: ";
 //        for (auto node : item_ref_map.second->nodes)
 //        {
