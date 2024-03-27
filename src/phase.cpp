@@ -508,6 +508,8 @@ bool PhaseToken::setItemReference(std::string item_name, Eigen::MatrixXd values)
             bool_found = true;
         }
     }
+
+    _update_item_reference(_initial_node);
     return bool_found;
 }
 
