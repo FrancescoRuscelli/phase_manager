@@ -14,7 +14,7 @@ class FakeItem:
 
         self.name = 'fake_item'
         self.ref = par
-        self.nodes = None
+        self.nodes = list(range(50))
 
     def getName(self):
 
@@ -45,18 +45,25 @@ fake_item = FakeItem(par)
 pm = pymanager.PhaseManager(ns)
 timeline_1 = pm.addTimeline('timeline_1')
 phase_1 = pyphase.Phase(5, 'phase_1')
-phase_1.addItemReference(fake_item, np.array([[2., 2., 2., 2., 2.]]))
+
+# phase_1.addItemReference(fake_item, np.array([[10., 11., 12., 13., 14.]]))
+phase_1.addItemReference(fake_item, np.array([[2]]), nodes=[1])
 timeline_1.registerPhase(phase_1)
 
 timeline_1.addPhase(phase_1)
-timeline_1.addPhase(phase_1)
+# timeline_1.addPhase(phase_1)
 
 print('values after adding phase: ', par.getValues())
 
-print("modifying phase: ")
-timeline_1.getPhases()[1].setItemReference('fake_item', np.array([[7., 7., 7., 7., 7.]]))
+print('==========================================================')
+for i in range(7):
+    pm.shift()
+    print('values after shifting: ', par.getValues())
 
-print('values after modifying phase: ', par.getValues())
+# print("modifying phase: ")
+# timeline_1.getPhases()[1].setItemReference('fake_item', np.array([[7., 7., 7., 7., 7.]]))
+#
+# print('values after modifying phase: ', par.getValues())
 #
 
 

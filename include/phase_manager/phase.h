@@ -135,7 +135,30 @@ public:
         }
 
         val_container->nodes = active_nodes;
-        val_container->values = values;
+
+        // parameter reference matrix's size is always equal to phase lenght
+        // set the corresponding matrix columns according to the nodes specified
+        // this is required for the _update_item_reference: var_map.second->nodes.end(), pair_nodes.first[col_i]) would go out of allocated memory
+        Eigen::MatrixXd all_nodes_values = Eigen::MatrixXd::Zero(values.rows(), _n_nodes);
+
+        int col_values = 0;
+
+//        std::cout << "active nodes:" << std::endl;
+//        for (auto node: active_nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
+
+        for (auto node : active_nodes)
+        {
+            all_nodes_values.col(node) = values.col(col_values);
+            col_values++;
+        }
+
+//        std::cout << "assigning values:" << all_nodes_values << std::endl;
+        val_container->values = all_nodes_values;
+//        val_container->values = values;
 
         // add to vector the element pointer
         // add to map name-element
@@ -419,7 +442,7 @@ private:
 
     Phase::Ptr _abstract_phase;
     std::vector<int> _active_nodes;
-    std::vector<int> _nodes;
+//    std::vector<int> _nodes;
     int _initial_node;
 
     // change ref of single phasetoken
@@ -438,6 +461,8 @@ private:
 
     bool _set_position(int initial_node);
     bool _update();
+
+//    Eigen::MatrixXd _item_reference_values_to_assign;
 
     std::vector<int>& _get_active_nodes();
     Phase::Ptr get_phase();

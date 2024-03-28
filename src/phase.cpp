@@ -443,9 +443,8 @@ bool Phase::_init_nodes(int n_nodes)
 PhaseToken::PhaseToken(Phase::Ptr phase):
     _abstract_phase(phase),
     _initial_node(0)
-
 {
-    // copy construct a personal info container
+    // copy construct a private info container
     for (auto pair : _abstract_phase->getItemsReferenceInfo())
     {
         ValuesContainer::Ptr item_ref_copy = std::make_unique<ValuesContainer>(pair.second);
@@ -497,7 +496,6 @@ const int PhaseToken::getNNodes()
 
 bool PhaseToken::setItemReference(std::string item_name, Eigen::MatrixXd values)
 {
-
     // set item reference for independent phase token
     bool bool_found = false;
     for (auto item : _info_items_ref_token)
@@ -551,30 +549,26 @@ bool PhaseToken::_update_item_reference(int initial_node)
         auto pair_nodes = _compute_horizon_nodes(item_ref_map.second->nodes, initial_node);
 
 //        std::cout << "item to which values are assigned: " << item_ref_map.first << std::endl;
-//        std::cout << "value assigned by user: " << item_ref_map.second->values << std::endl;
-//        std::cout << "item ref map nodes: ";
+//        std::cout << "value assigned by user: " << item_ref_map.second->values << " (dim: " << item_ref_map.second->values.size() << ")" << std::endl;
+//        std::cout << "item nodes: ";
 //        for (auto node : item_ref_map.second->nodes)
 //        {
 //            std::cout << node << " ";
 //        }
 //        std::cout << std::endl;
 
+        // when shifting, the pair_nodes.first shifts too. I need to set the correct values from --> item_ref_map.second->values
+        // example: when the phase is half in the past, only the phase nodes [3, 4, 5] are active. Hence, I have to take the values at those position in the matrix item_ref_map.second
+
+        // create a matrix of values to assign
         Eigen::MatrixXd bring_me_to_eigen_3_4_val;
         bring_me_to_eigen_3_4_val.resize(item_ref_map.second->values.rows(), pair_nodes.first.size());
-
 
         for (int col_i = 0; col_i < bring_me_to_eigen_3_4_val.cols(); col_i++)
         {
             bring_me_to_eigen_3_4_val.col(col_i) = item_ref_map.second->values.col(pair_nodes.first[col_i]);
         }
 
-//        std::cout << "assigning values:" << bring_me_to_eigen_3_4_val << "to nodes:" << std::endl;
-//        for (int node : pair_nodes.second)
-//                {
-//                    std::cout << node << " ";
-//                }
-//                std::cout << std::endl;
-//        std::cout << "matrix assigned: " << bring_me_to_eigen_3_4_val << std::endl;
         item_ref_map.first->setNodes(pair_nodes.second, false);
         item_ref_map.first->assign(bring_me_to_eigen_3_4_val, pair_nodes.second);
 //        item_ref_map.first->addValues(pair_nodes.second, bring_me_to_eigen_3_4_val);
