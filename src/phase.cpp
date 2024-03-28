@@ -502,7 +502,13 @@ bool PhaseToken::setItemReference(std::string item_name, Eigen::MatrixXd values)
     {
         if (item.first->getName() == item_name)
         {
-            _info_items_ref_token[item.first]->values = values;
+            int col_values = 0;
+            // set reference of the specified nodes
+            for (auto node : _info_items_ref_token[item.first]->nodes)
+            {
+                _info_items_ref_token[item.first]->values.col(node) = values.col(col_values);
+                col_values++;
+            }
             bool_found = true;
         }
     }

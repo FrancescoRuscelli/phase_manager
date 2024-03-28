@@ -51,19 +51,19 @@ phase_1.addItemReference(fake_item, np.array([[2]]), nodes=[1])
 timeline_1.registerPhase(phase_1)
 
 timeline_1.addPhase(phase_1)
-# timeline_1.addPhase(phase_1)
+timeline_1.addPhase(phase_1)
 
 print('values after adding phase: ', par.getValues())
 
-print('==========================================================')
-for i in range(7):
-    pm.shift()
-    print('values after shifting: ', par.getValues())
+# print('==========================================================')
+# for i in range(7):
+#     pm.shift()
+#     print('values after shifting: ', par.getValues())
 
-# print("modifying phase: ")
-# timeline_1.getPhases()[1].setItemReference('fake_item', np.array([[7., 7., 7., 7., 7.]]))
-#
-# print('values after modifying phase: ', par.getValues())
+print("modifying phase: ")
+timeline_1.getPhases()[1].setItemReference('fake_item', np.array([[7.]]))
+
+print('values after modifying phase: ', par.getValues())
 #
 
 
