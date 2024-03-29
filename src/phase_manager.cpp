@@ -177,7 +177,7 @@ bool SinglePhaseManager::_add_phases(int pos, bool absolute_position_flag)
         }
 
         // update the phase tokens
-        phase_token_i->_update();
+        phase_token_i->update();
 //        std::cout << "============================" << std::endl;
     }
 
@@ -236,7 +236,7 @@ int SinglePhaseManager::_insert_phases(int pos)
         // otherwise I have to update like this
         for (auto phase_i : _active_phases)
         {
-            phase_i->_update();
+            phase_i->update();
         }
     }
     // update position of phases before the position 'pos' (before i resetted)
@@ -479,7 +479,7 @@ bool SinglePhaseManager::shift()
         // update every phase
         for (auto phase : _phases)
         {
-            phase->_update();
+            phase->update();
         }
     }
 

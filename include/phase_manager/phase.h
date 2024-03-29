@@ -434,6 +434,8 @@ public:
     bool setItemReference(std::string item_name,
                           Eigen::MatrixXd values);
 
+    bool update();
+
 protected:
 
     PhaseToken(Phase::Ptr phase);
@@ -449,7 +451,7 @@ private:
     std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> _info_items_ref_token;
     std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer::Ptr> _info_parameters_token;
 
-    // all these updates gets called by the SinglePhaseManager
+    // all these updates gets called by the SinglePhaseManager // or can be called manually
     bool _update_items(int initial_node);
     bool _update_item_reference(int initial_node);
     bool _update_constraints(int initial_node); //std::vector<std::string, std::set<int>>* input_container, std::vector<std::string, std::set<int>>* output_container
@@ -460,7 +462,6 @@ private:
     std::pair<std::vector<int>, std::vector<int>> _compute_horizon_nodes(std::vector<int> nodes, int initial_node);
 
     bool _set_position(int initial_node);
-    bool _update();
 
 //    Eigen::MatrixXd _item_reference_values_to_assign;
 

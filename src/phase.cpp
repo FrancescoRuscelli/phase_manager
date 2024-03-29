@@ -513,7 +513,7 @@ bool PhaseToken::setItemReference(std::string item_name, Eigen::MatrixXd values)
         }
     }
 
-    _update_item_reference(_initial_node);
+//    _update_item_reference(_initial_node);
     return bool_found;
 }
 
@@ -754,7 +754,7 @@ bool PhaseToken::_set_position(int initial_node)
 //    _initial_node = initial_node;
 //}
 
-bool PhaseToken::_update()
+bool PhaseToken::update()
 {
     /*
      * update items contained in phase in horizon based on the position of the phase
