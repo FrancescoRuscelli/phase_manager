@@ -22,7 +22,7 @@ namespace HorizonPhases {
             std::unique_ptr<ros::NodeHandle> _nh;
             PhaseManager::Ptr _pm;
 
-            std::unordered_map<std::string, SinglePhaseManager::Ptr> _timelines;
+            std::unordered_map<std::string, Timeline::Ptr> _timelines;
 
             ros::Publisher _timelines_pub;
 

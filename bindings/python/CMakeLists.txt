@@ -21,6 +21,12 @@ if(${pybind11_FOUND})
     install(TARGETS pyphase
             DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
 
+    include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+    pybind11_add_module(pytimeline pyTimeline.cpp)
+    target_link_libraries(pytimeline PUBLIC phase_manager)
+    install(TARGETS pytimeline
+            DESTINATION ${PYTHON_SITE}/${PROJECT_NAME})
+
     pybind11_add_module(pymanager pyPhaseManager.cpp)
     target_link_libraries(pymanager PUBLIC phase_manager)
     install(TARGETS pymanager

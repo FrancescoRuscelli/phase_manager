@@ -36,7 +36,9 @@ set(LIBRARY_TARGET_NAME phase_manager) # set library name
 
 set(phase_manager_SRC
     src/phase_manager.cpp
+    src/timeline.cpp
     src/phase.cpp
+
     )
 
 set(phase_manager_ros_SRC

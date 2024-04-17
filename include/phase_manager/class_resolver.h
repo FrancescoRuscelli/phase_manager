@@ -1,4 +1,4 @@
-    #ifndef CLASS_RESOLVER_H
+#ifndef CLASS_RESOLVER_H
 #define CLASS_RESOLVER_H
 
 #include <iostream>
