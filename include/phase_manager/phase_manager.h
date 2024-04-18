@@ -1,11 +1,20 @@
 #ifndef PHASE_MANAGER_H
 #define PHASE_MANAGER_H
 
-#include <phase_manager/timeline.h>
+#include <phase_manager/horizon_interface.h>
 
-#include <map>
-#include <set>
+#include <Eigen/Dense>
+#include <numeric>
+#include <vector>
+#include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <unordered_set>
 
+class Timeline;
+class Phase;
+//typedef std::shared_ptr<Timeline> Timeline::Ptr;
+//typedef std::shared_ptr<Phase> Phase::Ptr;
 
 class PhaseManager
 {
@@ -16,22 +25,32 @@ public:
 
     PhaseManager(int n_nodes);
 
-    Timeline::Ptr addTimeline(std::string name);
+    std::shared_ptr<Timeline> createTimeline(std::string name);
 
-    Timeline::Ptr getTimelines(std::string name);
+    std::shared_ptr<Timeline> getTimelines(std::string name);
 
-    std::unordered_map<std::string, Timeline::Ptr> getTimelines();
+    std::unordered_map<std::string, std::shared_ptr<Timeline>> getTimelines();
 
-    bool registerPhase(std::string name, Phase::Ptr phase);
-    bool addPhase(std::string name, Phase::Ptr phase);
+    std::shared_ptr<Phase> createPhase(int n_nodes, std::string name);
+
+//    bool registerPhase(std::string name, std::shared_ptr<Phase> phase);
+//    bool addPhase(std::string name, std::shared_ptr<Phase> phase);
     int getNodes();
     bool shift();
     bool clear();
 
+protected:
+
+//    bool addItem(ItemBase::Ptr item);
+//    std::unordered_map<std::string, ItemBase::Ptr> getItems();
+
 private:
 
-    std::unordered_map<std::string, Timeline::Ptr> _timelines;
+    std::unordered_map<std::string, std::shared_ptr<Timeline>> _timelines;
+
     int _n_nodes;
+
+//    std::unordered_map<std::string, ItemBase::Ptr> _items;
 
 };
 

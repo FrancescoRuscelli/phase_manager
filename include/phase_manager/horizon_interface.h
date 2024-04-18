@@ -23,6 +23,9 @@ public:
     virtual int getDim() = 0;
     virtual std::vector<int> getNodes() = 0;
 
+    virtual bool reset() = 0;
+    virtual bool update(std::vector<int> local_nodes, std::vector<int> absolute_nodes) = 0;
+
     bool isChanged()
     {
         return _is_changed;
@@ -34,6 +37,8 @@ public:
         setNodesInternal(nodes, erasing);
         return true;
     }
+
+
 
 protected:
 
@@ -80,6 +85,7 @@ public:
     virtual bool assignInternal(Eigen::MatrixXd values, std::vector<int> nodes) = 0;
     virtual bool assignInternal(Eigen::MatrixXd values) = 0;
 
+
     bool clearValues()
     {
         assignInternal(_initial_values);
@@ -106,6 +112,7 @@ protected:
     Eigen::MatrixXd _values;
     Eigen::MatrixXd _initial_values;
 };
+
 
 // model that calls the desired function from the original objects
 template <typename T>
@@ -180,5 +187,8 @@ private:
 
     std::shared_ptr<T> m_item;
 };
+
+
+
 
 #endif

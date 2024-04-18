@@ -2,6 +2,8 @@
 #define ROS_SERVER_CLASS_H
 
 #include <phase_manager/phase_manager.h>
+#include <phase_manager/timeline.h>
+#include <phase_manager/phase.h>
 #include <ros/ros.h>
 
 namespace HorizonPhases {

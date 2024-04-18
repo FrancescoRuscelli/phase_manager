@@ -1,4 +1,6 @@
 #include <phase_manager/phase_manager.h>
+#include <phase_manager/timeline.h>
+//#include <phase_manager/phase.h>
 
 PhaseManager::PhaseManager(int n_nodes):
     _n_nodes(n_nodes)
@@ -6,9 +8,9 @@ PhaseManager::PhaseManager(int n_nodes):
 
 }
 
-Timeline::Ptr PhaseManager::addTimeline(std::string name)
+Timeline::Ptr PhaseManager::createTimeline(std::string name)
 {
-    Timeline::Ptr timeline = std::make_shared<Timeline>(_n_nodes, name);
+    Timeline::Ptr timeline = std::make_shared<Timeline>(*this, _n_nodes, name);
     _timelines[name]= timeline;
     return timeline;
 }
@@ -26,15 +28,15 @@ Timeline::Ptr PhaseManager::getTimelines(std::string name)
 }
 
 // TODO: remove registerphase, is very tricky. Find a way to embed it in addPhase
-bool PhaseManager::registerPhase(std::string name, Phase::Ptr phase)
-{
-    return _timelines[name]->registerPhase(phase);
-}
+//bool PhaseManager::registerPhase(std::string name, Phase::Ptr phase)
+//{
+//    return _timelines[name]->registerPhase(phase);
+//}
 
-bool PhaseManager::addPhase(std::string name, Phase::Ptr phase)
-{
-    return _timelines[name]->addPhase(phase);
-}
+//bool PhaseManager::addPhase(std::string name, Phase::Ptr phase)
+//{
+//    return _timelines[name]->addPhase(phase);
+//}
 
 int PhaseManager::getNodes()
 {

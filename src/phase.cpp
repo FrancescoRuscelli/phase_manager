@@ -1,8 +1,10 @@
 #include <phase_manager/phase.h>
+#include <phase_manager/timeline.h>
 
-Phase::Phase(int n_nodes, std::string name):
+Phase::Phase(Timeline& timeline, int n_nodes, std::string name):
     _n_nodes(n_nodes),
-    _name(name)
+    _name(name),
+    _timeline(timeline)
 //    _phase_manager(phase_manager)
 
 {
@@ -252,6 +254,7 @@ bool Phase::addItem(ItemBase::Ptr item, std::vector<int> nodes)
     auto active_nodes = _check_active_nodes(nodes);
     std::cout << "adding item:" << item->getName() << " (" << item << ")" << " to phase. " << std::endl;
 
+    _timeline.addItem(item);
     // create a container with all the relevant information about the item added
     InfoContainer::Ptr nodes_container = std::make_unique<InfoContainer>();
     nodes_container->nodes = active_nodes;
@@ -782,7 +785,7 @@ bool PhaseToken::_update_items(int initial_node)
     return true;
 }
 
-bool PhaseToken::_update_item_reference(int initial_node)
+bool PhaseToken::_update_item_reference(int initial_node) // DONE
 {
     // update item with references that are independent to the abstract phase, but copied (and changeable) inside the phase token.
     for (auto item_ref_map : _info_items_ref_token)
@@ -790,19 +793,7 @@ bool PhaseToken::_update_item_reference(int initial_node)
     {
         auto pair_nodes = _compute_horizon_nodes(item_ref_map.second->nodes, initial_node);
 
-//        std::cout << "item to which values are assigned: " << item_ref_map.first << std::endl;
-//        std::cout << "value assigned by user: " << item_ref_map.second->values << " (dim: " << item_ref_map.second->values.size() << ")" << std::endl;
-//        std::cout << "item nodes: ";
-//        for (auto node : item_ref_map.second->nodes)
-//        {
-//            std::cout << node << " ";
-//        }
-//        std::cout << std::endl;
 
-        // when shifting, the pair_nodes.first shifts too. I need to set the correct values from --> item_ref_map.second->values
-        // example: when the phase is half in the past, only the phase nodes [3, 4, 5] are active. Hence, I have to take the values at those position in the matrix item_ref_map.second
-
-        // create a matrix of values to assign
         Eigen::MatrixXd bring_me_to_eigen_3_4_val;
         bring_me_to_eigen_3_4_val.resize(item_ref_map.second->values.rows(), pair_nodes.first.size());
 
@@ -999,12 +990,18 @@ bool PhaseToken::update()
 //    std::cout << "updating phase: '" << getName() << "' at node: " << _initial_node << std::endl;
     if (!_active_nodes.empty())
     {
-        _update_items(_initial_node);
-        _update_item_reference(_initial_node);
-        _update_constraints(_initial_node);
-        _update_variables(_initial_node);
-        _update_costs(_initial_node);
-        _update_parameters(_initial_node);
+        for (auto item_map : _abstract_phase->getItemsInfo())
+        {
+            auto pair_nodes = _compute_horizon_nodes(item_map.second->nodes, _initial_node);
+
+            item_map.first->update(pair_nodes.first, pair_nodes.second);
+        }
+//        _update_items(_initial_node);
+//        _update_item_reference(_initial_node);
+//        _update_constraints(_initial_node);
+//        _update_variables(_initial_node);
+//        _update_costs(_initial_node);
+//        _update_parameters(_initial_node);
     }
     return true;
 

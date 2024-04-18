@@ -3,6 +3,7 @@
 #include <pybind11/stl.h>
 #include <pybind11/pytypes.h>
 #include <phase_manager/phase.h>
+#include <phase_manager/timeline.h>
 
 namespace py = pybind11;
 
@@ -20,6 +21,20 @@ public:
     std::string getName() { return _pyobj.attr("getName")().cast<std::string>(); }
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
+
+    bool update(std::vector<int> local_nodes, std::vector<int> absolute_nodes)
+    {
+        setNodes(absolute_nodes, false);
+        return true;
+    }
+
+    bool reset()
+    {
+        // resetting nodes
+        std::vector<int> empty_nodes;
+        _pyobj.attr("setNodes")(empty_nodes, true);
+        return true;
+    }
 
     bool setNodesInternal(std::vector<int> nodes, bool erasing)
     {
@@ -40,10 +55,6 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
     PyObjWrapperWithBounds(py::object pyobj):
         _pyobj(pyobj)
     {
-//        _lower_bounds = - std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
-//        _upper_bounds = std::numeric_limits<double>::infinity() * Eigen::MatrixXd::Ones(getDim(), getNodes().size());
-
-        //TODO: why inf? better like this
         // initial bounds are required when clearing the phase: the current value is restored to the initial one.
         _lower_bounds = std::get<0>(getBounds());
         _upper_bounds = std::get<1>(getBounds());
@@ -56,6 +67,20 @@ struct PyObjWrapperWithBounds : ItemWithBoundsBase {
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
     std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> getBounds() {return _pyobj.attr("getBounds")().cast<std::tuple<Eigen::MatrixXd, Eigen::MatrixXd>>(); }
+
+    bool update(std::vector<int> local_nodes, std::vector<int> absolute_nodes)
+    {
+        return true;
+    }
+
+    bool reset()
+    {
+        // resetting nodes
+        std::vector<int> empty_nodes;
+        _pyobj.attr("setNodes")(empty_nodes, true);
+        clearBounds();
+        return true;
+    }
 
     bool setNodesInternal(std::vector<int> nodes, bool erasing)
     {
@@ -86,15 +111,12 @@ private:
 };
 
 struct PyObjWrapperWithValues : ItemWithValuesBase {
-    PyObjWrapperWithValues(py::object pyobj):
+    PyObjWrapperWithValues(py::object pyobj, Eigen::MatrixXd values):
         _pyobj(pyobj)
     {
-//        std::cout << getName() << std::endl;
-        // TODO
-        // what if empty?
         // what if the parameter starts with zero nodes
-        _values = getValues();
-        _initial_values = _values;
+        _values = values; // desired values
+        _initial_values = getValues(); // initial values from item
 
 //        std::cout << "initialization of param: " << _values << std::endl;
 
@@ -110,6 +132,41 @@ struct PyObjWrapperWithValues : ItemWithValuesBase {
     int getDim() {return _pyobj.attr("getDim")().cast<int>(); }
     std::vector<int> getNodes() {return _pyobj.attr("getNodes")().cast<std::vector<int>>(); }
     Eigen::MatrixXd getValues() {return _pyobj.attr("getValues")().cast<Eigen::MatrixXd>(); }
+
+    bool reset()
+    {
+        // resetting nodes
+        return true;
+    }
+
+    bool update(std::vector<int> local_nodes, std::vector<int> absolute_nodes)
+    {
+
+//        std::cout << "item to which values are assigned: " << item_ref_map.first << std::endl;
+//        std::cout << "value assigned by user: " << item_ref_map.second->values << " (dim: " << item_ref_map.second->values.size() << ")" << std::endl;
+//        std::cout << "item nodes: ";
+//        for (auto node : item_ref_map.second->nodes)
+//        {
+//            std::cout << node << " ";
+//        }
+//        std::cout << std::endl;
+
+        // when shifting, the pair_nodes.first shifts too. I need to set the correct values from --> item_ref_map.second->values
+        // example: when the phase is half in the past, only the phase nodes [3, 4, 5] are active. Hence, I have to take the values at those position in the matrix item_ref_map.second
+
+        // create a matrix of values to assign
+
+        // get a submatrix of given index (local nodes) from the _values matrix
+        Eigen::MatrixXd vals( _values.cols(), local_nodes.size() );
+        for (int col_i = 0; col_i < vals.cols(); col_i++)
+        {
+            vals.col(col_i) = _values.col(local_nodes[col_i]);
+        }
+
+        setNodes(absolute_nodes, false);
+        assign(vals, absolute_nodes);
+        return true;
+    }
 
     bool setNodesInternal(std::vector<int> nodes, bool erasing)
     {
@@ -139,6 +196,30 @@ private:
     py::object _pyobj;
 };
 
+// ------------------------------------------------------------
+// specialized structs
+
+class pyCost : public PyObjWrapper {
+public:
+    pyCost(py::object pyobj) : PyObjWrapper(pyobj) {}
+
+    // Override reset function
+    bool reset() override {
+        //TODO: add specific implementation
+        return true;
+    }
+};
+
+//class Constraint : public PyObjWrapperWithBounds {
+//public:
+//    Constraint(py::object pyobj) : PyObjWrapperWithBounds(pyobj) {}
+
+//    // Override reset function
+//    bool reset() override {
+//        // specific
+
+//    }
+//};
 
 bool add_item_pyobject(Phase& self,
                        py::object item,
@@ -154,7 +235,7 @@ bool add_item_reference_pyobject(Phase& self,
                                  Eigen::MatrixXd values,
                                  std::vector<int> nodes)
 {
-    ItemWithValuesBase::Ptr item_converted = std::make_shared<PyObjWrapperWithValues>(item);
+    ItemWithValuesBase::Ptr item_converted = std::make_shared<PyObjWrapperWithValues>(item, values);
     self.addItemReference(item_converted, values, nodes);
     return true;
 }
@@ -163,7 +244,7 @@ bool add_cost_pyobject(Phase& self,
                        py::object item,
                        std::vector<int> nodes = {})
 {
-    ItemBase::Ptr item_converted = std::make_shared<PyObjWrapper>(item);
+    auto item_converted = std::make_shared<pyCost>(item);
     self.addCost(item_converted, nodes);
     return true;
 }
@@ -192,7 +273,7 @@ bool add_parameter_pyobject(Phase& self, py::object item,
                             Eigen::MatrixXd values,
                             std::vector<int> nodes)
 {
-    ItemWithValuesBase::Ptr item_converted = std::make_shared<PyObjWrapperWithValues>(item);
+    ItemWithValuesBase::Ptr item_converted = std::make_shared<PyObjWrapperWithValues>(item, values);
     self.addParameterValues(item_converted, values, nodes);
     return true;
 }
@@ -398,7 +479,7 @@ auto _get_parameters_map(Phase& phase)
 PYBIND11_MODULE(pyphase, m) {
 
     py::class_<Phase, Phase::Ptr>(m, "Phase")
-            .def(py::init<int, std::string>())
+            .def(py::init<Timeline&, int, std::string>())
             .def("getName", &Phase::getName)
             .def("getNNodes", &Phase::getNNodes)
             .def("setDuration", &Phase::setDuration)

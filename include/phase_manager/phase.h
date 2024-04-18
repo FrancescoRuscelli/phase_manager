@@ -14,6 +14,7 @@
 //#include <variant>
 //#include <functional>
 
+class Timeline;
 
 class InfoContainer
 {
@@ -81,7 +82,7 @@ public:
     typedef std::shared_ptr<Phase> Ptr;
 
 
-    Phase(int n_nodes, std::string name);
+    Phase(Timeline& timeline, int n_nodes, std::string name);
 
     std::string getName();
     int getNNodes();
@@ -169,7 +170,7 @@ private:
     std::unordered_map<std::string, ItemBase::Ptr> _elem_map;
     std::unordered_map<ItemBase::Ptr, InfoContainer::Ptr> _info_elements;
 
-//    PhaseManager::Ptr _phase_manager;
+    Timeline& _timeline;
 
 //    std::unordered_map<ItemBase::Ptr, std::vector<int>> _items_base;
 //    std::unordered_map<ItemWithValuesBase::Ptr, ValuesContainer> _items_ref;
@@ -199,7 +200,6 @@ class PhaseToken
      */
 
     friend class Timeline;
-    friend class HorizonManager;
 
 public:
 
