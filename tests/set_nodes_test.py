@@ -1,6 +1,7 @@
 from horizon.problem import Problem
 import phase_manager.pymanager as pymanager
 import phase_manager.pyphase as pyphase
+import phase_manager.pytimeline as pytimeline
 import time
 import numpy as np
 
@@ -13,11 +14,10 @@ a = prb.createStateVariable('a', 1)
 par = prb.createParameter('par', 1)
 
 pm = pymanager.PhaseManager(ns)
-timeline_1 = pm.addTimeline('timeline_1')
-phase_1 = pyphase.Phase(5, 'phase_1')
+timeline_1 = pm.createTimeline('timeline_1')
+phase_1 = timeline_1.createPhase(5, 'phase_1')
 phase_1.addVariableBounds(a, np.array([[1, 2, 3, 4, 5]]), np.array([[-1, -2, -3, -4, -5]]))
 phase_1.addParameterValues(par, np.array([[1., 2., 3.]]), [2, 3, 4])
-timeline_1.registerPhase(phase_1)
 
 # tic = time.time()
 # print(time.time() - tic)

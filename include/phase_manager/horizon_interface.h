@@ -24,7 +24,6 @@ public:
     virtual std::vector<int> getNodes() = 0;
 
     virtual bool reset() = 0;
-    virtual bool update(std::vector<int> local_nodes, std::vector<int> absolute_nodes) = 0;
 
     bool isChanged()
     {

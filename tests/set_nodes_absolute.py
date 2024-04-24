@@ -3,7 +3,7 @@ import phase_manager.pymanager
 from horizon.problem import Problem
 import phase_manager.pymanager as pymanager
 import phase_manager.pyphase as pyphase
-
+import phase_manager.pytimeline as pytimeline
 import numpy as np
 
 def printElemInfo(elem):
@@ -11,7 +11,7 @@ def printElemInfo(elem):
     print(f"  |     Phase duration: {elem.getNNodes()}")
     print(f"  |     Active nodes of phase: {elem.getActiveNodes()}")
     print(f"  |_____________________________________________________________|")
-def printAllPhases(timeline: phase_manager.pymanager.SinglePhaseManager, add_element_info=False):
+def printAllPhases(timeline: phase_manager.pytimeline.Timeline, add_element_info=False):
     elem_num = 1
     print(f"{colorama.Style.BRIGHT}==================== ALL PHASES: ===================={colorama.Style.RESET_ALL}")
     for elem in timeline.getPhases():
@@ -21,7 +21,7 @@ def printAllPhases(timeline: phase_manager.pymanager.SinglePhaseManager, add_ele
         if add_element_info:
             printElemInfo(elem)
         elem_num += 1
-def printActivePhases(timeline: phase_manager.pymanager.SinglePhaseManager, add_element_info=False):
+def printActivePhases(timeline: phase_manager.pytimeline.Timeline, add_element_info=False):
     elem_num = 1
     print(f"{colorama.Style.BRIGHT}==================== ACTIVE PHASES: ===================={colorama.Style.RESET_ALL}")
     for elem in timeline.getActivePhases():
@@ -104,27 +104,21 @@ if __name__ == '__main__':
     prb.setDt(dt)
 
     pm = pymanager.PhaseManager(ns)
-    timeline_1 = pm.addTimeline('timeline_1')
+    timeline_1 = pm.createTimeline('timeline_1')
 
     # adding stuff to the problem
     a = prb.createStateVariable('a', 1)
     par = prb.createParameter('par', 1)
     cnsrt_1 = prb.createConstraint('cnsrt_1', a / 2, nodes=[])
 
-    phase_1 = pyphase.Phase(4, 'phase_1')
+    phase_1 = timeline_1.createPhase(4, 'phase_1')
     phase_1.addParameterValues(par, np.array([[1., 3., 4.]]), [0, 2, 3])
 
-    phase_2 = pyphase.Phase(5, 'phase_2')
+    phase_2 = timeline_1.createPhase(5, 'phase_2')
     phase_2.addVariableBounds(a, np.array([[-1, -2, -3, -4, -5]]), np.array([[1, 2, 3, 4, 5]]))
     phase_2.addConstraint(cnsrt_1, nodes=[0, 3])
 
-    phase_inserted = pyphase.Phase(3, 'phase_inserted')
-
-    timeline_1.registerPhase(phase_1)
-    timeline_1.registerPhase(phase_2)
-    timeline_1.registerPhase(phase_inserted)
-
-
+    phase_inserted = timeline_1.createPhase(3, 'phase_inserted')
 
     # timeline_1.clear()
 

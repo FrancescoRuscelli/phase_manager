@@ -1,5 +1,6 @@
 from horizon.problem import Problem
 import phase_manager.pymanager as pymanager
+import phase_manager.pytimeline as pytimeline
 import phase_manager.pyphase as pyphase
 
 import numpy as np
@@ -22,7 +23,7 @@ class PhaseTester:
     def _create_phase_manager(self):
 
         self.pm = pymanager.PhaseManager(ns)
-        self.timeline_1 = self.pm.addTimeline('timeline_1')
+        self.timeline_1 = self.pm.createTimeline('timeline_1')
 
     def _setup(self):
 
@@ -33,10 +34,9 @@ class PhaseTester:
         self._setup()
         a = prb.createStateVariable('a', 1)
         cnsrt_1 = prb.createConstraint('cnsrt_1', a / 2, nodes=[])
-        phase_1 = pyphase.Phase(4, 'phase_1')
+        phase_1 = self.timeline_1.createPhase(4, 'phase_1')
         phase_1.addConstraint(cnsrt_1, nodes=[0, 3])
 
-        self.timeline_1.registerPhase(phase_1)
         self.timeline_1.addPhase(phase_1)
 
         for num_it in range(5):
@@ -53,11 +53,10 @@ class PhaseTester:
 
         self._setup()
         par = prb.createParameter('par', 1)
-        phase_1 = pyphase.Phase(4, 'phase_1')
+        phase_1 = self.timeline_1.createPhase(4, 'phase_1')
         phase_1.addParameterValues(par, np.array([[1., 3., 4.]]), [0, 2, 3])
         # phase_1.addParameterValues(par, np.array([[1., 3., 4., 5.]]))
 
-        self.timeline_1.registerPhase(phase_1)
         self.timeline_1.addPhase(phase_1)
 
         for num_it in range(5):
@@ -70,11 +69,11 @@ class PhaseTester:
 
         self._setup()
         a = prb.createStateVariable('a', 1)
-        phase_1 = pyphase.Phase(4, 'phase_1')
+        # print(a.getBounds())
+        phase_1 = self.timeline_1.createPhase(4, 'phase_1')
         phase_1.addVariableBounds(a, np.array([[-1, -2]]), np.array([[1, 2]]), [1, 3])
-        phase_1.addVariableBounds(a, np.array([[-1, -1, -1, -1]]), np.array([[1, 1, 1, 1]]))
+        # phase_1.addVariableBounds(a, np.array([[-1, -1, -1, -1]]), np.array([[1, 1, 1, 1]]))
 
-        self.timeline_1.registerPhase(phase_1)
         self.timeline_1.addPhase(phase_1)
 
         for num_it in range(5):

@@ -24,77 +24,38 @@ Phase::Ptr Timeline::createPhase(int n_nodes, std::string name)
 
 }
 
-bool Timeline::addItem(std::shared_ptr<ItemBase> item)
+bool Timeline::addElement(std::shared_ptr<ItemBase> element)
 {
 
     // registering the items inside the phase_manager, if not already registered
-    std::cout << "registering item: " << item->getName() << " (" << item << ")" << std::endl;
-    if (_items.find(item->getName()) != _items.end())
+    std::cout << "registering element: " << element->getName() << " (" << element << ")" << std::endl;
+    if (_elements.find(element->getName()) != _elements.end())
     {
-        std::cout << " already present (" << _items[item->getName()] << ")" << std::endl;
+        std::cout << " already present (" << _elements[element->getName()] << ")" << std::endl;
         std::cout << " ========== " << std::endl;
         return false;
     }
 
     std::cout << " ========== " << std::endl;
 
-    _items[item->getName()] = item;
+    _elements[element->getName()] = element;
 
     return true;
 }
 
-//template <typename T, typename U>
-//bool _register_items_from_phase(std::vector<T>& container, std::vector<U> items)
-//{
-//    bool flag_repetition = false;
-//    // registering the items inside the phase, if not already registered
-//    for (auto &item : items)
-//    {
-//        std::cout << "registering item: " << item->getName() << " (" << item << ")" << std::endl;
-//        for (auto it : container)
-//        {
-//            if (item->getName() == it->getName())
-//            {
-//                std::cout << " already present (" << it << ")" << std::endl;
-//                std::cout << " ========== " << std::endl;
-//                item = it;
-//                flag_repetition = true;
+std::shared_ptr<ItemBase> Timeline::getElement(std::string name)
+{
+    auto it = _elements.find(name);
 
-//                break;
-//            }
-//        }
-
-//        if (flag_repetition)
-//        {
-//            flag_repetition = false;
-//            continue;
-//        }
-
-//        // std::cout << "adding item: " << item->getName() << " (" << item << ")" << std::endl;
-//        std::cout << " ========== " << std::endl;
-//        container.push_back(item);
-//    }
-//    return true;
-//}
-
-//bool Timeline::registerPhase(Phase::Ptr phase)
-//{
-//    // registering phases
-//    // todo: make it faster
-
-////    std::cout << "registering phase " << phase->getName() << std::endl;
-//    _registered_phases.push_back(phase);
-
-//    _register_items_from_phase(_items,  phase->getItems());
-//    _register_items_from_phase(_items_ref,  phase->getItemsReference());
-//    _register_items_from_phase(_constraints,  phase->getConstraints());
-//    _register_items_from_phase(_variables,  phase->getVariables());
-//    _register_items_from_phase(_costs,  phase->getCosts());
-//    _register_items_from_phase(_parameters,  phase->getParameters());
-
-
-//    return true;
-//}
+    if (it != _elements.end())
+    {
+        return _elements[name];
+    }
+    else
+    {
+        return nullptr;
+    }
+}
 
 bool Timeline::_add_phases(int pos, bool absolute_position_flag)
 {
@@ -482,89 +443,17 @@ bool Timeline::_reset()
 {
 
     // windows to items stored in phase_manager
-    std::cout << "--------- resetting phases: ----------" << std::endl;
-    for (auto const & [name, item] : _items)
+//    std::cout << "--------- resetting phases: ----------" << std::endl;
+    for (auto const & [name, item] : _elements)
     {
-        std::cout << name << " (" << item << "): " << std::endl;
+//        std::cout << name << " (" << item << ") changed? " << item->isChanged() << std::endl;
         if (item->isChanged())
         {
-        //    std::cout << "resetting item..." << std::endl;
+//            std::cout << "resetting item..." << std::endl;
             item->reset();
-            // std::cout << "done" << std::endl;
+//             std::cout << "done" << std::endl;
         }
     }
-    std::cout << "--------- resetting done. ----------" << std::endl;
-//    bool erasing = true;
-//    std::vector<int> empty_nodes;
-
-//    std::cout << "--------- resetting phases: ----------" << std::endl;
-//    for (auto item : _items)
-//    {
-//        std::cout << item->getName() << " (" << item << "): " << std::endl;
-//        // std::cout << "is the item changed?" << item->isChanged() << std::endl;
-//        if (item->isChanged())
-//        {
-//        //    std::cout << "resetting item..." << std::endl;
-//            item->setNodes(empty_nodes, erasing);
-//            // std::cout << "done" << std::endl;
-//        }
-//    }
-
-//    for (auto item_ref : _items_ref)
-//    {
-//        if (item_ref->isChanged())
-//        {
-//        //    std::cout << "resetting items ref..." << std::endl;
-//            item_ref->setNodes(empty_nodes, erasing);
-//            item_ref->clearValues();
-//            // std::cout << "done" << std::endl;
-//        }
-//    }
-
-//    for (auto constraint : _constraints)
-//    {
-//        if (constraint->isChanged())
-//        {
-//        //    std::cout << "resetting constraint..." << std::endl;
-//            constraint->setNodes(empty_nodes, erasing);
-//            // constraint->clearBounds(); // this cleared bounds here
-//            // std::cout << "done" << std::endl;
-//        }
-//    }
-
-//    for (auto cost : _costs)
-//    {
-//        if (cost->isChanged())
-//        {
-//        //    std::cout << "resetting cost..." << std::endl;
-//            cost->setNodes(empty_nodes, erasing);
-//            // std::cout << "done" << std::endl;
-//        }
-//    }
-
-//    for (auto variable : _variables)
-//    {
-
-//        if (variable->isChanged())
-//        {
-//        //    std::cout << "resetting variable..." << std::endl;
-////          variable->clearNodes();
-//            variable->clearBounds();
-//            // std::cout << "done" << std::endl;
-//        }
-//    }
-
-//    for (auto parameter : _parameters)
-//    {
-//        if (parameter->isChanged())
-//        {
-//        //    std::cout << "resetting parameter..." << std::endl;
-//            parameter->clearValues();
-//            // std::cout << "done" << std::endl;
-//        }
-//    }
-
-//    std::cout << "--------- resetting done. ----------" << std::endl;
     return true;
 }
 
@@ -603,23 +492,16 @@ bool Timeline::addPhase(Phase::Ptr phase, int pos, bool absolute_position_flag)
 
 }
 
-//Phase::Ptr Timeline:: getRegisteredPhase(std::string name)
-//{
-////    std::cout << "checking name: '" << phase_name << "'" <<std::endl;
-//    for (int i=0; i<_registered_phases.size(); i++)
-//    {
-//        std::string phase_name = _registered_phases[i]->getName();
+Phase::Ptr Timeline:: getRegisteredPhase(std::string name)
+{
+//    std::cout << "checking name: '" << phase_name << "'" <<std::endl;
+    if (_registered_phases.find(name) == _registered_phases.end())
+    {
+      return nullptr;
+    }
 
-//        if (phase_name == name)
-//        {
-////            std::cout << "Found registered phase with name '" << name << "'" <<std::endl;
-//            return _registered_phases[i];
-//        }
-//    }
-
-////    std::cout << "NOT found registered phase with name '" << name << "'" <<std::endl;
-//    return nullptr;
-//}
+    return _registered_phases[name];
+}
 
 //std::vector<Phase::Ptr> Timeline::getRegisteredPhases()
 //{

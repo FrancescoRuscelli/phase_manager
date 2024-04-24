@@ -1,6 +1,7 @@
 from horizon.problem import Problem
 import phase_manager.pymanager as pymanager
 import phase_manager.pyphase as pyphase
+import phase_manager.pytimeline as pytimeline
 
 import numpy as np
 
@@ -18,21 +19,17 @@ cnsrt3 = prb.createConstraint('cnsrt3', 3 * a, nodes=[])
 cnsrt4 = prb.createConstraint('cnsrt4', 3 * a * b, nodes=[])
 
 pm = pymanager.PhaseManager(ns)
-timeline_1 = pm.addTimeline('timeline_1')
-phase_1 = pyphase.Phase(5, 'phase_1')
+timeline_1 = pm.createTimeline('timeline_1')
+phase_1 = timeline_1.createPhase(5, 'phase_1')
 
 phase_1.addItem(cnsrt1)
 phase_1.addItem(cnsrt2)
 # phase_1.addItem(cnsrt1)
 # phase_1.addItem(cnsrt3)
 
-timeline_1.registerPhase(phase_1)
-
-phase_2 = pyphase.Phase(5, 'phase_2')
+phase_2 = timeline_1.createPhase(5, 'phase_2')
 phase_2.addItem(cnsrt3)
 phase_2.addItem(cnsrt4)
-
-timeline_1.registerPhase(phase_2)
 
 timeline_1.addPhase(phase_2)
 timeline_1.addPhase(phase_2)

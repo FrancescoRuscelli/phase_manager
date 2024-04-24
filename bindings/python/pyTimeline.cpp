@@ -16,7 +16,7 @@ PYBIND11_MODULE(pytimeline, m) {
             .def("createPhase", &Timeline::createPhase)
             .def("addPhase", static_cast<bool (Timeline::*)(std::vector<Phase::Ptr>, int, bool)>(&Timeline::addPhase), py::arg("phases"), py::arg("pos") = -1, py::arg("absolute_position") = false)
             .def("addPhase", static_cast<bool (Timeline::*)(Phase::Ptr, int, bool)>(&Timeline::addPhase), py::arg("phase"), py::arg("pos") = -1, py::arg("absolute_position") = false)
-//            .def("getRegisteredPhase", &Timeline::getRegisteredPhase)
+            .def("getRegisteredPhase", &Timeline::getRegisteredPhase)
 //            .def("getRegisteredPhases", &Timeline::getRegisteredPhases)
             .def("getEmptyNodes", &Timeline::getEmptyNodes)
             .def("getActivePhases", &Timeline::getActivePhases)
