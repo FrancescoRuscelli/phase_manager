@@ -309,7 +309,7 @@ public:
             auto itr = std::find(selected_nodes.begin(), selected_nodes.end(), active_phase_nodes[col_i]);
             if (itr == selected_nodes.end())
             {
-                throw("SOMETHING WRONG IN UPDATE of VARIABLE MANAGER. element NOT FOUND");
+                throw std::runtime_error(std::string("SOMETHING WRONG IN UPDATE of VARIABLE MANAGER") + getItem()->getName() + std::string("element NOT FOUND"));
             }
             int index = std::distance(selected_nodes.begin(), itr);
             lb.col(col_i) = _lower_bounds.col(index);

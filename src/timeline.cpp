@@ -19,6 +19,12 @@ Phase::Ptr Timeline::createPhase(int n_nodes, std::string name)
 {
 
     Phase::Ptr phase = std::make_shared<Phase>(*this, n_nodes, name);
+
+    if (_registered_phases.find(name) != _registered_phases.end())
+    {
+        throw std::runtime_error(std::string("Failed to create phase: '") + name + std::string("'. Name already registered."));
+    }
+
     _registered_phases[name]= phase;
     return phase;
 
