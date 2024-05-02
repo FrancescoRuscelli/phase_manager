@@ -60,16 +60,14 @@ class TimelineWidget(QWidget):
         self.timeline = timeline
         self.rectangle_rounding = [10, 10]
         self.numbers_visible = True
-        self.phase_border_color = Qt.gray
-        self.phase_patch_transparency = 200
-        self.size_numbers = 10
+        self.phase_border_color = Qt.black
+        self.phase_patch_transparency = 200  # max 255
+        self.size_numbers = 8
         self.phases_path = []
 
         self.setMouseTracking(True)
-        self.phase_hovered_i = None
 
-
-
+        self.phase_hovered_i = -1
 
     def __is_mouse_inside_rect(self, pos):
         for i in range(len(self.phases_path)):
@@ -99,13 +97,17 @@ class TimelineWidget(QWidget):
 
     def __draw_phase_patch(self, path: QPainterPath, x_position, y_position, width, height):
 
-        corner_radius = 50
-        path.moveTo(x_position, y_position)
-        path.lineTo(x_position, y_position + height - corner_radius)
-        path.arcTo(x_position, y_position + height - corner_radius, corner_radius, corner_radius, 180.0, 90.0)
+        corner_radius_0 = 60
+        corner_radius_1 = 30
+        path.moveTo(x_position, y_position + corner_radius_1/2)
+        path.lineTo(x_position, y_position + height - corner_radius_0)
+        path.arcTo(x_position, y_position + height - corner_radius_0, min(corner_radius_0, width), corner_radius_0, 180.0, 90.0)
         path.lineTo(x_position + width, y_position + height)
-        path.lineTo(x_position + width, y_position)
-        path.lineTo(x_position, y_position)
+
+        path.arcTo(x_position + width - corner_radius_1, y_position, min(corner_radius_1, width), corner_radius_1, 0, 90.0)
+
+        path.lineTo(x_position + corner_radius_0/2, y_position)
+        path.arcTo(x_position, y_position, min(corner_radius_1, width), corner_radius_1, 90.0, 90.0)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -130,7 +132,7 @@ class TimelineWidget(QWidget):
 
         painter.setPen(QPen(self.phase_border_color, 0.5, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
         for phase in self.timeline.phases:
-            print(f'drawing phase: {phase.name} (duration: {phase.duration}, initial node: {phase.initial_node})')
+            # print(f'drawing phase: {phase.name} (duration: {phase.duration}, initial node: {phase.initial_node})')
             name = phase.name
             position = phase.initial_node
             color = QColor(*string_to_color(name))
@@ -139,15 +141,13 @@ class TimelineWidget(QWidget):
             phase_path = QPainterPath()
             self.__draw_phase_patch(phase_path, self.__nodes_to_lenght(position), 0, self.__nodes_to_lenght(phase.duration), timeline_height)
             # rect = QRectF(self.__nodes_to_lenght(position), 0, self.__nodes_to_lenght(phase.duration), timeline_height)
-            # rectPath.addRoundedRect(rect, self.rectangle_rounding[0], self.rectangle_rounding[1])
+            # phase_path.addRoundedRect(rect, self.rectangle_rounding[0], self.rectangle_rounding[1])
             self.phases_path.append(phase_path)
 
             painter.setBrush(color)
             painter.drawPath(phase_path)
 
-            # =============================
-
-        print('=========')
+        # print('=========')
 
         # if self.phase_hovered_i is not None:
         #     font = QFont()

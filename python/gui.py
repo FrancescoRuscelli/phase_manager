@@ -116,37 +116,38 @@ if __name__ == '__main__':
 
     # ----------------- artificial phases ----------------
 
-    # num_phases = 2
-    # phase_durations = [12, 15, 3, 7, 22, 11]
-    # phase_names = ['phase_q', 'phase1', 'verylongname_phase_with_some_other_stuff_written', 'something_else']
-    # timeline_names = ['a', 's', 'ball_1', 'd']
-    #
-    # timelines = dict()
-    #
-    # for name in timeline_names:
-    #     phases = []
-    #     phase_position = 0
-    #     for i in range(num_phases):
-    #         phase_duration = random.choice(phase_durations)
-    #         phases.append(PhaseInfo(random.choice(phase_names), phase_position, phase_duration))
-    #         phase_position += phase_duration
-    #
-    #     timelines[name] = phases
-    #
-    # timeline_ros = TimelineROS()
-    # timeline_ros.timelines = timelines
-    # gui = PhaseManagerGUI(timeline_ros, 50)
-    # gui.update()
+    num_phases = 10
+    phase_durations = [3, 15, 3, 7, 22, 11]
+    phase_names = ['phase_q', 'phase1', 'verylongname_phase_with_some_other_stuff_written', 'something_else']
+    timeline_names = ['a', 's', 'ball_1', 'd']
 
+    timelines = dict()
 
-    # ============================================================
+    for name in timeline_names:
+        phases = []
+        phase_position = 0
+        for i in range(num_phases):
+            phase_duration = random.choice(phase_durations)
+            phases.append(PhaseInfo(random.choice(phase_names), phase_position, phase_duration))
+            phase_position += phase_duration
+
+        timelines[name] = phases
 
     timeline_ros = TimelineROS()
+    timeline_ros.timelines = timelines
     gui = PhaseManagerGUI(timeline_ros, 50)
-
-    timer = QTimer()
-    timer.timeout.connect(gui.update)
-    timer.start(10)
+    gui.update()
 
     gui.show()
     sys.exit(app.exec_())
+    # ============================================================
+
+    # timeline_ros = TimelineROS()
+    # gui = PhaseManagerGUI(timeline_ros, 50)
+    #
+    # timer = QTimer()
+    # timer.timeout.connect(gui.update)
+    # timer.start(10)
+    #
+    # gui.show()
+    # sys.exit(app.exec_())
