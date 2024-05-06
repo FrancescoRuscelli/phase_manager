@@ -31,6 +31,8 @@ class PhaseInfo:
         self.initial_node = initial_node
         self.duration = duration
 
+        self.position_error = -1
+
 
 class TimelineInfo:
     def __init__(self, name, n_nodes):
@@ -39,5 +41,10 @@ class TimelineInfo:
         self.phases = []
 
     def update(self, phases):
-        # Rotate phases
         self.phases = phases
+
+        for phase_i in range(len(self.phases)):
+            if phase_i > 0:
+                node_overlap = self.phases[phase_i - 1].initial_node + self.phases[phase_i - 1].duration - self.phases[phase_i].initial_node
+                if node_overlap > 0:
+                    self.phases[phase_i].position_error = node_overlap

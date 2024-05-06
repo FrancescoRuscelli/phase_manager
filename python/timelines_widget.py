@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QHBoxLayout, QMenuBar, \
-    QAction
-from PyQt5.QtGui import QPainter, QColor, QBrush, QPainterPath, QPen, QFont, QFontMetrics
+    QAction, QTextEdit
+from PyQt5.QtGui import QPainter, QColor, QBrush, QPainterPath, QPen, QFont, QFontMetrics, QCursor
 from PyQt5.QtCore import Qt, QTimer, QRectF, pyqtSignal
 from ros_client_class import TimelineROS, PhaseInfo, TimelineInfo
 import hashlib
@@ -54,6 +54,7 @@ class PhaseInfoBox(QWidget):
 
 class TimelineWidget(QWidget):
     phase_hovered_signal = pyqtSignal(str, int)
+
     def __init__(self, timeline):
         super().__init__()
 
@@ -66,6 +67,9 @@ class TimelineWidget(QWidget):
         self.phases_path = []
 
         self.setMouseTracking(True)
+
+        self.last_position = 0
+        self.last_duration = 0
 
         self.phase_hovered_i = -1
 
@@ -97,17 +101,15 @@ class TimelineWidget(QWidget):
 
     def __draw_phase_patch(self, path: QPainterPath, x_position, y_position, width, height):
 
-        corner_radius_0 = 60
-        corner_radius_1 = 30
-        path.moveTo(x_position, y_position + corner_radius_1/2)
+        corner_radius_0 = min(self.height() * 0.5,  self.width() * 0.5)
+        corner_radius_1 = min(self.height() * 0.2,  self.width() * 0.3)
+        path.moveTo(x_position, y_position + corner_radius_1 / 2)
         path.lineTo(x_position, y_position + height - corner_radius_0)
-        path.arcTo(x_position, y_position + height - corner_radius_0, min(corner_radius_0, width), corner_radius_0, 180.0, 90.0)
+        path.arcTo(x_position, y_position + height - corner_radius_0, corner_radius_0, corner_radius_0, 180.0, 90.0)
         path.lineTo(x_position + width, y_position + height)
-
-        path.arcTo(x_position + width - corner_radius_1, y_position, min(corner_radius_1, width), corner_radius_1, 0, 90.0)
-
-        path.lineTo(x_position + corner_radius_0/2, y_position)
-        path.arcTo(x_position, y_position, min(corner_radius_1, width), corner_radius_1, 90.0, 90.0)
+        path.arcTo(x_position + width - corner_radius_1, y_position, corner_radius_1, corner_radius_1, 0, 90.0)
+        path.lineTo(x_position + corner_radius_0 / 2, y_position)
+        path.arcTo(x_position, y_position, corner_radius_1, corner_radius_1, 90.0, 90.0)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -130,13 +132,25 @@ class TimelineWidget(QWidget):
 
         self.phases_path.clear()
 
+
         painter.setPen(QPen(self.phase_border_color, 0.5, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        for phase in self.timeline.phases:
+        for phase_i in range(len(self.timeline.phases)):
+            phase = self.timeline.phases[phase_i]
             # print(f'drawing phase: {phase.name} (duration: {phase.duration}, initial node: {phase.initial_node})')
             name = phase.name
             position = phase.initial_node
+            position_error = phase.position_error
+
+            brush_pattern = Qt.SolidPattern  # Use CrossPattern as an example pattern
             color = QColor(*string_to_color(name))
             color.setAlpha(self.phase_patch_transparency)
+
+
+            # if phase_i > 0:
+            #     if position < self.timeline.phases[phase_i - 1].initial_node + self.timeline.phases[phase_i - 1].duration:
+            if position_error > 0:
+                    # color = QColor(Qt.red)
+                    brush_pattern = Qt.BDiagPattern
 
             phase_path = QPainterPath()
             self.__draw_phase_patch(phase_path, self.__nodes_to_lenght(position), 0, self.__nodes_to_lenght(phase.duration), timeline_height)
@@ -144,10 +158,17 @@ class TimelineWidget(QWidget):
             # phase_path.addRoundedRect(rect, self.rectangle_rounding[0], self.rectangle_rounding[1])
             self.phases_path.append(phase_path)
 
-            painter.setBrush(color)
+            brush = QBrush(brush_pattern)
+            brush.setColor(color)
+            painter.setBrush(brush)
             painter.drawPath(phase_path)
 
         # print('=========')
+
+        # check if mouse is inside a phase
+        self.phase_hovered_i = self.__is_mouse_inside_rect(self.mapFromGlobal(QCursor.pos()))
+        if self.phase_hovered_i > 0:
+            self.phase_hovered_signal.emit(self.timeline.name, self.phase_hovered_i)
 
         # if self.phase_hovered_i is not None:
         #     font = QFont()
@@ -179,7 +200,8 @@ class TimelinesWidget(QWidget):
         self.display_visible = True
 
         self.__init_UI()
-        self.__init_display()
+        self.__init_notification_display()
+        self.__init_phase_info_box()
         self.__init_timeline_box()
         self.__init_timelines()
         self.__add_timeline_name_widget()
@@ -203,13 +225,23 @@ class TimelinesWidget(QWidget):
         self.timelines_box.setLayout(self.hbox)
         self.vbox.addWidget(self.timelines_box, 10)
 
-    def __init_display(self):
-
+    def __init_phase_info_box(self):
 
         self.none_text = ['--', '--', '--']
         self.display_widget = PhaseInfoBox(self.none_text)
         self.vbox.addWidget(self.display_widget, 1)
 
+    def __init_notification_display(self):
+
+        self.log_text = QTextEdit()
+        self.log_text.setReadOnly(True)
+        self.log_text.setStyleSheet("color: red; background-color: black;")
+        self.vbox.addWidget(self.log_text, 1)
+
+    def __overlap_phase_error_message(self, timeline_name, phase):
+
+        txt = f"Timeline {timeline_name}: phase {phase.name} starting at node {phase.initial_node} overlaps with previous phase of {phase.position_error} nodes"
+        self.log_text.append(txt)
 
     def __update_display(self, timeline_name, phase_i):
 
@@ -276,9 +308,18 @@ class TimelinesWidget(QWidget):
         self.display_visible = not self.display_visible
         self.display_widget.setVisible(self.display_visible)
 
+    # def toggle_notification_box(self):
+    #     self.display_visible = not self.display_visible
+    #     self.display_widget.setVisible(self.display_visible)
+
     def update_timeline(self):
 
         for timeline_name, phases in self.timeline_gui.timelines.items():
             self.timelines[timeline_name].update(phases)
+
+            for phase in phases:
+                if phase.position_error > 0:
+                    self.__overlap_phase_error_message(timeline_name, phase)
+
 
         self.update()
