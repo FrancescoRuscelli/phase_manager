@@ -27,17 +27,6 @@ Timeline::Ptr PhaseManager::getTimelines(std::string name)
     return it;
 }
 
-// TODO: remove registerphase, is very tricky. Find a way to embed it in addPhase
-//bool PhaseManager::registerPhase(std::string name, Phase::Ptr phase)
-//{
-//    return _timelines[name]->registerPhase(phase);
-//}
-
-//bool PhaseManager::addPhase(std::string name, Phase::Ptr phase)
-//{
-//    return _timelines[name]->addPhase(phase);
-//}
-
 int PhaseManager::getNodes()
 {
     return _n_nodes;
