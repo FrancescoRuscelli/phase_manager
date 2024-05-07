@@ -2,10 +2,11 @@
 #include <phase_manager/phase_manager.h>
 #include <phase_manager/phase.h>
 
-Timeline::Timeline(PhaseManager& phase_manager, int n_nodes, std::string name):
+Timeline::Timeline(PhaseManager& phase_manager, int n_nodes, std::string name, bool debug):
     _name(name),
     _n_nodes(n_nodes),
-    _phase_manager(phase_manager)
+    _phase_manager(phase_manager),
+    _debug(debug)
 {
 
 }
@@ -144,7 +145,7 @@ bool Timeline::_add_phases(int pos, bool absolute_position_flag)
 
         if ((absolute_position == -1) && (pos == -1))
         {
-            return 0;
+            return false;
         }
     }
     else
@@ -337,8 +338,11 @@ std::pair<int, int> Timeline::_check_absolute_position(int pos)
         // if the absolute phase is in a position already occupied, throw error
         if ((pos > _phases[phase_num]->getPosition()) && (pos < _phases[phase_num]->getPosition() + _phases[phase_num]->getNNodes()))
         {
-            std::string text = "absolute position requested (" + std::to_string(pos) + ") is occupied by phase at position: " + std::to_string(phase_num) + ".";
-            std::cout << "WARNING: " << text << " Phase NOT added." << std::endl;
+            if (_debug)
+            {
+                std::string text = "absolute position requested (" + std::to_string(pos) + ") is occupied by phase at position: " + std::to_string(phase_num) + ".";
+                std::cout << "WARNING: " << text << " Phase NOT added." << std::endl;
+            }
             return std::make_pair(-1, -1);
 //            throw std::runtime_error(text);
         }
@@ -524,11 +528,10 @@ bool Timeline::addPhase(std::vector<Phase::Ptr> phases, int pos, bool absolute_p
         _phases_to_add.push_back(_generate_phase_token(phase));
     }
 
-    _add_phases(pos, absolute_position_flag);
-
+    bool res = _add_phases(pos, absolute_position_flag);
     _phases_to_add.clear();
 
-    return true;
+    return res;
 
 }
 
@@ -542,10 +545,10 @@ bool Timeline::addPhase(Phase::Ptr phase, int pos, bool absolute_position_flag)
     _phases_to_add.push_back(_generate_phase_token(phase));
 
 
-    _add_phases(pos, absolute_position_flag);
+    bool res = _add_phases(pos, absolute_position_flag);
     _phases_to_add.clear();
 
-    return true;
+    return res;
 
 
 }

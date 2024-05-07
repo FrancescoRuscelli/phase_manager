@@ -23,7 +23,7 @@ public:
 
     typedef std::shared_ptr<PhaseManager> Ptr;
 
-    PhaseManager(int n_nodes);
+    PhaseManager(int n_nodes, bool debug=false);
 
     std::shared_ptr<Timeline> createTimeline(std::string name);
 
@@ -49,6 +49,7 @@ private:
     std::unordered_map<std::string, std::shared_ptr<Timeline>> _timelines;
 
     int _n_nodes;
+    bool _debug;
 
 //    std::unordered_map<std::string, ItemBase::Ptr> _items;
 

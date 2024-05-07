@@ -24,7 +24,7 @@ public:
 
     typedef std::shared_ptr<Timeline> Ptr;
 
-    Timeline(PhaseManager& phase_manager, int n_nodes, std::string name="");
+    Timeline(PhaseManager& phase_manager, int n_nodes, std::string name="", bool debug=false);
     // , PhaseManager::Ptr phase_manager
 
     std::string getName();
@@ -78,6 +78,8 @@ private:
 //    std::vector<std::shared_ptr<ItemWithValuesBase>> _parameters;
 
     PhaseManager& _phase_manager;
+
+    bool _debug;
 
 };
 

@@ -25,7 +25,7 @@ cnsrt2 = prb.createConstraint('cnsrt2', 2 * b, nodes=[])
 cnsrt3 = prb.createConstraint('cnsrt3', 3 * a, nodes=[])
 cnsrt4 = prb.createConstraint('cnsrt4', 3 * a * b, nodes=[])
 
-pm = pymanager.PhaseManager(ns)
+pm = pymanager.PhaseManager(ns, True)
 timeline_1 = pm.createTimeline('timeline_1')
 
 phase_1n = timeline_1.createPhase(1, 'phase_1n')
@@ -37,15 +37,17 @@ phase_5n.addItem(cnsrt3)
 phase_5n.addItem(cnsrt4)
 
 for i in range(1):
-    timeline_1.addPhase(phase_5n)
+    timeline_1.addPhase(phase_1n)
 
 print_timeline_phases()
 
-timeline_1.addPhase(phase_1n, 1, absolute_position=True)
-timeline_1.addPhase(phase_1n, 2, absolute_position=True)
-timeline_1.addPhase(phase_1n, 3, absolute_position=True)
-timeline_1.addPhase(phase_1n, 4, absolute_position=True)
-
+print(timeline_1.addPhase(phase_1n, 1, absolute_position=True))
+print(timeline_1.addPhase(phase_1n, 2, absolute_position=True))
+print(timeline_1.addPhase(phase_1n, 3, absolute_position=True))
+print(timeline_1.addPhase(phase_1n, 4, absolute_position=True))
+print(timeline_1.addPhase(phase_5n, 5, absolute_position=True))
+print(timeline_1.addPhase(phase_5n, 6, absolute_position=True))
+exit()
 # for i in range(1):
 # timeline_1.addPhase(phase_5n, 10, absolute_position=True)
 print("py-insert phase")

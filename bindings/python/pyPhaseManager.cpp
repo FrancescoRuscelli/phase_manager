@@ -11,7 +11,7 @@ PYBIND11_MODULE(pymanager, m) {
 
 
     py::class_<PhaseManager, PhaseManager::Ptr>(m, "PhaseManager")
-            .def(py::init<int>())
+            .def(py::init<int, bool>(),  py::arg("n_nodes"), py::arg("debug") = false)
             .def("createTimeline", &PhaseManager::createTimeline)
             .def("getTimelines", static_cast<Timeline::Ptr (PhaseManager::*)(std::string)>(&PhaseManager::getTimelines))
             .def("getTimelines", static_cast<std::unordered_map<std::string, Timeline::Ptr> (PhaseManager::*)()>(&PhaseManager::getTimelines))
