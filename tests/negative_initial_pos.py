@@ -47,10 +47,14 @@ timeline_1.addPhase(phase_1n, 3, absolute_position=True)
 timeline_1.addPhase(phase_1n, 4, absolute_position=True)
 
 # for i in range(1):
-timeline_1.addPhase(phase_5n, 10, absolute_position=True)
-print_timeline_phases()
-exit()
+# timeline_1.addPhase(phase_5n, 10, absolute_position=True)
+print("py-insert phase")
 timeline_1.addPhase(phase_1n, 7, absolute_position=True)
+timeline_1.addPhase(phase_1n, 8, absolute_position=True)
+timeline_1.addPhase(phase_1n, 9, absolute_position=True)
+timeline_1.addPhase(phase_1n, 10, absolute_position=True)
+timeline_1.addPhase(phase_5n, 11, absolute_position=True)
+print_timeline_phases()
 
 exit()
 print(" initial condition: ")
