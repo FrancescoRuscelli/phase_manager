@@ -54,9 +54,9 @@ private:
 
     bool _reset();
     bool _add_phases(int pos=-1, bool absolute_position_flag=false);
-    int _insert_phases(int pos);
-    int _update_phases_to_add(int pos);
+    int _insert_phases(int pos, int absolute_position);
     bool _update_active_phases();
+    int _pos_to_absolute(int pos);
     std::pair<int, int> _check_absolute_position(int pos);
     std::shared_ptr<PhaseToken> _generate_phase_token(std::shared_ptr<Phase> phase);
 

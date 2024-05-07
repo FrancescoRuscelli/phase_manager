@@ -24,7 +24,6 @@ Phase::Ptr Timeline::createPhase(int n_nodes, std::string name)
     {
         throw std::runtime_error(std::string("Failed to create phase: '") + name + std::string("'. Name already registered."));
     }
-
     _registered_phases[name]= phase;
     return phase;
 
@@ -32,7 +31,6 @@ Phase::Ptr Timeline::createPhase(int n_nodes, std::string name)
 
 bool Timeline::addElement(std::shared_ptr<ItemBase> element)
 {
-
     // registering the items inside the phase_manager, if not already registered
 //    std::cout << "registering element: " << element->getName() << " (" << element << ")" << std::endl;
     if (_elements.find(element->getName()) != _elements.end())
@@ -63,8 +61,24 @@ std::shared_ptr<ItemBase> Timeline::getElement(std::string name)
     }
 }
 
+int Timeline::_pos_to_absolute(int pos)
+{
+    int absolute_position;
+
+    if (pos < _phases.size())
+    {
+        absolute_position = _phases[pos]->getPosition() + _phases[pos]->getNNodes();
+    }
+    else
+    {
+        absolute_position = _phases.back()->getPosition() + _phases.back()->getNNodes();
+    }
+
+    return absolute_position;
+}
 bool Timeline::_add_phases(int pos, bool absolute_position_flag)
 {
+
     //  TODO: cannot add a phase if it is not registered (done with nullptr)
 
 //    for (auto phase : _phases_to_add)
@@ -120,13 +134,18 @@ bool Timeline::_add_phases(int pos, bool absolute_position_flag)
 //    }
 //    std::cout << "> = = = = = at node: ";
 //    std::cout << " = = = = = = = = =" << std::endl;
+    int last_node = 0;
 
     // compute absolute position of phase
     int absolute_position = 0;
-
     if (absolute_position_flag)
     {
         std::tie(absolute_position, pos) = _check_absolute_position(pos);
+
+        if ((absolute_position == -1) && (pos == -1))
+        {
+            return 0;
+        }
     }
     else
     {
@@ -137,21 +156,9 @@ bool Timeline::_add_phases(int pos, bool absolute_position_flag)
     }
 
     // fill _phases_to_add, a vector of phases to add to the horizon
-    if (pos == -1 || pos > _phases.size())
-    {
-        // add phase_tokens in temporary container (_phase_to_add) to stack
-//        std::cout << "Adding '" << _phases_to_add.size() << "' phase/s at tail: " << "(pos: " << _phases.size() << ")";
-        _phases.insert(_phases.end(), _phases_to_add.begin(), _phases_to_add.end());
-//        std::cout << " ...done." << " (total n. of phases: " << _phases.size() << ")" << std::endl;
-    }
-    else
-    {
-        absolute_position = _insert_phases(pos);
-    }
 
-    // set absolute position of phase
-    absolute_position = _update_phases_to_add(absolute_position);
-//    std::cout << "absolute_position: " << absolute_position << std::endl;
+    last_node = _insert_phases(pos, absolute_position);
+
 
     // compute active nodes inside the added phases
     for (auto phase_token_i : _phases_to_add)
@@ -159,7 +166,7 @@ bool Timeline::_add_phases(int pos, bool absolute_position_flag)
         int initial_node = phase_token_i->getPosition();
         int phase_nodes = phase_token_i->getNNodes();
 
-//        std::cout << "initial_node: " << initial_node<< std::endl;
+        // std::cout << "initial_node: " << initial_node << std::endl;
         // set active node for each added phase
         if (initial_node <= _n_nodes)
         {
@@ -212,25 +219,12 @@ bool Timeline::_add_phases(int pos, bool absolute_position_flag)
 
 }
 
-int Timeline::_insert_phases(int pos)
+int Timeline::_insert_phases(int pos, int absolute_position)
 {
-    // insert phase_tokens of temporary container (_phase_to_add) in stack at posistion 'pos'
-//    std::cout << "Inserting phase at pos: " << pos << " (total n. of phases: " << _phases.size() << ")";
-    _phases.insert(_phases.begin() + pos, _phases_to_add.begin(), _phases_to_add.end());
-//    std::cout << " ...done." << std::endl;
+    std::cout << "inserting phases at position: " << pos << std::endl;
+    std::cout << "inserting phases at absolute position: " << absolute_position << std::endl;
 
-    // add to _phases_to_add the tail of all the phases after the one inserted (nodes need to be recomputed)
-    _phases_to_add.insert(_phases_to_add.end(), _phases.begin() + pos + 1, _phases.end());
-//    std::cout << "Inserting phases to be recomputed: " << std::endl;
-//    for (auto phase_token_i : _phases_to_add)
-//    {
-//        std::cout << phase_token_i->getName() << ", ";
-//    }
-//    std::cout << std::endl;
-
-    int last_current_node = 0;
     // if 'pos' is beyond the horizon (outside of the active_phases), skip useless computation
-
     if (pos <= _active_phases.size())
     {
         // remove all the active_phases after the position 'pos'
@@ -245,16 +239,63 @@ int Timeline::_insert_phases(int pos)
             phase_i->update();
         }
     }
+
     // update position of phases before the position 'pos' (before i resetted)
+    int last_current_node = 0;
     if (!_active_phases.empty())
     {
         last_current_node = _active_phases.back()->getPosition() + _active_phases.back()->getNNodes();
+
+        // if the absolute node is greater than the last current node, add in absolute node (if there are no gaps between phases, last_current_node=absolute_position)
+        if (last_current_node < absolute_position)
+        {
+            last_current_node = absolute_position;
+        }
+    }
+
+    // set initial nodes of phases inserted
+    int added_nodes = 0;
+    for (auto phase_token_i : _phases_to_add)
+    {
+        phase_token_i->_set_position(last_current_node);
+        added_nodes += phase_token_i->getNNodes();
+        std::cout << "setting position of " << phase_token_i->getName() << ": " << last_current_node << std::endl;
+    }
+
+    std::cout << "number of nodes inserted: " << added_nodes << std::endl;
+    // shift all the phases in the tail (after the phase inserted)
+    for (int pos_i = pos + 1; pos <= _phases.size(); pos++)
+    {
+        _phases[pos_i]->_set_position(_phases[pos_i]->getPosition() + added_nodes);
+        std::cout << "setting position of " << _phases[pos_i]->getName() << ": " << _phases[pos_i]->getPosition() + added_nodes << std::endl;
     }
 
 
+    if (pos == -1 || pos > _phases.size())
+    {
+        // add phase_tokens in temporary container (_phase_to_add) to stack
+//        std::cout << "Adding '" << _phases_to_add.size() << "' phase/s at tail: " << "(pos: " << _phases.size() << ")";
+        _phases.insert(_phases.end(), _phases_to_add.begin(), _phases_to_add.end());
+    }
+    else
+    {
+//        std::cout << " ...done." << " (total n. of phases: " << _phases.size() << ")" << std::endl;
+    // insert phase_tokens of temporary container (_phase_to_add) in stack at posistion 'pos'
+    //    std::cout << "Inserting phase at pos: " << pos << " (total n. of phases: " << _phases.size() << ")";
+        _phases.insert(_phases.begin() + pos, _phases_to_add.begin(), _phases_to_add.end());
+    //    std::cout << " ...done." << std::endl;
+
+    // add to _phases_to_add the tail of all the phases after the one inserted (nodes need to be recomputed)
+        _phases_to_add.insert(_phases_to_add.end(), _phases.begin() + pos + 1, _phases.end());
+    }
+    //    std::cout << "Inserting phases to be recomputed: " << std::endl;
+    //    for (auto phase_token_i : _phases_to_add)
+    //    {
+    //        std::cout << phase_token_i->getName() << ", ";
+    //    }
+    //    std::cout << std::endl;
+
     // remove active nodes from phases to add, needs to be recomputed (all the phases that were active may not be active anymore after being pushed back)
-    // set new position of phase
-    // update position of phases after the position 'pos' (before i resetted)
     for (auto phase_token_i : _phases_to_add)
     {
         phase_token_i->_get_active_nodes().clear();
@@ -263,47 +304,42 @@ int Timeline::_insert_phases(int pos)
     return last_current_node;
 }
 
-int Timeline::_update_phases_to_add(int pos)
-{
-    for (auto phase_token_i : _phases_to_add)
-    {
-//        std::cout << "updating " << phase_token_i->getName() << " from position: " << pos << std::endl;
-        phase_token_i->_set_position(pos);
-        pos += phase_token_i->getNNodes();
-    }
-    return pos;
-}
-
 std::pair<int, int> Timeline::_check_absolute_position(int pos)
 {
     // search for the position 'pos', which is to be intended as the absolute position in horizon
+    // if the absolute position is free, add the phase at that position, pushing the other phases forward
+    // if not free, do not add the phase
     int absolute_position = pos;
 
+    // if there are no phases, add to specified position
     if (_phases.size() == 0)
     {
         int phase_position = -1;
         return std::make_pair(absolute_position, phase_position);
     }
 
+    // if position is after the last occupied node, add to specified position
     int last_current_node = _phases.back()->getPosition() + _phases.back()->getNNodes();
-
     if (pos >= last_current_node)
     {
         int phase_position = -1;
         return std::make_pair(absolute_position, phase_position);
     }
 
+    // otherwise, search it in the vector '_phases'
     int phase_num = 0;
-    // search it in the vector '_phases'
     for (phase_num; phase_num < _phases.size(); phase_num++)
     {
         // if the absolute phase is in a position already occupied, throw error
         if ((pos > _phases[phase_num]->getPosition()) && (pos < _phases[phase_num]->getPosition() + _phases[phase_num]->getNNodes()))
         {
-            throw std::runtime_error("absolute position requested is occupied by phase at position: " + std::to_string(phase_num));
+            std::string text = "absolute position requested (" + std::to_string(pos) + ") is occupied by phase at position: " + std::to_string(phase_num) + ".";
+            std::cout << "WARNING: " << text << " Phase NOT added." << std::endl;
+            return std::make_pair(-1, -1);
+//            throw std::runtime_error(text);
         }
 
-        if (pos < _phases[phase_num]->getPosition())
+        if (pos <= _phases[phase_num]->getPosition())
         {
             break;
         }
@@ -315,13 +351,19 @@ std::pair<int, int> Timeline::_check_absolute_position(int pos)
         total_duration += phase->getNNodes();
     }
 
+    /// todo
     // once inserted, checking if the phase fits (is not overlapping with the next)
-    if (phase_num < _phases.size() && pos + total_duration > _phases[phase_num]->getPosition())
-    {
-        throw std::runtime_error("There is no space left to insert phase. Another phase is starting at node: " + std::to_string(_phases[phase_num]->getPosition()));
-    }
+    /// changing behaviour: now if the it can be added, it is added. All the others gets pushed further in the timeline
+
+//    if (phase_num < _phases.size() && pos + total_duration > _phases[phase_num]->getPosition())
+//    {
+//        throw std::runtime_error("There is no space left to insert phase. Another phase is starting at node: " + std::to_string(_phases[phase_num]->getPosition()));
+//    }
 
     int phase_position = phase_num;
+//    std::cout << "absolute_position: " << absolute_position << std::endl;
+//    std::cout << "phase_position: " << phase_position << std::endl;
+
     return std::make_pair(absolute_position, phase_position);
 
 
@@ -465,6 +507,12 @@ bool Timeline::_reset()
 
 bool Timeline::addPhase(std::vector<Phase::Ptr> phases, int pos, bool absolute_position_flag)
 {
+
+    /*
+     * Add phase to timeline.
+     * pos: position where to insert the phase. If not specified, the phase is added as last. The position is w.r.t. the order of phases.
+     * absolute_position_flag: if true, the position is the specified absolute node in the timeline. Default is false.
+    */
 
     // add phase in temporary container (_phase_to_add), do computation and clean it
     for (auto phase : phases)
