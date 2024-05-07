@@ -304,7 +304,7 @@ int Timeline::_insert_phases(int pos, int absolute_position)
         phase_token_i->_get_active_nodes().clear();
     }
 
-    std::cout << "------------------" << std::endl;
+//    std::cout << "------------------" << std::endl;
     return last_current_node;
 }
 
