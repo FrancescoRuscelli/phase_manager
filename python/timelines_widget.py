@@ -1,8 +1,8 @@
 import sys
 from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QGridLayout, QLabel, QHBoxLayout, QMenuBar, \
-    QAction, QTextEdit
+    QAction, QTextEdit, QSizePolicy, QStyleOptionFrame, QStyle
 from PyQt5.QtGui import QPainter, QColor, QBrush, QPainterPath, QPen, QFont, QFontMetrics, QCursor
-from PyQt5.QtCore import Qt, QTimer, QRectF, pyqtSignal
+from PyQt5.QtCore import Qt, QTimer, QRectF, pyqtSignal, QSize
 from ros_client_class import TimelineROS, PhaseInfo, TimelineInfo
 import hashlib
 import random
@@ -17,6 +17,41 @@ def string_to_color(input_string, seed=None):
     a = 255
     return (r, g, b, a)
 
+
+class ElideLabel(QLabel):
+    _elideMode = Qt.ElideMiddle
+
+    def __init__(self, text='', parent=None):
+        super().__init__(text, parent)
+        self.setWordWrap(True)  # Wrap text if it doesn't fit horizontally
+        self.elidedText = text
+
+    def setText(self, text):
+        self.elidedText = text
+        super().setText(text)
+
+    def elideMode(self):
+        return self._elideMode
+
+    def setElideMode(self, mode):
+        if self._elideMode != mode and mode != Qt.ElideNone:
+            self._elideMode = mode
+            self.updateGeometry()
+
+    def minimumSizeHint(self):
+        return self.sizeHint()
+
+    def sizeHint(self):
+        hint = self.fontMetrics().boundingRect(self.text()).size()
+        l, t, r, b = self.getContentsMargins()
+        margin = self.margin() * 2
+        return QSize(min(100, hint.width()) + l + r + margin, min(self.fontMetrics().height(), hint.height()) + t + b + margin)
+
+    def paintEvent(self, event):
+
+        qp = QPainter(self)
+        elidedText = self.fontMetrics().elidedText(self.text(), self.elideMode(), self.rect().width())
+        qp.drawText(self.rect(), self.alignment(), elidedText)
 
 class PhaseInfoBox(QWidget):
     def __init__(self, tags):
@@ -38,10 +73,14 @@ class PhaseInfoBox(QWidget):
 
         self.labels = {}
         for (row, col), text in label_texts.items():
-            label = QLabel(text)
+            if col == 0:
+                label = QLabel(text)
+            else:
+                label = ElideLabel(text)
 
             self.grid_layout.addWidget(label, row, col)
             self.labels[(row, col)] = label
+            label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
             if col == 1:
                 value_font = QFont()
@@ -101,10 +140,13 @@ class TimelineWidget(QWidget):
 
     def __draw_phase_patch(self, path: QPainterPath, x_position, y_position, width, height):
 
-        corner_radius_0 = min(self.height() * 0.5,  self.width() * 0.5)
-        corner_radius_1 = min(self.height() * 0.2,  self.width() * 0.3)
+        corner_radius_0 = min(width*2,  self.height() * 0.5, self.width() * 0.5, 60)
+        corner_radius_1 = min(width/2,  self.height() * 0.2, self.width() * 0.05, 30)
+
+        # corner_radius_0 = min(self.height() * 0.5,  self.width() * 0.1)
+        # corner_radius_1 = min(self.height() * 0.2,  self.width() * 0.05)
         path.moveTo(x_position, y_position + corner_radius_1 / 2)
-        path.lineTo(x_position, y_position + height - corner_radius_0)
+        # path.lineTo(x_position, y_position + height - corner_radius_0)
         path.arcTo(x_position, y_position + height - corner_radius_0, corner_radius_0, corner_radius_0, 180.0, 90.0)
         path.lineTo(x_position + width, y_position + height)
         path.arcTo(x_position + width - corner_radius_1, y_position, corner_radius_1, corner_radius_1, 0, 90.0)
@@ -197,10 +239,13 @@ class TimelinesWidget(QWidget):
         self.timeline_widgets = []
 
         self.timeline_name_visible = True
-        self.display_visible = True
+        self.phase_info_box_visible = True
+        self.log_box_visible = True
+
+        self.log_box_widget = None
 
         self.__init_UI()
-        self.__init_notification_display()
+        # self.__init_notification_display()
         self.__init_phase_info_box()
         self.__init_timeline_box()
         self.__init_timelines()
@@ -228,20 +273,20 @@ class TimelinesWidget(QWidget):
     def __init_phase_info_box(self):
 
         self.none_text = ['--', '--', '--']
-        self.display_widget = PhaseInfoBox(self.none_text)
-        self.vbox.addWidget(self.display_widget, 1)
+        self.phase_info_box_widget = PhaseInfoBox(self.none_text)
+        self.vbox.addWidget(self.phase_info_box_widget, 1)
 
     def __init_notification_display(self):
 
-        self.log_text = QTextEdit()
-        self.log_text.setReadOnly(True)
-        self.log_text.setStyleSheet("color: red; background-color: black;")
-        self.vbox.addWidget(self.log_text, 1)
+        self.log_box_widget = QTextEdit()
+        self.log_box_widget.setReadOnly(True)
+        self.log_box_widget.setStyleSheet("color: red; background-color: black;")
+        self.vbox.addWidget(self.log_box_widget, 1)
 
     def __overlap_phase_error_message(self, timeline_name, phase):
 
         txt = f"Timeline {timeline_name}: phase {phase.name} starting at node {phase.initial_node} overlaps with previous phase of {phase.position_error} nodes"
-        self.log_text.append(txt)
+        self.log_box_widget.append(txt)
 
     def __update_display(self, timeline_name, phase_i):
 
@@ -252,7 +297,7 @@ class TimelinesWidget(QWidget):
         else:
             info_text = self.none_text
 
-        self.display_widget.setText(info_text)
+        self.phase_info_box_widget.setText(info_text)
 
     def __init_timelines(self):
 
@@ -265,7 +310,7 @@ class TimelinesWidget(QWidget):
         self.label_layout.setContentsMargins(0, 0, 0, 0)
 
         for name, timeline in self.timelines.items():
-            label = QLabel(name)
+            label = ElideLabel(name)
             label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
             font = QFont()
             font.setBold(True)
@@ -305,21 +350,22 @@ class TimelinesWidget(QWidget):
             self.timeline_layout.itemAt(i).widget().update()
 
     def toggle_phase_info_box(self):
-        self.display_visible = not self.display_visible
-        self.display_widget.setVisible(self.display_visible)
+        self.phase_info_box_visible = not self.phase_info_box_visible
+        self.phase_info_box_widget.setVisible(self.phase_info_box_visible)
 
-    # def toggle_notification_box(self):
-    #     self.display_visible = not self.display_visible
-    #     self.display_widget.setVisible(self.display_visible)
+    def toggle_notification_box(self):
+        self.log_box_visible = not self.log_box_visible
+        self.log_box_widget.setVisible(self.log_box_visible)
 
     def update_timeline(self):
 
         for timeline_name, phases in self.timeline_gui.timelines.items():
             self.timelines[timeline_name].update(phases)
 
-            for phase in phases:
-                if phase.position_error > 0:
-                    self.__overlap_phase_error_message(timeline_name, phase)
+            if self.log_box_widget:
+                for phase in phases:
+                    if phase.position_error > 0:
+                        self.__overlap_phase_error_message(timeline_name, phase)
 
 
         self.update()

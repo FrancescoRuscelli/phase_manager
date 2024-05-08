@@ -94,6 +94,13 @@ class PhaseManagerGUI(QMainWindow):
         self.phase_info_box_action.triggered.connect(self.timelines_widget.toggle_phase_info_box)
         self.view_menu.addAction(self.phase_info_box_action)
 
+        # toggle notification box
+        # self.log_box_action = QAction('Show Notification Display', self)
+        # self.log_box_action.setCheckable(True)
+        # self.log_box_action.setChecked(True)
+        # self.log_box_action.triggered.connect(self.timelines_widget.toggle_notification_box)
+        # self.view_menu.addAction(self.log_box_action)
+
     def toggle_button(self):
         if self.button.text() == "Run":
             self.button.setText("Stop")
@@ -115,7 +122,7 @@ if __name__ == '__main__':
     # ----------------- artificial phases ----------------
 
     # num_phases = 10
-    # phase_durations = [3, 15, 3, 7, 22, 11]
+    # phase_durations = [1, 3, 15, 3, 7, 22, 11]
     # phase_names = ['phase_q', 'phase1', 'verylongname_phase_with_some_other_stuff_written', 'something_else']
     # timeline_names = ['a', 's', 'ball_1', 'd']
     #
@@ -141,7 +148,7 @@ if __name__ == '__main__':
     # gui.show()
     # sys.exit(app.exec_())
     # ============================================================
-
+    #
     timeline_ros = TimelineROS()
     gui = PhaseManagerGUI(timeline_ros, 50)
 
