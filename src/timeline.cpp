@@ -157,7 +157,6 @@ bool Timeline::_add_phases(int pos, bool absolute_position_flag)
     }
 
     // fill _phases_to_add, a vector of phases to add to the horizon
-
     last_node = _insert_phases(pos, absolute_position);
 
 
@@ -420,14 +419,10 @@ bool Timeline::shift()
         for (auto phase : _phases)
         {
             int phase_pos = phase->getPosition();
+            phase->_set_position(phase_pos - 1);
 
-            if (phase_pos > 0)
+            if (phase_pos <= 0)
             {
-                phase->_set_position(phase_pos - 1);
-            }
-            else
-            {
-                // if phase is in position 0, erase node or full phase
                 erase_node_flag = true;
             }
         }
@@ -463,13 +458,15 @@ bool Timeline::shift()
         // todo: should not erase, but shift below 0. Nodes with negative position are not considered
         if (erase_node_flag)
         {
+            std::cout << "active nodes: " << std::endl;
             _active_phases[0]->_get_active_nodes().erase(_active_phases[0]->_get_active_nodes().begin());
-
+            // remove depleted phase from _active_phases
             if (_active_phases[0]->_get_active_nodes().empty())
             {
                 _active_phases.erase(_active_phases.begin());
             }
 
+            // remove depleted phase from _phases
             if (_phases[0]->_get_active_nodes().empty())
             {
                 _phases.erase(_phases.begin());

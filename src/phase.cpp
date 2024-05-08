@@ -659,15 +659,16 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
                           std::back_inserter(active_item_nodes));
 
 
+
     std::vector<int> horizon_nodes(active_item_nodes.size());
     // active phase nodes             : [2 3 4 5]
     // active nodes of item in phase  : [3 4]
     // phase position in horizon      : 7
-    // item node position in horizon  : 7 + 3 (node 0 of 'active nodes') - 2 (first node of '_active_nodes') = 8
-    // item node position in horizon  : 7 + 4 (node 1 of 'active nodes') - 2 (first node of '_active_nodes') = 9
+    // item node position in horizon  : 7 + 3 (node 0 of 'active nodes') = 10
+    // item node position in horizon  : 7 + 4 (node 1 of 'active nodes') = 11
     for (int node_i = 0; node_i < horizon_nodes.size(); node_i++)
     {
-        horizon_nodes[node_i] = initial_node + active_item_nodes[node_i] - _active_nodes[0];
+        horizon_nodes[node_i] = initial_node + active_item_nodes[node_i];
     }
 
     return std::make_pair(active_item_nodes, horizon_nodes);
@@ -708,12 +709,6 @@ bool PhaseToken::update()
 //            std::cout << "updating element " << it->getName() << " (" << it->getItem() << ")" << std::endl;
             it->update(pair_nodes.first, pair_nodes.second);
         }
-//        _update_items(_initial_node);
-//        _update_item_reference(_initial_node);
-//        _update_constraints(_initial_node);
-//        _update_variables(_initial_node);
-//        _update_costs(_initial_node);
-//        _update_parameters(_initial_node);
 
 //        std::cout << "===========================" << std::endl;
     }
