@@ -67,14 +67,17 @@ int Timeline::_pos_to_absolute(int pos)
 
     if (_phases.empty())
     {
+        std::cout << "pos to absolute: " << 0 << std::endl;
         return 0;
     }
 
     if (pos == -1 || pos >= _phases.size())
     {
+        std::cout << "pos to absolute: " << _phases.back()->getPosition() + _phases.back()->getNNodes() << std::endl;
         return _phases.back()->getPosition() + _phases.back()->getNNodes();
     }
 
+    std::cout << "pos to absolute: " << _phases[pos]->getPosition() << std::endl;
     return _phases[pos]->getPosition();
 }
 
@@ -121,33 +124,31 @@ bool Timeline::_add_phase(std::shared_ptr<PhaseToken> phase_to_add, int pos, boo
     int phase_position;
     bool success = false;
 
-    // compute absolute position of phase
-    if (absolute_position_flag)
+    if (!absolute_position_flag)
     {
-        absolute_position = pos;
-        success = _check_absolute_pos(absolute_position, phase_position);
-
-        if (!success)
-        {
-            if (_debug)
-            {
-                std::cout << "Failed to add phase " << phase_to_add->getName() << "at absolute position: " << pos << std::endl;
-            }
-            return false;
-        }
-
-        phase_to_add->_set_position(absolute_position);
-
+        absolute_position = _pos_to_absolute(pos);
     }
     else
     {
-        absolute_position = _pos_to_absolute(pos);
-        phase_position = pos;
-        phase_to_add->_set_position(absolute_position);
+        absolute_position = pos;
     }
 
-    success = _insert_phase(phase_to_add, phase_position);
+    // compute absolute position of phase
+    success = _check_absolute_pos(absolute_position, phase_position);
 
+    if (!success)
+    {
+        if (_debug)
+        {
+            std::cout << "Failed to add phase '" << phase_to_add->getName() << "' at absolute position: " << pos << std::endl;
+        }
+        return false;
+    }
+
+    phase_to_add->_set_position(absolute_position);
+
+
+    success = _insert_phase(phase_to_add, phase_position);
 
     if (!success)
     {
@@ -155,34 +156,34 @@ bool Timeline::_add_phase(std::shared_ptr<PhaseToken> phase_to_add, int pos, boo
     }
 
 
-    std::cout << "current phases in active phases vector: << ";
-    for (auto phase : _active_phases)
-    {
-       std::cout << phase->getName() << " ";
-    }
-    std::cout << ">> (" << _active_phases.size() << ")" << std::endl;
+//    std::cout << "current phases in active phases vector: << ";
+//    for (auto phase : _active_phases)
+//    {
+//       std::cout << phase->getName() << " ";
+//    }
+//    std::cout << ">> (" << _active_phases.size() << ")" << std::endl;
 
 
-    int counter_i = 1;
-    std::cout << "current phases: " << std::endl;
-    for (auto phase : _phases)
-    {
+//    int counter_i = 1;
+//    std::cout << "current phases: " << std::endl;
+//    for (auto phase : _phases)
+//    {
 
-        std::cout << counter_i << "-> " << phase->getName() << " (initial position = " << phase->getPosition() << ")" << std::endl;
+//        std::cout << counter_i << "-> " << phase->getName() << " (initial position = " << phase->getPosition() << ")" << std::endl;
 
-        std::cout << "  active nodes: ";
-
-
-        for (auto j : phase->getActiveNodes())
-        {
-            std::cout << j << " ";
-        }
-        std::cout << std::endl;
-        counter_i++;
-    }
+//        std::cout << "  active nodes: ";
 
 
-    std::cout << "= = = = = = = = = = = = = = = = = = = = = = = = = = =" << std::endl;
+//        for (auto j : phase->getActiveNodes())
+//        {
+//            std::cout << j << " ";
+//        }
+//        std::cout << std::endl;
+//        counter_i++;
+//    }
+
+
+//    std::cout << "= = = = = = = = = = = = = = = = = = = = = = = = = = =" << std::endl;
 
 
     return true;
@@ -386,7 +387,7 @@ bool Timeline::shift()
     _reset();
 
 //    auto start_time = std::chrono::high_resolution_clock::now();
-//    std::cout << " ============ shifting phases ============ : " << std::endl;
+//    std::cout << " ============ shifting phases =========== " << std::endl;
 
     //  if phases vector is empty, skip everything
 
@@ -395,15 +396,7 @@ bool Timeline::shift()
         // update active_phases with all the phases that have active nodes
 
         bool erase_node_flag = false;
-//        _active_phases.clear();
 
-//        for (int i=0; i<_phases.size(); i++)
-//        {
-//            if (_phases[i]->_get_active_nodes().size() > 0)
-//            {
-//                _active_phases.push_back(_phases[i]);
-//            }
-//        }
         // roll down all phases by 1
         for (auto phase : _phases)
         {

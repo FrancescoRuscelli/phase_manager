@@ -671,6 +671,15 @@ std::pair<std::vector<int>, std::vector<int>> PhaseToken::_compute_horizon_nodes
         horizon_nodes[node_i] = initial_node + active_item_nodes[node_i];
     }
 
+//    std::cout << "    initial_node: " << initial_node << std::endl;
+//    std::cout << "      active item nodes: ";
+//    for (auto node_i : active_item_nodes)
+//    {
+//        std::cout << node_i << " ";
+//    }
+//    std::cout << std::endl;
+//    std::cout << "------" << std::endl;
+
     return std::make_pair(active_item_nodes, horizon_nodes);
 
 }
@@ -692,7 +701,7 @@ bool PhaseToken::update()
      * update items contained in phase in horizon based on the position of the phase
      */
 
-//    std::cout << "updating phase: '" << getName() << "' at node: " << _initial_node << std::endl;
+//    std::cout << "   -> updating phase: '" << getName() << "' at node: " << _initial_node << std::endl;
     if (!_active_nodes.empty())
     {
 
@@ -704,6 +713,7 @@ bool PhaseToken::update()
                  it = _cloned_elements[element->getName()];
             }
 
+//            std::cout << "        --> element updated: " << element->getName() << std::endl;
             auto pair_nodes = _compute_horizon_nodes(element->getSelectedNodes(), _initial_node);
 
 //            std::cout << "updating element " << it->getName() << " (" << it->getItem() << ")" << std::endl;
