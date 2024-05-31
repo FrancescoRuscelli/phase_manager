@@ -32,7 +32,7 @@ public:
 //    bool registerPhase(std::shared_ptr<Phase> phase);
     std::shared_ptr<Phase> createPhase(int n_nodes, std::string name);
 
-    bool addPhase(std::vector<std::shared_ptr<Phase>> phases, int pos=-1, bool absolute_position_flag=false);
+//    bool addPhase(std::vector<std::shared_ptr<Phase>> phases, int pos=-1, bool absolute_position_flag=false);
     bool addPhase(std::shared_ptr<Phase> phase, int pos=-1, bool absolute_position_flag=false);
 
 
@@ -53,11 +53,12 @@ protected:
 private:
 
     bool _reset();
-    bool _add_phases(int pos=-1, bool absolute_position_flag=false);
-    bool _insert_phases(int pos, int absolute_position);
-    bool _update_active_phases();
+    bool _add_phase(std::shared_ptr<PhaseToken> phase_to_add, int pos=-1, bool absolute_position_flag=false);
+    bool _insert_phase(std::shared_ptr<PhaseToken> phase, int pos);
+    bool _update_active_phases(std::vector<std::shared_ptr<PhaseToken>> phases);
     int _pos_to_absolute(int pos);
-    std::pair<int, int> _check_absolute_position(int pos);
+    bool _check_absolute_pos(int absolute_position, int& phase_position);
+//    std::pair<int, int> _check_absolute_position(int pos);
     std::shared_ptr<PhaseToken> _generate_phase_token(std::shared_ptr<Phase> phase);
 
     std::string _name;
@@ -65,7 +66,6 @@ private:
     int _n_nodes;
 
     // todo: find a way of exposing this in python (should give back "images" of the Phase class, which cannot be used)
-    std::vector<std::shared_ptr<PhaseToken>> _phases_to_add; // temporary vector of phases that are added to timeline
     std::vector<std::shared_ptr<PhaseToken>> _phases; // list of all the phases
     std::vector<std::shared_ptr<PhaseToken>> _active_phases; // list of all active phases
 
