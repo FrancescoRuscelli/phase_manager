@@ -67,17 +67,14 @@ int Timeline::_pos_to_absolute(int pos)
 
     if (_phases.empty())
     {
-        std::cout << "pos to absolute: " << 0 << std::endl;
         return 0;
     }
 
     if (pos == -1 || pos >= _phases.size())
     {
-        std::cout << "pos to absolute: " << _phases.back()->getPosition() + _phases.back()->getNNodes() << std::endl;
         return _phases.back()->getPosition() + _phases.back()->getNNodes();
     }
 
-    std::cout << "pos to absolute: " << _phases[pos]->getPosition() << std::endl;
     return _phases[pos]->getPosition();
 }
 
@@ -258,6 +255,11 @@ bool Timeline::_check_absolute_pos(int absolute_position, int& phase_position)
 {
     // if the absolute position is free, add the phase at that position, pushing the other phases forward
     // if not free, do not add the phase
+
+    if (absolute_position < 0)
+    {
+        return false;
+    }
 
     // if phases is empty, can add everywhere
     if (_phases.empty())

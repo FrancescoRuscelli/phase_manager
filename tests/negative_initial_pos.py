@@ -126,11 +126,12 @@ phase_15n.addItem(cnsrt4)
 # ============================================================================
 # test 9
 timeline_1.addPhase(phase_15n)
+timeline_1.addPhase(phase_15n)
+pm.shift()
+timeline_1.addPhase(phase_8n, pos=0, absolute_position=False)
 print_timeline_phases()
 exit()
-pm.shift()
 
-timeline_1.addPhase(phase_8n, pos=0, absolute_position=False)
 
 
 # timeline_1.addPhase(phase_8n)
