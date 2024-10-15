@@ -34,6 +34,7 @@ public:
 
 //    bool addPhase(std::vector<std::shared_ptr<Phase>> phases, int pos=-1, bool absolute_position_flag=false);
     bool addPhase(std::shared_ptr<Phase> phase, int pos=-1, bool absolute_position_flag=false);
+    bool removePhase(int pos);
 
 
     std::shared_ptr<Phase> getRegisteredPhase(std::string name);

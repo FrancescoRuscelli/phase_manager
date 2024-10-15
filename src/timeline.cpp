@@ -16,6 +16,12 @@ std::string Timeline::getName()
     return _name;
 }
 
+bool Timeline::removePhase(int pos)
+{
+    _phases.erase(_phases.begin() + pos);
+    return true;
+}
+
 Phase::Ptr Timeline::createPhase(int n_nodes, std::string name)
 {
 
