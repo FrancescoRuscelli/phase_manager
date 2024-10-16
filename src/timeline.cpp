@@ -18,7 +18,25 @@ std::string Timeline::getName()
 
 bool Timeline::removePhase(int pos)
 {
-    _phases.erase(_phases.begin() + pos);
+    if (pos < _active_phases.size())
+    {
+        _active_phases.erase(_active_phases.begin() + pos);
+    }
+    else
+    {
+        std::cerr << "active_phases: Index of phase to erase (" << pos << ") out of bounds!" << std::endl;
+    }
+
+    if (pos < _phases.size())
+    {
+        _phases.erase(_phases.begin() + pos);
+    }
+    else
+    {
+        std::cerr << "phases: Index of phase to erase (" << pos << ") out of bounds!" << std::endl;
+    }
+
+
     return true;
 }
 
